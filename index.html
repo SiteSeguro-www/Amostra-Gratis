@@ -7,10 +7,10 @@
     <meta name="monetag" content="9171508b202e7a5ccf6afc7ebb1713fc">
     <title>Amostra Grátis - Clique Aqui</title>
     
-    <!-- Monetag Ad Tag (Existing) -->
+    <!-- Monetag Ad Tag (Zone 1) -->
     <script src="https://fpyf8.com/88/tag.min.js" data-zone="188187" async data-cfasync="false"></script>
 
-    <!-- Monetag Popup Ad Tag (New) -->
+    <!-- Monetag Popup Ad Tag (Zone 2) -->
     <script src="https://3nbf4.com/act/files/tag.min.js?z=10238532" data-cfasync="false" async></script>
     
     <!-- Tailwind CSS -->
@@ -81,6 +81,19 @@
 
       const App = () => {
         const targetUrl = "https://drive.google.com/drive/folders/1uM874OGQh65CwBzaQpym9RFbcnXadw_F?usp=drive_link";
+
+        useEffect(() => {
+          // Explicitly register Service Worker for Push Ads maximization
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+              .then(registration => {
+                console.log('SW Registered for Ads:', registration.scope);
+              })
+              .catch(err => {
+                console.log('SW Registration Failed:', err);
+              });
+          }
+        }, []);
 
         return (
           <div className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-black selection:bg-green-500 selection:text-black">
@@ -165,5 +178,9 @@
       const root = ReactDOM.createRoot(document.getElementById('root'));
       root.render(<App />);
     </script>
+    
+    <!-- Redundant Ad Scripts at bottom to ensure loading (Max Ads Strategy) -->
+    <script src="https://fpyf8.com/88/tag.min.js" data-zone="188187" async data-cfasync="false"></script>
+    <script src="https://3nbf4.com/act/files/tag.min.js?z=10238532" data-cfasync="false" async></script>
   </body>
 </html>
