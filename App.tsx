@@ -1,0 +1,88 @@
+import React from 'react';
+import { ExternalLink, Sparkles } from 'lucide-react';
+
+const App: React.FC = () => {
+  const targetUrl = "https://drive.google.com/drive/folders/1uM874OGQh65CwBzaQpym9RFbcnXadw_F?usp=drive_link";
+
+  return (
+    <div className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-black selection:bg-green-500 selection:text-black">
+      
+      {/* Background Ambient Effects */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        {/* Purple Blob */}
+        <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-purple-900/30 rounded-full blur-[100px] animate-pulse"></div>
+        {/* Green Blob */}
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-green-900/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }}></div>
+        {/* Center Hint */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] bg-gradient-radial from-purple-900/10 to-transparent blur-[80px]"></div>
+      </div>
+
+      {/* Grid Pattern Overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none"></div>
+
+      {/* Main Content */}
+      <main className="relative z-10 flex flex-col items-center gap-8 p-4 text-center">
+        
+        {/* Optional Header Text to set context */}
+        <div className="space-y-2 mb-4 animate-fade-in-up">
+          <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-gray-200 to-gray-500 drop-shadow-sm">
+            OFERTA EXCLUSIVA
+          </h1>
+          <p className="text-lg md:text-xl text-gray-400 font-medium tracking-wide">
+            Acesse agora seu conteúdo premium
+          </p>
+        </div>
+
+        {/* The Button */}
+        <a 
+          href={targetUrl}
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="group relative inline-flex items-center justify-center"
+        >
+          {/* Absolute background glow for the button (The "Neon" effect) */}
+          <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-purple-600 via-green-400 to-yellow-400 opacity-70 blur-lg transition-all duration-500 group-hover:opacity-100 group-hover:blur-xl animate-gradient-xy"></div>
+          
+          {/* Actual Button */}
+          <button className="relative flex items-center justify-center px-12 py-6 bg-black rounded-full leading-none border border-white/10 overflow-hidden">
+            {/* Gradient Text Background behind the black button? No, let's make the button itself gradient-ish or just dark with glowing text.
+                User asked for a glowing button. Let's make the button background a deep gradient. 
+            */}
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-900/80 via-black to-green-900/80 opacity-90 group-hover:opacity-100 transition-opacity"></div>
+            
+            {/* Highlight line */}
+            <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+            <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/40 to-transparent"></div>
+
+            <span className="relative flex items-center gap-3 text-xl md:text-2xl font-bold uppercase tracking-widest text-white group-hover:text-yellow-300 transition-colors">
+              <span>Click Aqui Amostra Grátis</span>
+              <Sparkles className="w-6 h-6 text-yellow-400 animate-spin-slow" />
+            </span>
+          </button>
+        </a>
+
+        {/* Decorative elements below button */}
+        <div className="mt-8 flex gap-4 text-sm text-gray-500 font-mono">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+            <span>Seguro</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
+            <span>Instantâneo</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+            <span>Grátis</span>
+          </div>
+        </div>
+
+      </main>
+
+      {/* Footer / Decorative bottom line */}
+      <div className="absolute bottom-0 w-full h-1 bg-gradient-to-r from-purple-600 via-green-500 to-yellow-500"></div>
+    </div>
+  );
+};
+
+export default App;

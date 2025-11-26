@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Amostra Grátis - Clique Aqui</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #000;
+        color: #fff;
+      }
+      /* Custom animation for the gradient rotation */
+      @keyframes gradient-xy {
+        0%, 100% {
+          background-size: 400% 400%;
+          background-position: left center;
+        }
+        50% {
+          background-size: 200% 200%;
+          background-position: right center;
+        }
+      }
+      .animate-gradient-xy {
+        animation: gradient-xy 3s ease infinite;
+      }
+      
+      @keyframes pulse-glow {
+        0%, 100% {
+          box-shadow: 0 0 20px rgba(168, 85, 247, 0.5), 0 0 40px rgba(34, 197, 94, 0.3);
+          transform: scale(1);
+        }
+        50% {
+          box-shadow: 0 0 30px rgba(168, 85, 247, 0.8), 0 0 60px rgba(34, 197, 94, 0.6);
+          transform: scale(1.05);
+        }
+      }
+      .animate-pulse-glow {
+        animation: pulse-glow 2s infinite;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
