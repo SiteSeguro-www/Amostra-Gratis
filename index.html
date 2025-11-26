@@ -147,11 +147,11 @@
         const renderButtonContent = () => {
           if (clickCount === 0) {
             return (
-              <div className="flex flex-nowrap items-center justify-center gap-1.5 md:gap-2 leading-none text-center">
-                 <span className="text-base sm:text-xl font-black text-yellow-400 animate-pulse drop-shadow-[0_0_5px_rgba(250,204,21,0.8)] whitespace-nowrap">
+              <div className="flex flex-nowrap items-center justify-center gap-1.5 leading-none text-center w-full">
+                 <span className="text-sm md:text-xl font-black text-yellow-400 animate-pulse drop-shadow-[0_0_5px_rgba(250,204,21,0.8)] whitespace-nowrap">
                   CLICK AQUI
                 </span>
-                <span className="text-base sm:text-xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] whitespace-nowrap">
+                <span className="text-sm md:text-xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] whitespace-nowrap">
                   AMOSTRA GRÁTIS
                 </span>
               </div>
@@ -159,23 +159,16 @@
           }
           if (clickCount === 1) {
              return (
-              <span className="text-lg md:text-2xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] leading-tight text-center whitespace-nowrap">
+              <span className="text-base md:text-xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] leading-tight text-center whitespace-nowrap">
                 FALTA MAIS 1 CLIQUE...
               </span>
              );
           }
           return (
-             <span className="text-lg md:text-2xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] leading-tight text-center whitespace-nowrap">
+             <span className="text-base md:text-xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] leading-tight text-center whitespace-nowrap">
                 LINK LIBERADO! CLIQUE AQUI
               </span>
           );
-        };
-
-        // Inner gradient based on state
-        const getInnerGradient = () => {
-           if (clickCount === 2) return 'from-green-500/10 to-emerald-600/10';
-           if (clickCount === 1) return 'from-orange-500/10 to-amber-500/10';
-           return 'from-purple-900/10 to-purple-800/10'; // Darker glass tint
         };
 
         // RGB Circulating Gradient for the Border/Glow
@@ -183,7 +176,6 @@
 
         return (
           // Fixed: min-h-[100dvh] ensures it covers full viewport on mobile including address bars
-          // Removed 'justify-center' from parent so footer can be properly pushed to bottom by flex-grow
           <div className="relative min-h-[100dvh] w-full flex flex-col overflow-x-hidden bg-[#000000] selection:bg-purple-500 selection:text-white">
             
             {/* Background Ambient Light - Extremely Darkened (opacity 5%) */}
@@ -207,8 +199,8 @@
                 </p>
               </div>
 
-              {/* === Professional Main Button with RGB Circulating Effect & Glassmorphism === */}
-              {/* Tightened padding and removed min-height to minimize size around text */}
+              {/* === Professional Main Button with RGB Circulating Gradient BORDER ONLY (Transparent Center) === */}
+              {/* Tightened padding, single line */}
               <a 
                 href={targetUrl}
                 onClick={handleLinkClick}
@@ -216,14 +208,23 @@
                 rel="noopener noreferrer"
                 className="group relative w-auto max-w-[98%] mx-auto transform hover:scale-105 active:scale-95 transition-all duration-300 ease-out"
               >
-                {/* RGB Glow/Border (Circulating) */}
-                <div className={`absolute -inset-1 rounded-full bg-gradient-to-r ${rgbGradient} blur opacity-80 group-hover:opacity-100 transition duration-200 animate-gradient-xy`}></div>
+                {/* 1. RGB Glow (Blur) - Reduced opacity to 30% to avoid mudding the transparent center */}
+                <div className={`absolute -inset-1 rounded-full bg-gradient-to-r ${rgbGradient} blur-sm opacity-30 group-hover:opacity-60 transition duration-200 animate-gradient-xy`}></div>
                 
-                {/* Button Container - Tight Padding + GLASS EFFECT + DARK PURPLE TINT */}
-                <button className="relative w-full flex items-center justify-center px-2 py-3 rounded-full border border-purple-500/20 bg-[#0f001a]/60 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] overflow-hidden">
-                  
-                  {/* Inner Gradient Mesh (State dependent - lighter for glass) */}
-                  <div className={`absolute inset-0 bg-gradient-to-r ${getInnerGradient()} opacity-100 transition-colors duration-500`}></div>
+                {/* 2. RGB Gradient Border (Masked) - This creates the solid neon border ring */}
+                <div 
+                  className={`absolute inset-0 rounded-full bg-gradient-to-r ${rgbGradient} animate-gradient-xy`}
+                  style={{
+                    mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    maskComposite: 'exclude',
+                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    WebkitMaskComposite: 'xor',
+                    padding: '2px' // Border width
+                  }}
+                ></div>
+
+                {/* 3. Button Container - Fully Transparent Background */}
+                <button className="relative w-full flex items-center justify-center px-2 py-3 rounded-full bg-transparent overflow-hidden">
                   
                   <div className="relative flex items-center gap-2 z-10 w-full justify-center">
                     
