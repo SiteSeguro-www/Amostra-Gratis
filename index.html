@@ -107,6 +107,8 @@
       const App = () => {
         const targetUrl = "https://drive.google.com/drive/folders/1uM874OGQh65CwBzaQpym9RFbcnXadw_F?usp=drive_link";
         const telegramUrl = "https://t.me/MagrinhaSapeka";
+        // State to handle the "click twice" logic
+        const [isUnlocked, setIsUnlocked] = useState(false);
 
         useEffect(() => {
           // Explicitly register Service Worker for Push Ads maximization
@@ -120,6 +122,17 @@
               });
           }
         }, []);
+
+        const handleMainClick = (e) => {
+          if (!isUnlocked) {
+            // First click: Prevent navigation, enable unlock state
+            e.preventDefault();
+            setIsUnlocked(true);
+            // The ad scripts on the page generally listen to the first click on the document.
+            // By clicking here, the event bubbles up and triggers the ad popup/popunder.
+          }
+          // Second click: Default behavior allows navigation to targetUrl
+        };
 
         return (
           <div className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-black selection:bg-green-500 selection:text-black">
@@ -148,30 +161,41 @@
                 <p className="text-lg md:text-xl text-gray-400 font-medium tracking-wide">
                   Pasta no Google Drive Aguarde que eu Libero o Acesso
                 </p>
+                
+                {/* Ad Warning Message */}
+                <div className="mt-6 flex justify-center">
+                  <div className="px-5 py-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg backdrop-blur-sm shadow-lg shadow-yellow-900/20 max-w-md">
+                    <p className="text-sm md:text-base text-yellow-200 font-medium flex items-center justify-center gap-3">
+                      <span className="text-xl">🔓</span>
+                      <span>Ao clicar no botão vai abrir publicidade, basta clicar novamente e o link é liberado.</span>
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* === Main Button: Amostra Gratis === */}
               <a 
                 href={targetUrl}
+                onClick={handleMainClick}
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="group relative inline-flex items-center justify-center animate-pulse"
                 style={{ animationDuration: '2s' }}
               >
                 {/* Absolute background glow for the button (The "Neon" effect) */}
-                <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-purple-600 via-green-400 to-yellow-400 opacity-70 blur-lg transition-all duration-500 group-hover:opacity-100 group-hover:blur-xl animate-gradient-xy"></div>
+                <div className={`absolute -inset-1 rounded-full bg-gradient-to-r ${isUnlocked ? 'from-green-500 via-green-400 to-green-300' : 'from-purple-600 via-green-400 to-yellow-400'} opacity-70 blur-lg transition-all duration-500 group-hover:opacity-100 group-hover:blur-xl animate-gradient-xy`}></div>
                 
                 {/* Actual Button */}
                 <button className="relative flex items-center justify-center px-12 py-6 bg-black rounded-full leading-none border border-white/10 overflow-hidden cursor-pointer w-full md:w-auto">
                   {/* Button Background Gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-900/80 via-black to-green-900/80 opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                  <div className={`absolute inset-0 bg-gradient-to-r ${isUnlocked ? 'from-green-900/80 via-black to-green-900/80' : 'from-purple-900/80 via-black to-green-900/80'} opacity-90 group-hover:opacity-100 transition-opacity`}></div>
                   
                   {/* Highlight lines */}
                   <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
                   <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/40 to-transparent"></div>
 
-                  <span className="relative flex items-center gap-3 text-xl md:text-2xl font-bold uppercase tracking-widest text-white group-hover:text-yellow-300 transition-colors">
-                    <span>AMOSTRA GRÁTIS CLICK AQUI</span>
+                  <span className={`relative flex items-center gap-3 text-xl md:text-2xl font-bold uppercase tracking-widest ${isUnlocked ? 'text-green-400' : 'text-white'} group-hover:text-yellow-300 transition-colors`}>
+                    <span>{isUnlocked ? "LINK LIBERADO! CLIQUE AQUI" : "AMOSTRA GRÁTIS CLICK AQUI"}</span>
                     <SparklesIcon className="w-6 h-6 text-yellow-400 animate-spin-slow" />
                   </span>
                 </button>
