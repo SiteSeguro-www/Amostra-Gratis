@@ -155,10 +155,31 @@
           }
         };
 
-        const getButtonText = () => {
-          if (clickCount === 0) return "GRÁTIS PACK COM. VÍDEOS + FOTOS GRÁTIS";
-          if (clickCount === 1) return "FALTA MAIS 1 CLIQUE...";
-          return "LINK LIBERADO! CLIQUE AQUI";
+        const renderButtonContent = () => {
+          if (clickCount === 0) {
+            return (
+              <div className="flex flex-wrap items-center justify-center gap-1 leading-tight px-1 text-center">
+                <span className="text-[11px] sm:text-[13px] font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+                  PACK GRÁTIS COM VÍDEOS E FOTOS GRÁTIS
+                </span>
+                <span className="text-[11px] sm:text-[13px] font-black text-yellow-400 animate-pulse drop-shadow-[0_0_5px_rgba(250,204,21,0.8)] whitespace-nowrap">
+                  CLICK AQUI
+                </span>
+              </div>
+            );
+          }
+          if (clickCount === 1) {
+             return (
+              <span className="text-base md:text-xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+                FALTA MAIS 1 CLIQUE...
+              </span>
+             );
+          }
+          return (
+             <span className="text-base md:text-xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+                LINK LIBERADO! CLIQUE AQUI
+              </span>
+          );
         };
 
         // Inner gradient based on state
@@ -207,19 +228,21 @@
                 <div className={`absolute -inset-1 rounded-full bg-gradient-to-r ${rgbGradient} blur opacity-80 group-hover:opacity-100 transition duration-200 animate-gradient-xy`}></div>
                 
                 {/* Button Container */}
-                <button className="relative w-full flex items-center justify-center px-8 py-4 bg-black rounded-full border border-white/5 shadow-2xl overflow-hidden">
+                <button className="relative w-full flex items-center justify-center px-4 py-4 bg-black rounded-full border border-white/5 shadow-2xl overflow-hidden min-h-[70px]">
                   
                   {/* Inner Gradient Mesh (State dependent) */}
                   <div className={`absolute inset-0 bg-gradient-to-r ${getInnerGradient()} opacity-100 transition-colors duration-500`}></div>
                   
-                  <div className="relative flex items-center gap-3 z-10">
-                    <span className={`text-base md:text-xl font-bold tracking-wider uppercase text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] text-center leading-tight`}>
-                      {getButtonText()}
-                    </span>
+                  <div className="relative flex items-center gap-2 z-10 w-full justify-center">
+                    
+                    {/* Render Text Content */}
+                    <div className="flex items-center justify-center w-full">
+                       {renderButtonContent()}
+                    </div>
                     
                     {/* Spinning Heart */}
                     <div className="flex items-center justify-center animate-spin-slow shrink-0">
-                      <HeartIcon className="w-6 h-6 md:w-7 md:h-7 text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+                      <HeartIcon className="w-5 h-5 md:w-6 md:h-6 text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
                     </div>
                   </div>
                 </button>
