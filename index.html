@@ -171,7 +171,7 @@
           );
         };
 
-        // RGB Circulating Gradient for the Border/Glow
+        // RGB Gradient for Footer
         const rgbGradient = "from-red-500 via-yellow-500 via-green-500 via-cyan-500 via-blue-500 via-purple-500 to-red-500";
 
         return (
@@ -199,8 +199,7 @@
                 </p>
               </div>
 
-              {/* === Professional Main Button with RGB Circulating Gradient Border & Solid Background === */}
-              {/* Tightened padding, single line */}
+              {/* === Main Button: Styled Exactly like Telegram Button (Cyan/Blue Glass Pulse) === */}
               <a 
                 href={targetUrl}
                 onClick={handleLinkClick}
@@ -208,26 +207,7 @@
                 rel="noopener noreferrer"
                 className="group relative w-auto max-w-[98%] mx-auto transform hover:scale-105 active:scale-95 transition-all duration-300 ease-out"
               >
-                {/* 1. RGB Glow (Blur) */}
-                <div className={`absolute -inset-1 rounded-full bg-gradient-to-r ${rgbGradient} blur-sm opacity-30 group-hover:opacity-60 transition duration-200 animate-gradient-xy`}></div>
-                
-                {/* 2. Solid Purple Background (No Glass Effect) */}
-                <div className="absolute inset-0 rounded-full bg-[#2e0240]"></div>
-
-                {/* 3. RGB Gradient Border (Masked) - Creates the neon ring on top of the solid background */}
-                <div 
-                  className={`absolute inset-0 rounded-full bg-gradient-to-r ${rgbGradient} animate-gradient-xy`}
-                  style={{
-                    mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                    maskComposite: 'exclude',
-                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                    WebkitMaskComposite: 'xor',
-                    padding: '2px' // Border width
-                  }}
-                ></div>
-
-                {/* 4. Button Content */}
-                <button className="relative w-full flex items-center justify-center px-2 py-3 rounded-full bg-transparent overflow-hidden">
+                <button className="relative w-full flex items-center justify-center px-4 py-3 rounded-full border border-cyan-500/50 bg-cyan-500/10 backdrop-blur-md shadow-[0_0_15px_rgba(34,211,238,0.4)] animate-pulse transition-all duration-300 group-hover:shadow-[0_0_25px_rgba(34,211,238,0.7)] group-hover:bg-cyan-500/20 overflow-hidden">
                   
                   <div className="relative flex items-center gap-2 z-10 w-full justify-center">
                     
