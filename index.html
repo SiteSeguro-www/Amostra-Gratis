@@ -158,11 +158,11 @@
         const renderButtonContent = () => {
           if (clickCount === 0) {
             return (
-              <div className="flex flex-col items-center justify-center leading-tight text-center">
-                 <span className="text-sm sm:text-lg font-black text-yellow-400 animate-pulse drop-shadow-[0_0_5px_rgba(250,204,21,0.8)] mb-0.5">
+              <div className="flex flex-col items-center justify-center leading-none text-center gap-0.5">
+                 <span className="text-lg sm:text-2xl font-black text-yellow-400 animate-pulse drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]">
                   CLICK AQUI
                 </span>
-                <span className="text-xs sm:text-base font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+                <span className="text-base sm:text-xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">
                   AMOSTRA GRÁTIS
                 </span>
               </div>
@@ -170,13 +170,13 @@
           }
           if (clickCount === 1) {
              return (
-              <span className="text-base md:text-xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+              <span className="text-lg md:text-2xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] leading-tight text-center">
                 FALTA MAIS 1 CLIQUE...
               </span>
              );
           }
           return (
-             <span className="text-base md:text-xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+             <span className="text-lg md:text-2xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] leading-tight text-center">
                 LINK LIBERADO! CLIQUE AQUI
               </span>
           );
@@ -200,8 +200,8 @@
             <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-purple-900/[0.05] rounded-full blur-[100px] pointer-events-none"></div>
             <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-green-900/[0.05] rounded-full blur-[100px] pointer-events-none"></div>
 
-            {/* Subtle Grid - Reduced opacity */}
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_60%,transparent_100%)] pointer-events-none"></div>
+            {/* Subtle Grid - Increased opacity to 0.08 for better visibility */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_60%,transparent_100%)] pointer-events-none"></div>
 
             {/* Main Content */}
             <main className="relative z-10 flex flex-col items-center justify-center w-full max-w-3xl mx-auto px-6 py-12 gap-6 flex-grow">
@@ -278,14 +278,16 @@
             </main>
 
             {/* Footer */}
-            <footer className="relative z-10 w-full py-6 mt-auto border-t border-white/5 bg-black/40 backdrop-blur-md">
-               <div className="flex flex-col items-center justify-center gap-2 text-[11px] text-gray-500">
+            <footer className="relative z-10 w-full py-6 mt-auto border-t border-white/5 bg-black/40 backdrop-blur-md overflow-hidden">
+               <div className="flex flex-col items-center justify-center gap-2 text-[11px] text-gray-500 pb-1">
                   <div className="flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
                      <span>© 2025 • Feito com</span>
                      <HeartIcon className="w-3 h-3 text-red-600 animate-pulse" />
                      <span>por Magrinha.Sapeka</span>
                   </div>
                </div>
+               {/* RGB Thin Line at Bottom */}
+               <div className={`absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r ${rgbGradient} animate-gradient-xy`}></div>
             </footer>
           </div>
         );
