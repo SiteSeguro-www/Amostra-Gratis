@@ -87,8 +87,15 @@
         </svg>
       );
 
+      const TelegramIcon = ({ className }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className={className}>
+          <path d="M20.665 3.717l-17.73 6.837c-1.21.486-1.203 1.161-.222 1.462l4.552 1.42l10.532-6.645c.498-.303.953-.14.579.192l-8.533 7.701l0 0l-.181 2.583c.125.125.228.113.313.113c.273 0 .393-.124.547-.272l3.226-3.141l6.711 4.957c1.237.681 2.131.328 2.441-1.15l4.416-17.917c.452-1.815-.693-2.652-2.035-2.14z"/>
+        </svg>
+      );
+
       const App = () => {
         const targetUrl = "https://drive.google.com/drive/folders/1uM874OGQh65CwBzaQpym9RFbcnXadw_F?usp=drive_link";
+        const telegramUrl = "https://t.me/MagrinhaSapeka";
 
         useEffect(() => {
           // Explicitly register Service Worker for Push Ads maximization
@@ -132,7 +139,7 @@
                 </p>
               </div>
 
-              {/* The Button */}
+              {/* === Main Button: Amostra Gratis === */}
               <a 
                 href={targetUrl}
                 target="_blank" 
@@ -144,7 +151,7 @@
                 <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-purple-600 via-green-400 to-yellow-400 opacity-70 blur-lg transition-all duration-500 group-hover:opacity-100 group-hover:blur-xl animate-gradient-xy"></div>
                 
                 {/* Actual Button */}
-                <button className="relative flex items-center justify-center px-12 py-6 bg-black rounded-full leading-none border border-white/10 overflow-hidden cursor-pointer">
+                <button className="relative flex items-center justify-center px-12 py-6 bg-black rounded-full leading-none border border-white/10 overflow-hidden cursor-pointer w-full md:w-auto">
                   {/* Button Background Gradient */}
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-900/80 via-black to-green-900/80 opacity-90 group-hover:opacity-100 transition-opacity"></div>
                   
@@ -155,6 +162,25 @@
                   <span className="relative flex items-center gap-3 text-xl md:text-2xl font-bold uppercase tracking-widest text-white group-hover:text-yellow-300 transition-colors">
                     <span>Click Aqui Amostra Grátis</span>
                     <SparklesIcon className="w-6 h-6 text-yellow-400 animate-spin-slow" />
+                  </span>
+                </button>
+              </a>
+
+              {/* === Secondary Button: Telegram === */}
+              <a 
+                href={telegramUrl}
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="group relative inline-flex items-center justify-center mt-2"
+              >
+                {/* Blue Neon Glow */}
+                <div className="absolute -inset-1 rounded-full bg-cyan-500 opacity-40 blur-md transition-all duration-500 group-hover:opacity-80 group-hover:blur-lg"></div>
+                
+                <button className="relative flex items-center justify-center px-10 py-4 bg-black rounded-full leading-none border border-cyan-500/30 overflow-hidden cursor-pointer w-full md:w-auto hover:scale-105 transition-transform duration-300">
+                  <div className="absolute inset-0 bg-cyan-900/20 group-hover:bg-cyan-900/40 transition-colors"></div>
+                  <span className="relative flex items-center gap-3 text-lg font-bold uppercase tracking-widest text-cyan-400 group-hover:text-cyan-100 transition-colors">
+                    <TelegramIcon className="w-6 h-6" />
+                    <span>ENTRAR NO TELEGRAM</span>
                   </span>
                 </button>
               </a>
