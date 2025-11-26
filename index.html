@@ -107,8 +107,12 @@
       const App = () => {
         const targetUrl = "https://drive.google.com/drive/folders/1uM874OGQh65CwBzaQpym9RFbcnXadw_F?usp=drive_link";
         const telegramUrl = "https://t.me/MagrinhaSapeka";
-        // State to handle the "click twice" logic
-        const [isUnlocked, setIsUnlocked] = useState(false);
+        
+        // State to handle the click count (0, 1, 2)
+        // 0 = Initial
+        // 1 = 1 Ad Clicked
+        // 2 = Unlocked (Ready to go)
+        const [clickCount, setClickCount] = useState(0);
 
         useEffect(() => {
           // Explicitly register Service Worker for Push Ads maximization
@@ -124,14 +128,32 @@
         }, []);
 
         const handleMainClick = (e) => {
-          if (!isUnlocked) {
-            // First click: Prevent navigation, enable unlock state
+          // We require 2 "sacrificial" clicks for ads before the real link works
+          if (clickCount < 2) {
             e.preventDefault();
-            setIsUnlocked(true);
-            // The ad scripts on the page generally listen to the first click on the document.
-            // By clicking here, the event bubbles up and triggers the ad popup/popunder.
+            setClickCount(prev => prev + 1);
+            // The ad scripts on the page listen to these document clicks.
+            // Each click here bubbles up and triggers a popup/popunder.
           }
-          // Second click: Default behavior allows navigation to targetUrl
+          // If clickCount is 2 (or more), we let the default anchor behavior happen (navigation)
+        };
+
+        const getButtonText = () => {
+          if (clickCount === 0) return "AMOSTRA GRÁTIS CLICK AQUI";
+          if (clickCount === 1) return "FALTA MAIS 1 CLIQUE...";
+          return "LINK LIBERADO! CLIQUE AQUI";
+        };
+
+        const getButtonGradient = () => {
+           if (clickCount === 2) return 'from-green-500 via-green-400 to-green-300'; // Unlocked
+           if (clickCount === 1) return 'from-orange-500 via-yellow-500 to-orange-400'; // Progress
+           return 'from-purple-600 via-green-400 to-yellow-400'; // Initial
+        };
+        
+        const getButtonTextColors = () => {
+           if (clickCount === 2) return 'text-green-400 group-hover:text-green-200';
+           if (clickCount === 1) return 'text-orange-400 group-hover:text-orange-200';
+           return 'text-white group-hover:text-yellow-300';
         };
 
         return (
@@ -151,7 +173,7 @@
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none"></div>
 
             {/* Main Content */}
-            <main className="relative z-10 flex flex-col items-center gap-8 p-4 text-center mb-20">
+            <main className="relative z-10 flex flex-col items-center gap-6 p-4 text-center mb-20">
               
               {/* Header Text */}
               <div className="space-y-2 mb-4 animate-fade-in-up">
@@ -161,16 +183,6 @@
                 <p className="text-lg md:text-xl text-gray-400 font-medium tracking-wide">
                   Pasta no Google Drive Aguarde que eu Libero o Acesso
                 </p>
-                
-                {/* Ad Warning Message */}
-                <div className="mt-6 flex justify-center">
-                  <div className="px-5 py-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg backdrop-blur-sm shadow-lg shadow-yellow-900/20 max-w-md">
-                    <p className="text-sm md:text-base text-yellow-200 font-medium flex items-center justify-center gap-3">
-                      <span className="text-xl">🔓</span>
-                      <span>Ao clicar no botão vai abrir publicidade, basta clicar novamente e o link é liberado.</span>
-                    </p>
-                  </div>
-                </div>
               </div>
 
               {/* === Main Button: Amostra Gratis === */}
@@ -183,19 +195,19 @@
                 style={{ animationDuration: '2s' }}
               >
                 {/* Absolute background glow for the button (The "Neon" effect) */}
-                <div className={`absolute -inset-1 rounded-full bg-gradient-to-r ${isUnlocked ? 'from-green-500 via-green-400 to-green-300' : 'from-purple-600 via-green-400 to-yellow-400'} opacity-70 blur-lg transition-all duration-500 group-hover:opacity-100 group-hover:blur-xl animate-gradient-xy`}></div>
+                <div className={`absolute -inset-1 rounded-full bg-gradient-to-r ${getButtonGradient()} opacity-70 blur-lg transition-all duration-500 group-hover:opacity-100 group-hover:blur-xl animate-gradient-xy`}></div>
                 
                 {/* Actual Button */}
                 <button className="relative flex items-center justify-center px-12 py-6 bg-black rounded-full leading-none border border-white/10 overflow-hidden cursor-pointer w-full md:w-auto">
                   {/* Button Background Gradient */}
-                  <div className={`absolute inset-0 bg-gradient-to-r ${isUnlocked ? 'from-green-900/80 via-black to-green-900/80' : 'from-purple-900/80 via-black to-green-900/80'} opacity-90 group-hover:opacity-100 transition-opacity`}></div>
+                  <div className={`absolute inset-0 bg-gradient-to-r ${clickCount === 2 ? 'from-green-900/80 via-black to-green-900/80' : 'from-purple-900/80 via-black to-green-900/80'} opacity-90 group-hover:opacity-100 transition-opacity`}></div>
                   
                   {/* Highlight lines */}
                   <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
                   <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/40 to-transparent"></div>
 
-                  <span className={`relative flex items-center gap-3 text-xl md:text-2xl font-bold uppercase tracking-widest ${isUnlocked ? 'text-green-400' : 'text-white'} group-hover:text-yellow-300 transition-colors`}>
-                    <span>{isUnlocked ? "LINK LIBERADO! CLIQUE AQUI" : "AMOSTRA GRÁTIS CLICK AQUI"}</span>
+                  <span className={`relative flex items-center gap-3 text-xl md:text-2xl font-bold uppercase tracking-widest ${getButtonTextColors()} transition-colors`}>
+                    <span>{getButtonText()}</span>
                     <SparklesIcon className="w-6 h-6 text-yellow-400 animate-spin-slow" />
                   </span>
                 </button>
@@ -220,8 +232,17 @@
                 </button>
               </a>
 
+              {/* Ad Warning Message - Moved below Telegram & Smaller */}
+              <div className="mt-2 flex justify-center">
+                <div className="px-3 py-1 bg-yellow-500/5 border border-yellow-500/20 rounded-md backdrop-blur-sm shadow-sm shadow-yellow-900/10">
+                  <p className="text-xs text-yellow-400/80 font-medium">
+                     🔓 Clique 2x para liberar
+                  </p>
+                </div>
+              </div>
+
               {/* Decorative elements below button */}
-              <div className="mt-8 flex gap-4 text-sm text-gray-500 font-mono">
+              <div className="mt-6 flex gap-4 text-sm text-gray-500 font-mono">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                   <span>Seguro</span>
