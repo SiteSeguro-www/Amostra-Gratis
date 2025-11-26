@@ -55,7 +55,7 @@
       }
       body {
         font-family: 'Inter', sans-serif;
-        background-color: #050505;
+        background-color: #000000; /* Pure Black */
         color: #fff;
       }
       
@@ -194,14 +194,14 @@
 
         return (
           // Use w-full and overflow-x-hidden strictly
-          <div className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-x-hidden bg-[#050505] selection:bg-purple-500 selection:text-white">
+          <div className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-x-hidden bg-[#000000] selection:bg-purple-500 selection:text-white">
             
-            {/* Background Ambient Light - Darkened (opacity 20 -> 10) */}
-            <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-purple-900/10 rounded-full blur-[100px] pointer-events-none"></div>
-            <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-green-900/10 rounded-full blur-[100px] pointer-events-none"></div>
+            {/* Background Ambient Light - Extremely Darkened (opacity 5%) */}
+            <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-purple-900/[0.05] rounded-full blur-[100px] pointer-events-none"></div>
+            <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-green-900/[0.05] rounded-full blur-[100px] pointer-events-none"></div>
 
-            {/* Subtle Grid */}
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_60%,transparent_100%)] pointer-events-none"></div>
+            {/* Subtle Grid - Reduced opacity */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_60%,transparent_100%)] pointer-events-none"></div>
 
             {/* Main Content */}
             <main className="relative z-10 flex flex-col items-center justify-center w-full max-w-3xl mx-auto px-6 py-12 gap-6 flex-grow">
