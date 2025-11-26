@@ -51,7 +51,7 @@
         font-family: 'Inter', sans-serif;
         background-color: #050505;
         color: #fff;
-        overflow-x: hidden;
+        overflow-x: hidden; /* Prevent horizontal scroll */
       }
       
       /* Animations */
@@ -167,7 +167,8 @@
         const rgbGradient = "from-red-500 via-yellow-500 via-green-500 via-cyan-500 via-blue-500 via-purple-500 to-red-500";
 
         return (
-          <div className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-[#050505] selection:bg-purple-500 selection:text-white">
+          // Changed overflow-hidden to overflow-x-hidden to ensure vertical scrolling on small screens if needed
+          <div className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-x-hidden bg-[#050505] selection:bg-purple-500 selection:text-white">
             
             {/* Background Ambient Light */}
             <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-purple-900/20 rounded-full blur-[100px] pointer-events-none"></div>
@@ -177,7 +178,7 @@
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_60%,transparent_100%)] pointer-events-none"></div>
 
             {/* Main Content */}
-            <main className="relative z-10 flex flex-col items-center justify-center w-full max-w-3xl mx-auto px-6 py-12 gap-6">
+            <main className="relative z-10 flex flex-col items-center justify-center w-full max-w-3xl mx-auto px-6 py-12 gap-6 flex-grow">
               
               {/* Header Text */}
               <div className="text-center space-y-3 mb-6 animate-fade-in-up">
@@ -233,8 +234,8 @@
                 </button>
               </a>
 
-              {/* Warning Panel */}
-              <div className="mt-2 flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg backdrop-blur-sm animate-pulse">
+              {/* Warning Panel - Removed animate-pulse here */}
+              <div className="mt-2 flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg backdrop-blur-sm">
                  <LockIcon isOpen={clickCount === 2} className={`w-4 h-4 ${clickCount === 2 ? 'text-green-500' : 'text-yellow-500'}`} />
                  <span className="text-xs md:text-sm font-semibold text-yellow-500/90 tracking-wide">
                    {clickCount === 2 ? 'Link Liberado!' : 'Clique 2x para liberar'}
