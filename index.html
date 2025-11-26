@@ -113,7 +113,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-      const { useState, useEffect } = React;
+      const { useState, useEffect, useRef } = React;
 
       // Icons
       const TelegramIcon = ({ className }) => (
@@ -333,7 +333,7 @@
               </div>
 
               {/* === Verified Badge (Trust Signal) - MOVED ABOVE BUTTON === */}
-              <div className="flex items-center gap-1.5 opacity-90 animate-fade-in-up mb-1" style={{animationDelay: '0.1s'}}>
+              <div className="flex items-center gap-1.5 opacity-90 animate-fade-in-up mb-1" style={{animationDelay: '0.15s'}}>
                  <ShieldCheckIcon className="w-4 h-4 text-green-500" />
                  <span className="text-[10px] md:text-[11px] font-bold text-green-500 tracking-wider uppercase drop-shadow-[0_0_5px_rgba(34,197,94,0.4)]">
                    Verificado • Livre de Vírus
