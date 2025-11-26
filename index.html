@@ -156,7 +156,7 @@
         };
 
         const getButtonText = () => {
-          if (clickCount === 0) return "AMOSTRA GRÁTIS CLICK AQUI";
+          if (clickCount === 0) return "GRÁTIS PACK COM. VÍDEOS + FOTOS GRÁTIS";
           if (clickCount === 1) return "FALTA MAIS 1 CLIQUE...";
           return "LINK LIBERADO! CLIQUE AQUI";
         };
@@ -213,12 +213,12 @@
                   <div className={`absolute inset-0 bg-gradient-to-r ${getInnerGradient()} opacity-100 transition-colors duration-500`}></div>
                   
                   <div className="relative flex items-center gap-3 z-10">
-                    <span className={`text-lg md:text-xl font-bold tracking-wider uppercase text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]`}>
+                    <span className={`text-base md:text-xl font-bold tracking-wider uppercase text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] text-center leading-tight`}>
                       {getButtonText()}
                     </span>
                     
                     {/* Spinning Heart */}
-                    <div className="flex items-center justify-center animate-spin-slow">
+                    <div className="flex items-center justify-center animate-spin-slow shrink-0">
                       <HeartIcon className="w-6 h-6 md:w-7 md:h-7 text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
                     </div>
                   </div>
