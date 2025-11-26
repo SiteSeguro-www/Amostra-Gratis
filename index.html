@@ -53,6 +53,7 @@
         padding: 0;
         background-color: #000000;
         overflow-x: hidden;
+        -webkit-tap-highlight-color: transparent; /* Remove highlight on tap */
       }
       
       /* Animations */
@@ -116,6 +117,12 @@
       const HeartIcon = ({ className }) => (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      );
+
+      const ShieldCheckIcon = ({ className }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
+           <path fillRule="evenodd" d="M12.516 2.17a.75.75 0 00-1.032 0 11.209 11.209 0 01-7.877 3.08.75.75 0 00-.722.515A12.74 12.74 0 002.25 9.75c0 5.942 4.064 10.933 9.563 12.348a.749.749 0 00.374 0c5.499-1.415 9.563-6.406 9.563-12.348 0-1.352-.114-2.668-.334-3.935a.75.75 0 00-.723-.515 11.208 11.208 0 01-7.877-3.08zM12 17.25a5.25 5.25 0 110-10.5 5.25 5.25 0 010 10.5z" clipRule="evenodd" />
         </svg>
       );
 
@@ -198,8 +205,12 @@
         const rgbGradient = "from-red-500 via-yellow-500 via-green-500 via-cyan-500 via-blue-500 via-purple-500 to-red-500";
 
         return (
+          // Added 'select-none' and 'onContextMenu' to prevent selection and right-click (Native App Feel)
           // Fixed: min-h-[100dvh] ensures it covers full viewport on mobile including address bars
-          <div className="relative min-h-[100dvh] w-full flex flex-col overflow-x-hidden bg-[#000000] selection:bg-purple-500 selection:text-white">
+          <div 
+            onContextMenu={(e) => e.preventDefault()}
+            className="relative min-h-[100dvh] w-full flex flex-col overflow-x-hidden bg-[#000000] select-none"
+          >
             
             {/* Background Ambient Light - Extremely Darkened (opacity 5%) */}
             <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-purple-900/[0.05] rounded-full blur-[100px] pointer-events-none"></div>
@@ -247,6 +258,14 @@
                   </div>
                 </button>
               </a>
+
+              {/* === Verified Badge (Trust Signal) === */}
+              <div className="flex items-center gap-1.5 opacity-90 animate-fade-in-up" style={{animationDelay: '0.1s'}}>
+                 <ShieldCheckIcon className="w-4 h-4 text-green-500" />
+                 <span className="text-[10px] md:text-[11px] font-bold text-green-500 tracking-wider uppercase drop-shadow-[0_0_5px_rgba(34,197,94,0.4)]">
+                   Verificado • Livre de Vírus
+                 </span>
+              </div>
 
               {/* === Professional Small Telegram Button (Neon Blue Pulsating + Glass) === */}
               <a 
