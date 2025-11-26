@@ -158,12 +158,12 @@
         const renderButtonContent = () => {
           if (clickCount === 0) {
             return (
-              <div className="flex flex-wrap items-center justify-center gap-1 leading-tight px-1 text-center">
-                <span className="text-xs sm:text-base font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">
-                  PACK GRÁTIS COM VÍDEOS E FOTOS GRÁTIS
-                </span>
-                <span className="text-xs sm:text-base font-black text-yellow-400 animate-pulse drop-shadow-[0_0_5px_rgba(250,204,21,0.8)] whitespace-nowrap">
+              <div className="flex flex-col items-center justify-center leading-tight text-center">
+                 <span className="text-sm sm:text-lg font-black text-yellow-400 animate-pulse drop-shadow-[0_0_5px_rgba(250,204,21,0.8)] mb-0.5">
                   CLICK AQUI
+                </span>
+                <span className="text-xs sm:text-base font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+                  AMOSTRA GRÁTIS
                 </span>
               </div>
             );
@@ -196,9 +196,9 @@
           // Use w-full and overflow-x-hidden strictly
           <div className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-x-hidden bg-[#050505] selection:bg-purple-500 selection:text-white">
             
-            {/* Background Ambient Light */}
-            <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-purple-900/20 rounded-full blur-[100px] pointer-events-none"></div>
-            <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-green-900/20 rounded-full blur-[100px] pointer-events-none"></div>
+            {/* Background Ambient Light - Darkened (opacity 20 -> 10) */}
+            <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-purple-900/10 rounded-full blur-[100px] pointer-events-none"></div>
+            <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-green-900/10 rounded-full blur-[100px] pointer-events-none"></div>
 
             {/* Subtle Grid */}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_60%,transparent_100%)] pointer-events-none"></div>
@@ -209,7 +209,7 @@
               {/* Header Text */}
               <div className="text-center space-y-3 mb-6 animate-fade-in-up">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.1)]">
-                  OFERTA <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">EXCLUSIVA</span>
+                  AMOSTRAS <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">GRÁTIS</span>
                 </h1>
                 <p className="text-gray-400 text-base md:text-lg font-medium max-w-md mx-auto leading-relaxed">
                   Pasta no Google Drive <br className="hidden md:block" /> Aguarde que eu Libero o Acesso
