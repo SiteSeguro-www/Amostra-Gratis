@@ -199,7 +199,7 @@
                 </p>
               </div>
 
-              {/* === Professional Main Button with RGB Circulating Gradient BORDER ONLY (Transparent Center) === */}
+              {/* === Professional Main Button with RGB Circulating Gradient Border & Solid Background === */}
               {/* Tightened padding, single line */}
               <a 
                 href={targetUrl}
@@ -208,10 +208,13 @@
                 rel="noopener noreferrer"
                 className="group relative w-auto max-w-[98%] mx-auto transform hover:scale-105 active:scale-95 transition-all duration-300 ease-out"
               >
-                {/* 1. RGB Glow (Blur) - Reduced opacity to 30% to avoid mudding the transparent center */}
+                {/* 1. RGB Glow (Blur) */}
                 <div className={`absolute -inset-1 rounded-full bg-gradient-to-r ${rgbGradient} blur-sm opacity-30 group-hover:opacity-60 transition duration-200 animate-gradient-xy`}></div>
                 
-                {/* 2. RGB Gradient Border (Masked) - This creates the solid neon border ring */}
+                {/* 2. Solid Purple Background (No Glass Effect) */}
+                <div className="absolute inset-0 rounded-full bg-[#2e0240]"></div>
+
+                {/* 3. RGB Gradient Border (Masked) - Creates the neon ring on top of the solid background */}
                 <div 
                   className={`absolute inset-0 rounded-full bg-gradient-to-r ${rgbGradient} animate-gradient-xy`}
                   style={{
@@ -223,7 +226,7 @@
                   }}
                 ></div>
 
-                {/* 3. Button Container - Fully Transparent Background */}
+                {/* 4. Button Content */}
                 <button className="relative w-full flex items-center justify-center px-2 py-3 rounded-full bg-transparent overflow-hidden">
                   
                   <div className="relative flex items-center gap-2 z-10 w-full justify-center">
