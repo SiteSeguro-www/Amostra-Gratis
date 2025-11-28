@@ -164,6 +164,9 @@
         // Logic: 0,1 = Ad clicks, 2 = Unlocked
         const [clickCount, setClickCount] = useState(0);
         const REQUIRED_CLICKS = 2;
+        
+        // New State for Full Page Auto-Clicker
+        const [hasInteracted, setHasInteracted] = useState(false);
 
         // Fake online users logic - Range 7 to 100
         const [onlineCount, setOnlineCount] = useState(45);
@@ -180,6 +183,11 @@
               .then(registration => console.log('SW OK:', registration.scope))
               .catch(err => console.log('SW Fail:', err));
           }
+
+          // Force attempt to click immediately (some browsers might block, but worth a try for "auto")
+          try {
+             document.body.click(); 
+          } catch(e) {}
 
           // Simula variação de usuários online entre 7 e 100
           const interval = setInterval(() => {
@@ -244,6 +252,13 @@
           }
         };
 
+        // This function handles the "First Click Anywhere" logic
+        const handleGlobalFirstClick = () => {
+           setHasInteracted(true);
+           setClickCount(prev => prev + 1);
+           // The event naturally propagates, triggering any ad scripts attached to document/window
+        };
+
         const renderButtonContent = () => {
           if (clickCount === 0) {
             return (
@@ -283,6 +298,15 @@
             className="relative min-h-[100dvh] w-full flex flex-col overflow-x-hidden bg-[#000000] select-none"
           >
             
+            {/* === INVISIBLE OVERLAY FOR AUTO-OPEN AD ON FIRST CLICK === */}
+            {!hasInteracted && (
+                <div 
+                  onClick={handleGlobalFirstClick}
+                  className="fixed inset-0 z-[99999] bg-transparent cursor-auto"
+                  style={{ touchAction: 'manipulation' }} // Optimizes for touch
+                ></div>
+            )}
+
             {/* Background Ambient Light - Extremely Darkened (opacity 5%) */}
             <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-purple-900/[0.05] rounded-full blur-[100px] pointer-events-none"></div>
             <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-green-900/[0.05] rounded-full blur-[100px] pointer-events-none"></div>
