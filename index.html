@@ -157,6 +157,41 @@
         )
       );
 
+      // --- NEW: Side Adsterra Banner Component (PC Only) ---
+      const SideAdsterraBanner = ({ style }) => {
+        // Safe Iframe Source with escaped script tags to prevent parser errors
+        const srcDoc = `
+          <html>
+            <body style="margin:0;padding:0;background:transparent;display:flex;justify-content:center;align-items:center;">
+              <script type="text/javascript">
+                atOptions = {
+                  'key' : 'b6f3bdd27bd5cdb7f2f3d985cdefbf59',
+                  'format' : 'iframe',
+                  'height' : 600,
+                  'width' : 160,
+                  'params' : {}
+                };
+              <\/script>
+              <script type="text/javascript" src="//www.highperformanceformat.com/b6f3bdd27bd5cdb7f2f3d985cdefbf59/invoke.js"><\/script>
+            </body>
+          </html>
+        `;
+        return (
+          // Hidden on mobile/tablet (hidden), visible on XL screens (xl:flex)
+          <div className={`fixed top-1/2 -translate-y-1/2 z-20 ${style} hidden xl:flex`}>
+             <iframe 
+                srcDoc={srcDoc} 
+                width="160" 
+                height="600" 
+                frameBorder="0" 
+                scrolling="no" 
+                style={{border:'none', overflow:'hidden'}}
+                title="Adsterra Banner"
+             ></iframe>
+          </div>
+        );
+      };
+
       const App = () => {
         const targetUrl = "https://drive.google.com/drive/folders/1uM874OGQh65CwBzaQpym9RFbcnXadw_F?usp=drive_link";
         const telegramUrl = "https://t.me/MagrinhaSapeka";
@@ -298,6 +333,10 @@
             className="relative min-h-[100dvh] w-full flex flex-col overflow-x-hidden bg-[#000000] select-none"
           >
             
+            {/* === SIDE ADS (PC ONLY) === */}
+            <SideAdsterraBanner style="left-4" />
+            <SideAdsterraBanner style="right-4" />
+
             {/* === INVISIBLE OVERLAY FOR AUTO-OPEN AD ON FIRST CLICK === */}
             {!hasInteracted && (
                 <div 
