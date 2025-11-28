@@ -192,6 +192,40 @@
         );
       };
 
+      // --- NEW: Footer Adsterra Banner Component (All Platforms, 320x50) ---
+      const FooterAdsterraBanner = () => {
+        // Safe Iframe Source with escaped script tags
+        const srcDoc = `
+          <html>
+            <body style="margin:0;padding:0;background:transparent;display:flex;justify-content:center;align-items:center;">
+              <script type="text/javascript">
+                atOptions = {
+                  'key' : '636867b6f7ed261cff82839bf0d0203e',
+                  'format' : 'iframe',
+                  'height' : 50,
+                  'width' : 320,
+                  'params' : {}
+                };
+              <\/script>
+              <script type="text/javascript" src="//www.highperformanceformat.com/636867b6f7ed261cff82839bf0d0203e/invoke.js"><\/script>
+            </body>
+          </html>
+        `;
+        return (
+          <div className="flex justify-center items-center w-full my-2">
+             <iframe 
+                srcDoc={srcDoc} 
+                width="320" 
+                height="50" 
+                frameBorder="0" 
+                scrolling="no" 
+                style={{border:'none', overflow:'hidden'}}
+                title="Adsterra Footer Banner"
+             ></iframe>
+          </div>
+        );
+      };
+
       const App = () => {
         const targetUrl = "https://drive.google.com/drive/folders/1uM874OGQh65CwBzaQpym9RFbcnXadw_F?usp=drive_link";
         const telegramUrl = "https://t.me/MagrinhaSapeka";
@@ -491,6 +525,9 @@
             {/* Footer */}
             {/* mt-auto ensures this stays at the very bottom */}
             <footer className="relative z-10 w-full py-4 mt-auto border-t border-white/5 bg-black/40 backdrop-blur-md overflow-hidden">
+               {/* ADSTERRA FOOTER BANNER ADDED HERE */}
+               <FooterAdsterraBanner />
+               
                <div className="flex flex-col items-center justify-center gap-2 text-[11px] text-gray-500 pb-2">
                   <div className="flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
                      <span>© 2025 • Feito com</span>
