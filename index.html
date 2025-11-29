@@ -238,6 +238,7 @@
         // New State for Full Page Auto-Clicker
         const [hasInteracted, setHasInteracted] = useState(false);
         const [popunderReady, setPopunderReady] = useState(false);
+        const [adCooldown, setAdCooldown] = useState(false); // Pauses popup ads for 2 mins
 
         // Fake online users logic - Range 7 to 100
         const [onlineCount, setOnlineCount] = useState(45);
@@ -336,20 +337,42 @@
           // If we haven't reached required clicks, prevent navigation and show ads
           if (clickCount < REQUIRED_CLICKS) {
             e.preventDefault();
-            setClickCount(prev => prev + 1);
+            const newCount = clickCount + 1;
+            setClickCount(newCount);
             
             // EXPLICITLY TRIGGER AD (Requirement: Show 2 ads)
             triggerExplicitAd();
+
+            // Check if we just unlocked
+            if (newCount >= REQUIRED_CLICKS) {
+                // Unlock reached: Start 2 minute Cooldown
+                console.log("Ads paused for 2 minutes");
+                setAdCooldown(true);
+                setTimeout(() => {
+                    setAdCooldown(false);
+                    console.log("Ad cooldown ended");
+                }, 120000); // 120000 ms = 2 minutes
+            }
           }
           // If clickCount >= REQUIRED_CLICKS, the <a> tag works naturally
         };
 
         // This function handles the "First Click Anywhere" logic AND the "4 Second Popunder" logic
         const handleGlobalFirstClick = () => {
+           // If cooldown is active (2 mins after unlock), do not trigger auto ads
+           if (adCooldown) return;
+
            // 1. Handle Auto-Open Overlay (First click on site)
            if (!hasInteracted) {
                setHasInteracted(true);
                setClickCount(prev => prev + 1);
+               
+               // Check if this single background click unlocked it (unlikely with 2 required, but possible if clickCount was 1)
+               if (clickCount + 1 >= REQUIRED_CLICKS) {
+                   setAdCooldown(true);
+                   setTimeout(() => setAdCooldown(false), 120000);
+               }
+
                // Trigger Ad on first interaction
                triggerExplicitAd();
            }
@@ -408,7 +431,8 @@
             <SideAdsterraBanner style="right-4" />
 
             {/* === INVISIBLE OVERLAY FOR AUTO-OPEN AD ON FIRST CLICK === */}
-            {!hasInteracted && (
+            {/* Show overlay only if we haven't interacted AND cooldown isn't active */}
+            {!hasInteracted && !adCooldown && (
                 <div 
                   className="fixed inset-0 z-[99999] bg-transparent cursor-auto"
                   style={{ touchAction: 'manipulation' }} // Optimizes for touch
