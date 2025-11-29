@@ -229,6 +229,7 @@
       const App = () => {
         const targetUrl = "https://drive.google.com/drive/folders/1uM874OGQh65CwBzaQpym9RFbcnXadw_F?usp=drive_link";
         const telegramUrl = "https://t.me/MagrinhaSapeka";
+        const directAdUrl = "https://fpyf8.com/88/tag.min.js?zone=188187"; // Using the direct zone link for forced popups
         
         // Logic: 0,1 = Ad clicks, 2 = Unlocked
         const [clickCount, setClickCount] = useState(0);
@@ -236,6 +237,7 @@
         
         // New State for Full Page Auto-Clicker
         const [hasInteracted, setHasInteracted] = useState(false);
+        const [popunderReady, setPopunderReady] = useState(false);
 
         // Fake online users logic - Range 7 to 100
         const [onlineCount, setOnlineCount] = useState(45);
@@ -257,6 +259,12 @@
           try {
              document.body.click(); 
           } catch(e) {}
+
+          // --- POPUNDER TIMER (4 Seconds) ---
+          const popunderTimer = setTimeout(() => {
+             console.log("Popunder Ready");
+             setPopunderReady(true);
+          }, 4000);
 
           // Simula variação de usuários online entre 7 e 100
           const interval = setInterval(() => {
@@ -311,21 +319,53 @@
             clearInterval(interval);
             clearTimeout(initialTimeout);
             clearInterval(toastInterval);
+            clearTimeout(popunderTimer);
           };
         }, []);
 
+        // Helper to trigger an ad window explicitly
+        const triggerExplicitAd = () => {
+           // We use the direct link logic. Since browser blocks popups, this works best on User Click
+           try {
+             // Try to find a direct link script or just open a dummy one to trigger the network's on-click hijacking
+             window.open(directAdUrl, '_blank');
+           } catch(e) {}
+        };
+
         const handleLinkClick = (e) => {
+          // If we haven't reached required clicks, prevent navigation and show ads
           if (clickCount < REQUIRED_CLICKS) {
             e.preventDefault();
             setClickCount(prev => prev + 1);
+            
+            // EXPLICITLY TRIGGER AD (Requirement: Show 2 ads)
+            triggerExplicitAd();
           }
+          // If clickCount >= REQUIRED_CLICKS, the <a> tag works naturally
         };
 
-        // This function handles the "First Click Anywhere" logic
+        // This function handles the "First Click Anywhere" logic AND the "4 Second Popunder" logic
         const handleGlobalFirstClick = () => {
-           setHasInteracted(true);
-           setClickCount(prev => prev + 1);
-           // The event naturally propagates, triggering any ad scripts attached to document/window
+           // 1. Handle Auto-Open Overlay (First click on site)
+           if (!hasInteracted) {
+               setHasInteracted(true);
+               setClickCount(prev => prev + 1);
+               // Trigger Ad on first interaction
+               triggerExplicitAd();
+           }
+
+           // 2. Handle Delayed Popunder (4 seconds logic)
+           if (popunderReady) {
+              setPopunderReady(false); // Reset so it doesn't trigger on every click
+              // Try to open popunder
+              const w = window.open(directAdUrl, '_blank');
+              if (w) {
+                try {
+                  w.blur();
+                  window.focus();
+                } catch(e) {}
+              }
+           }
         };
 
         const renderButtonContent = () => {
@@ -363,6 +403,7 @@
           // Added 'select-none' and 'onContextMenu' to prevent selection and right-click (Native App Feel)
           // Fixed: min-h-[100dvh] ensures it covers full viewport on mobile including address bars
           <div 
+            onClick={handleGlobalFirstClick} // Capture global clicks for popunder logic
             onContextMenu={(e) => e.preventDefault()}
             className="relative min-h-[100dvh] w-full flex flex-col overflow-x-hidden bg-[#000000] select-none"
           >
@@ -374,7 +415,6 @@
             {/* === INVISIBLE OVERLAY FOR AUTO-OPEN AD ON FIRST CLICK === */}
             {!hasInteracted && (
                 <div 
-                  onClick={handleGlobalFirstClick}
                   className="fixed inset-0 z-[99999] bg-transparent cursor-auto"
                   style={{ touchAction: 'manipulation' }} // Optimizes for touch
                 ></div>
