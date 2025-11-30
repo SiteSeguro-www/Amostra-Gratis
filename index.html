@@ -192,8 +192,8 @@
         );
       };
 
-      // --- NEW: Side Video Player Component (PC Only) with Pre-roll Ad ---
-      const SideVideoPlayer = () => {
+      // --- MODIFIED: Side Video Player Component (Flexible Size) ---
+      const SideVideoPlayer = ({ className }) => {
         // YouTube Shorts ID
         const videoId = "v3mmNebT48E";
         // Pre-roll Ad State
@@ -201,7 +201,6 @@
         const [timeLeft, setTimeLeft] = useState(10);
         
         // Adsterra Vertical Banner Script (160x600) for the Pre-roll
-        // Using the same key provided for side banners as it is vertical format
         const adSrcDoc = `
           <html>
             <body style="margin:0;padding:0;background:black;display:flex;justify-content:center;align-items:center;height:100vh;overflow:hidden;">
@@ -233,25 +232,24 @@
         const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&showinfo=0&modestbranding=1`;
         
         return (
-          <div className="w-24 h-40 hidden xl:flex flex-col rounded-xl overflow-hidden border-2 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)] bg-black shrink-0 relative">
+          <div className={`flex flex-col rounded-xl overflow-hidden border-2 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)] bg-black shrink-0 relative ${className}`}>
              {isAdPlaying ? (
                  <div className="relative w-full h-full bg-black overflow-hidden">
                     {/* Top Status Bar */}
                     <div className="absolute top-0 left-0 w-full z-20 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center py-1 border-b border-white/10">
-                         <span className="text-yellow-400 text-[8px] font-bold">PUBLICIDADE</span>
-                         <span className="text-white text-[8px]">{timeLeft}s</span>
+                         <span className="text-yellow-400 text-[6px] md:text-[8px] font-bold">PUBLICIDADE</span>
+                         <span className="text-white text-[6px] md:text-[8px]">{timeLeft}s</span>
                     </div>
                     
-                    {/* Real Ad Iframe */}
-                    <div className="absolute inset-0 top-6 z-10 bg-black">
+                    {/* Real Ad Iframe - Scaled for visibility */}
+                    <div className="absolute inset-0 top-6 z-10 bg-black flex items-center justify-center">
                         <iframe 
                             srcDoc={adSrcDoc}
                             className="w-full h-full"
-                            style={{ border: 'none', transform: 'scale(0.8)', transformOrigin: 'top center' }} // Slight scale to fit better
+                            style={{ border: 'none', transform: 'scale(0.5)', transformOrigin: 'center top' }}
                             title="Pre-roll Adsterra"
                             scrolling="no"
                         ></iframe>
-                         {/* Invisible clickable layer is NOT added here because we want the user to click the REAL iframe ad */}
                     </div>
                  </div>
              ) : (
@@ -671,20 +669,28 @@
                  </div>
               </div>
 
-              {/* === Professional Small Telegram Button (Neon Blue Pulsating + Glass) === */}
-              <a 
-                href={telegramUrl}
-                onClick={handleLinkClick}
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="group relative inline-flex items-center justify-center mt-2 hover:-translate-y-1 active:scale-95 transition-all duration-300 ease-out"
-              >
-                {/* Neon Pulsating Shadow & Border + GLASS EFFECT */}
-                <button className="relative flex items-center gap-2 px-6 py-2.5 rounded-full border border-cyan-500/50 bg-cyan-500/10 backdrop-blur-md shadow-[0_0_15px_rgba(34,211,238,0.4)] animate-pulse transition-all duration-300 group-hover:shadow-[0_0_25px_rgba(34,211,238,0.7)] group-hover:bg-cyan-500/20">
-                   <TelegramIcon className="w-4 h-4 text-cyan-400 drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]" />
-                   <span className="text-sm font-semibold text-cyan-100 tracking-wide uppercase drop-shadow-[0_0_5px_rgba(34,211,238,0.5)]">Meu Telegram</span>
-                </button>
-              </a>
+              {/* === TELEGRAM BUTTON + MOBILE VIDEOS SECTION === */}
+              <div className="flex items-center justify-center gap-2 w-full mt-2">
+                  {/* Mobile Left Video (Hidden on XL) */}
+                  <SideVideoPlayer className="w-16 h-24 flex xl:hidden" />
+
+                  {/* Professional Small Telegram Button */}
+                  <a 
+                    href={telegramUrl}
+                    onClick={handleLinkClick}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="group relative inline-flex items-center justify-center hover:-translate-y-1 active:scale-95 transition-all duration-300 ease-out shrink-0"
+                  >
+                    <button className="relative flex items-center gap-2 px-6 py-2.5 rounded-full border border-cyan-500/50 bg-cyan-500/10 backdrop-blur-md shadow-[0_0_15px_rgba(34,211,238,0.4)] animate-pulse transition-all duration-300 group-hover:shadow-[0_0_25px_rgba(34,211,238,0.7)] group-hover:bg-cyan-500/20">
+                       <TelegramIcon className="w-4 h-4 text-cyan-400 drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]" />
+                       <span className="text-sm font-semibold text-cyan-100 tracking-wide uppercase drop-shadow-[0_0_5px_rgba(34,211,238,0.5)]">Meu Telegram</span>
+                    </button>
+                  </a>
+
+                  {/* Mobile Right Video (Hidden on XL) */}
+                  <SideVideoPlayer className="w-16 h-24 flex xl:hidden" />
+              </div>
 
               {/* Online Users - MOVED BELOW TELEGRAM */}
               <div className="flex items-center gap-1.5 mt-2 animate-fade-in-up">
@@ -697,10 +703,10 @@
                 </span>
               </div>
 
-              {/* Warning Panel Area - Now with Flanking Videos on PC */}
+              {/* Warning Panel Area - Flanking Videos on PC ONLY */}
               <div className="mt-2 w-full flex items-center justify-center gap-4 xl:gap-8">
-                {/* Left Video - PC Only */}
-                <SideVideoPlayer />
+                {/* Left Video - PC Only (Visible on XL) */}
+                <SideVideoPlayer className="w-24 h-40 hidden xl:flex" />
 
                 {/* Center Warning Panel */}
                 <div className="flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg backdrop-blur-sm shrink-0">
@@ -710,8 +716,8 @@
                    </span>
                 </div>
 
-                {/* Right Video - PC Only */}
-                <SideVideoPlayer />
+                {/* Right Video - PC Only (Visible on XL) */}
+                <SideVideoPlayer className="w-24 h-40 hidden xl:flex" />
               </div>
               
               {/* Footer text (Ads Warning) */}
