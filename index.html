@@ -207,7 +207,7 @@
       // Includes 4-second pre-roll ad (Now Native Adsterra)
       const SideVideoPlayer = ({ className, customVideoId, customType, customSrc }) => {
         const [isAdPlaying, setIsAdPlaying] = useState(true);
-        const [timeLeft, setTimeLeft] = useState(4); // 4 seconds ad
+        const [timeLeft, setTimeLeft] = useState(10); // 10 seconds ad as requested
         
         // Defaults to the requested YouTube video
         const defaultVideoId = "v3mmNebT48E";
