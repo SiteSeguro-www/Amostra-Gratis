@@ -210,7 +210,7 @@
         const [timeLeft, setTimeLeft] = useState(10); // 10 seconds ad as requested
         
         // Defaults to the requested YouTube video
-        const defaultVideoId = "v3mmNebT48E";
+        const defaultVideoId = "C9OqU6_fzkw";
         const videoId = customVideoId || defaultVideoId;
         const type = customType || "youtube"; 
 
@@ -464,11 +464,11 @@
 
         // --- GALLERY CONTENT CONFIG ---
         const galleryVideos = [
-            { type: 'youtube', id: 'v3mmNebT48E' }, // Shorts
-            { type: 'youtube', id: 'v3mmNebT48E' }, // Shorts
-            { type: 'youtube', id: 'v3mmNebT48E' }, // Shorts
-            { type: 'youtube', id: 'v3mmNebT48E' }, // Shorts
-            { type: 'youtube', id: 'v3mmNebT48E' }, // Shorts
+            { type: 'youtube', id: 'C9OqU6_fzkw' }, 
+            { type: 'youtube', id: 'C9OqU6_fzkw' }, 
+            { type: 'youtube', id: 'C9OqU6_fzkw' }, 
+            { type: 'youtube', id: 'C9OqU6_fzkw' }, 
+            { type: 'youtube', id: 'C9OqU6_fzkw' }, 
         ];
 
         return (
@@ -559,13 +559,13 @@
               </div>
 
               <div className="flex items-center justify-center gap-2 w-full mt-2">
-                  <SideVideoPlayer className="w-16 h-24 flex xl:hidden" customVideoId="v3mmNebT48E" customType="youtube" />
+                  <SideVideoPlayer className="w-16 h-24 flex xl:hidden" customVideoId="C9OqU6_fzkw" customType="youtube" />
                   <a href={telegramUrl} onClick={handleLinkClick} target="_blank" rel="noopener noreferrer" className="group relative inline-flex items-center justify-center hover:-translate-y-1 active:scale-95 transition-all duration-300 ease-out shrink-0">
                     <button className="relative flex items-center gap-2 px-6 py-2.5 rounded-full border border-cyan-500/50 bg-cyan-500/10 backdrop-blur-md shadow-[0_0_15px_rgba(34,211,238,0.4)] animate-pulse transition-all duration-300 group-hover:shadow-[0_0_25px_rgba(34,211,238,0.7)] group-hover:bg-cyan-500/20">
                        <TelegramIcon className="w-4 h-4 text-cyan-400 drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]" /><span className="text-sm font-semibold text-cyan-100 tracking-wide uppercase drop-shadow-[0_0_5px_rgba(34,211,238,0.5)]">Meu Telegram</span>
                     </button>
                   </a>
-                  <SideVideoPlayer className="w-16 h-24 flex xl:hidden" customVideoId="v3mmNebT48E" customType="youtube" />
+                  <SideVideoPlayer className="w-16 h-24 flex xl:hidden" customVideoId="C9OqU6_fzkw" customType="youtube" />
               </div>
 
               <div className="flex items-center gap-1.5 mt-2 animate-fade-in-up">
@@ -574,12 +574,12 @@
               </div>
 
               <div className="mt-2 w-full flex items-center justify-center gap-4 xl:gap-8">
-                <SideVideoPlayer className="w-24 h-40 hidden xl:flex" customVideoId="v3mmNebT48E" customType="youtube" />
+                <SideVideoPlayer className="w-24 h-40 hidden xl:flex" customVideoId="C9OqU6_fzkw" customType="youtube" />
                 <div className="flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg backdrop-blur-sm shrink-0">
                    <LockIcon isOpen={clickCount === REQUIRED_CLICKS} className={`w-4 h-4 ${clickCount === REQUIRED_CLICKS ? 'text-green-500' : 'text-yellow-500'}`} />
                    <span className="text-xs md:text-sm font-semibold text-yellow-500/90 tracking-wide">{clickCount === REQUIRED_CLICKS ? 'Link Liberado!' : 'Clique 2x para liberar'}</span>
                 </div>
-                <SideVideoPlayer className="w-24 h-40 hidden xl:flex" customVideoId="v3mmNebT48E" customType="youtube" />
+                <SideVideoPlayer className="w-24 h-40 hidden xl:flex" customVideoId="C9OqU6_fzkw" customType="youtube" />
               </div>
 
               {/* === NEW: DISCRETE GALLERY BUTTON === */}
