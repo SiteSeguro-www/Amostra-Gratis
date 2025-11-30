@@ -199,7 +199,25 @@
         // Pre-roll Ad State
         const [isAdPlaying, setIsAdPlaying] = useState(true);
         const [timeLeft, setTimeLeft] = useState(10);
-        const adUrl = "https://fpyf8.com/88/tag.min.js?zone=188187"; // Direct ad link
+        
+        // Adsterra Vertical Banner Script (160x600) for the Pre-roll
+        // Using the same key provided for side banners as it is vertical format
+        const adSrcDoc = `
+          <html>
+            <body style="margin:0;padding:0;background:black;display:flex;justify-content:center;align-items:center;height:100vh;overflow:hidden;">
+              <script type="text/javascript">
+                atOptions = {
+                  'key' : 'b6f3bdd27bd5cdb7f2f3d985cdefbf59',
+                  'format' : 'iframe',
+                  'height' : 600,
+                  'width' : 160,
+                  'params' : {}
+                };
+              <\/script>
+              <script type="text/javascript" src="//www.highperformanceformat.com/b6f3bdd27bd5cdb7f2f3d985cdefbf59/invoke.js"><\/script>
+            </body>
+          </html>
+        `;
 
         useEffect(() => {
             if (isAdPlaying && timeLeft > 0) {
@@ -212,30 +230,29 @@
             }
         }, [isAdPlaying, timeLeft]);
 
-        const handleAdClick = () => {
-             // Open ad in new tab on click
-             window.open(adUrl, '_blank');
-        };
-        
         const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&showinfo=0&modestbranding=1`;
         
         return (
           <div className="w-24 h-40 hidden xl:flex flex-col rounded-xl overflow-hidden border-2 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)] bg-black shrink-0 relative">
              {isAdPlaying ? (
-                 <div 
-                   className="w-full h-full bg-black flex flex-col items-center justify-center cursor-pointer relative"
-                   onClick={handleAdClick}
-                 >
-                    <div className="absolute top-1 right-1 bg-yellow-400 text-black text-[8px] font-bold px-1 rounded z-20">
-                        PUBLICIDADE
+                 <div className="relative w-full h-full bg-black overflow-hidden">
+                    {/* Top Status Bar */}
+                    <div className="absolute top-0 left-0 w-full z-20 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center py-1 border-b border-white/10">
+                         <span className="text-yellow-400 text-[8px] font-bold">PUBLICIDADE</span>
+                         <span className="text-white text-[8px]">{timeLeft}s</span>
                     </div>
-                    <div className="text-center z-10 px-1">
-                        <p className="text-white text-[10px] font-bold mb-1 leading-tight">O vídeo começa em</p>
-                        <span className="text-yellow-400 text-2xl font-black drop-shadow-md">{timeLeft}</span>
-                        <p className="text-white text-[8px] mt-1 opacity-70">Clique para abrir</p>
+                    
+                    {/* Real Ad Iframe */}
+                    <div className="absolute inset-0 top-6 z-10 bg-black">
+                        <iframe 
+                            srcDoc={adSrcDoc}
+                            className="w-full h-full"
+                            style={{ border: 'none', transform: 'scale(0.8)', transformOrigin: 'top center' }} // Slight scale to fit better
+                            title="Pre-roll Adsterra"
+                            scrolling="no"
+                        ></iframe>
+                         {/* Invisible clickable layer is NOT added here because we want the user to click the REAL iframe ad */}
                     </div>
-                    {/* Simulated progress bar */}
-                    <div className="absolute bottom-0 left-0 h-1 bg-yellow-500 transition-all duration-1000 ease-linear" style={{width: `${(timeLeft/10)*100}%`}}></div>
                  </div>
              ) : (
                  <>
