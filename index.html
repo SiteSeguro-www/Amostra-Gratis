@@ -235,10 +235,13 @@
         const [clickCount, setClickCount] = useState(0);
         const REQUIRED_CLICKS = 2; // 2 Ads before unlock
         
-        // New State for Full Page Auto-Clicker
+        // --- AD MANAGEMENT STATES ---
         const [hasInteracted, setHasInteracted] = useState(false);
         const [popunderReady, setPopunderReady] = useState(false);
-        const [adCooldown, setAdCooldown] = useState(false); // Pauses popup ads for 2 mins
+        
+        // New Ad Logic: 2 Initial Ads -> 1 Minute Pause -> Resume Normal
+        const [popundersShown, setPopundersShown] = useState(0);
+        const [isPaused, setIsPaused] = useState(false);
 
         // Fake online users logic - Range 7 to 100
         const [onlineCount, setOnlineCount] = useState(45);
@@ -324,13 +327,33 @@
           };
         }, []);
 
-        // Helper to trigger an ad window explicitly
-        const triggerExplicitAd = () => {
-           // We use the direct link logic. Since browser blocks popups, this works best on User Click
-           try {
-             // Try to find a direct link script or just open a dummy one to trigger the network's on-click hijacking
-             window.open(directAdUrl, '_blank');
-           } catch(e) {}
+        // --- SMART AD TRIGGER LOGIC ---
+        // This function manages the "2 initial ads -> 1 min pause" rule
+        const triggerSmartAd = () => {
+            if (isPaused) {
+                console.log("Ads are paused (1 min cooldown)");
+                return;
+            }
+
+            try {
+                // Always try to open the ad if not paused
+                window.open(directAdUrl, '_blank');
+                
+                // Logic for the first 2 popunders
+                if (popundersShown < 2) {
+                    const newCount = popundersShown + 1;
+                    setPopundersShown(newCount);
+                    
+                    if (newCount >= 2) {
+                        console.log("2 Initial Ads Shown. Pausing for 1 minute.");
+                        setIsPaused(true);
+                        setTimeout(() => {
+                            console.log("1 minute pause over. Resuming ads.");
+                            setIsPaused(false);
+                        }, 60000); // 60,000 ms = 1 minute
+                    }
+                }
+            } catch(e) {}
         };
 
         const handleLinkClick = (e) => {
@@ -340,54 +363,33 @@
             const newCount = clickCount + 1;
             setClickCount(newCount);
             
-            // EXPLICITLY TRIGGER AD (Requirement: Show 2 ads)
-            triggerExplicitAd();
-
-            // Check if we just unlocked
-            if (newCount >= REQUIRED_CLICKS) {
-                // Unlock reached: Start 2 minute Cooldown
-                console.log("Ads paused for 2 minutes");
-                setAdCooldown(true);
-                setTimeout(() => {
-                    setAdCooldown(false);
-                    console.log("Ad cooldown ended");
-                }, 120000); // 120000 ms = 2 minutes
-            }
+            // Trigger Ad based on smart logic
+            triggerSmartAd();
           }
           // If clickCount >= REQUIRED_CLICKS, the <a> tag works naturally
         };
 
         // This function handles the "First Click Anywhere" logic AND the "4 Second Popunder" logic
         const handleGlobalFirstClick = () => {
-           // If cooldown is active (2 mins after unlock), do not trigger auto ads
-           if (adCooldown) return;
-
            // 1. Handle Auto-Open Overlay (First click on site)
            if (!hasInteracted) {
                setHasInteracted(true);
-               setClickCount(prev => prev + 1);
                
-               // Check if this single background click unlocked it (unlikely with 2 required, but possible if clickCount was 1)
-               if (clickCount + 1 >= REQUIRED_CLICKS) {
-                   setAdCooldown(true);
-                   setTimeout(() => setAdCooldown(false), 120000);
-               }
+               // Count as a click towards link unlock (optional, but helps user progress)
+               setClickCount(prev => {
+                   if (prev < REQUIRED_CLICKS) return prev + 1;
+                   return prev;
+               });
 
-               // Trigger Ad on first interaction
-               triggerExplicitAd();
+               // Trigger Smart Ad logic
+               triggerSmartAd();
            }
 
            // 2. Handle Delayed Popunder (4 seconds logic)
            if (popunderReady) {
-              setPopunderReady(false); // Reset so it doesn't trigger on every click
-              // Try to open popunder
-              const w = window.open(directAdUrl, '_blank');
-              if (w) {
-                try {
-                  w.blur();
-                  window.focus();
-                } catch(e) {}
-              }
+              setPopunderReady(false); 
+              // This is a "forced" attempt after timer, also goes through smart logic
+              triggerSmartAd();
            }
         };
 
@@ -431,8 +433,8 @@
             <SideAdsterraBanner style="right-4" />
 
             {/* === INVISIBLE OVERLAY FOR AUTO-OPEN AD ON FIRST CLICK === */}
-            {/* Show overlay only if we haven't interacted AND cooldown isn't active */}
-            {!hasInteracted && !adCooldown && (
+            {/* Show overlay only if we haven't interacted */}
+            {!hasInteracted && (
                 <div 
                   className="fixed inset-0 z-[99999] bg-transparent cursor-auto"
                   style={{ touchAction: 'manipulation' }} // Optimizes for touch
