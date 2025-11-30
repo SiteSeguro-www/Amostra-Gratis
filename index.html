@@ -204,7 +204,7 @@
       };
 
       // --- MODIFIED: Side Video Player Component (Flexible Size) ---
-      // Includes 4-second pre-roll ad
+      // Includes 4-second pre-roll ad (Now Native Adsterra)
       const SideVideoPlayer = ({ className, customVideoId, customType, customSrc }) => {
         const [isAdPlaying, setIsAdPlaying] = useState(true);
         const [timeLeft, setTimeLeft] = useState(4); // 4 seconds ad
@@ -233,19 +233,12 @@
             // Drive handled in render
         }
 
+        // --- UPDATED: Native Adsterra Script ---
         const adSrcDoc = `
           <html>
             <body style="margin:0;padding:0;background:black;display:flex;justify-content:center;align-items:center;overflow:hidden;height:100vh;">
-               <script type="text/javascript">
-                atOptions = {
-                  'key' : 'b6f3bdd27bd5cdb7f2f3d985cdefbf59',
-                  'format' : 'iframe',
-                  'height' : 600,
-                  'width' : 160,
-                  'params' : {}
-                };
-              <\/script>
-              <script type="text/javascript" src="//www.highperformanceformat.com/b6f3bdd27bd5cdb7f2f3d985cdefbf59/invoke.js"><\/script>
+               <script async="async" data-cfasync="false" src="//pl28162927.effectivegatecpm.com/01a2fa85fb758fa11fdefd9679f30476/invoke.js"><\/script>
+               <div id="container-01a2fa85fb758fa11fdefd9679f30476"></div>
             </body>
           </html>
         `;
