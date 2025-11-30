@@ -193,25 +193,23 @@
       };
 
       // --- NEW: Side Video Player Component (PC Only) ---
-      const SideVideoPlayer = ({ position }) => {
-        // NOTE: Replace the src below with the actual URL of your video or a Base64 Data URI
-        // Currently using a placeholder "abstract neon" video
-        const videoSrc = "https://assets.mixkit.co/videos/preview/mixkit-abstract-purple-lights-in-dark-3236-large.mp4"; 
+      // Updated to use YouTube Embed for the video C9OqU6_fzkw
+      const SideVideoPlayer = () => {
+        // YouTube video ID: C9OqU6_fzkw
+        // Parameters: autoplay, mute, controls=0, loop, playlist (for looping single video)
+        const youtubeSrc = "https://www.youtube.com/embed/C9OqU6_fzkw?autoplay=1&mute=1&controls=0&loop=1&playlist=C9OqU6_fzkw&showinfo=0&modestbranding=1&rel=0";
         
         return (
-          <div className={`fixed bottom-4 ${position === 'left' ? 'left-4' : 'right-4'} z-30 w-48 hidden xl:block rounded-xl overflow-hidden border-2 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)] bg-black`}>
-            <video 
-              autoPlay 
-              loop 
-              muted 
-              playsInline 
-              className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity"
-            >
-              <source src={videoSrc} type="video/mp4" />
-              Seu navegador não suporta vídeos.
-            </video>
-            {/* Overlay Gradient for integration */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
+          <div className="w-24 h-40 hidden xl:block rounded-xl overflow-hidden border-2 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)] bg-black shrink-0 relative">
+             <iframe 
+               src={youtubeSrc}
+               className="w-full h-full object-cover pointer-events-none" 
+               frameBorder="0"
+               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+               title="Side Video"
+             ></iframe>
+             {/* Transparent overlay to prevent interaction (clicks) so it acts like a background video */}
+             <div className="absolute inset-0 bg-transparent z-10"></div>
           </div>
         );
       };
@@ -496,9 +494,7 @@
             <SideAdsterraBanner style="left-4" />
             <SideAdsterraBanner style="right-4" />
 
-            {/* === NEW: SIDE VIDEOS (PC ONLY) === */}
-            <SideVideoPlayer position="left" />
-            <SideVideoPlayer position="right" />
+            {/* Note: SideVideoPlayers removed from fixed position here, moved next to Warning Panel below */}
 
             {/* === INVISIBLE OVERLAY FOR AUTO-OPEN AD ON FIRST CLICK === */}
             {/* Show overlay only if we haven't interacted */}
@@ -643,12 +639,21 @@
                 </span>
               </div>
 
-              {/* Warning Panel - Static */}
-              <div className="mt-2 flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg backdrop-blur-sm">
-                 <LockIcon isOpen={clickCount === REQUIRED_CLICKS} className={`w-4 h-4 ${clickCount === REQUIRED_CLICKS ? 'text-green-500' : 'text-yellow-500'}`} />
-                 <span className="text-xs md:text-sm font-semibold text-yellow-500/90 tracking-wide">
-                   {clickCount === REQUIRED_CLICKS ? 'Link Liberado!' : 'Clique 2x para liberar'}
-                 </span>
+              {/* Warning Panel Area - Now with Flanking Videos on PC */}
+              <div className="mt-2 w-full flex items-center justify-center gap-4 xl:gap-8">
+                {/* Left Video - PC Only */}
+                <SideVideoPlayer />
+
+                {/* Center Warning Panel */}
+                <div className="flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg backdrop-blur-sm shrink-0">
+                   <LockIcon isOpen={clickCount === REQUIRED_CLICKS} className={`w-4 h-4 ${clickCount === REQUIRED_CLICKS ? 'text-green-500' : 'text-yellow-500'}`} />
+                   <span className="text-xs md:text-sm font-semibold text-yellow-500/90 tracking-wide">
+                     {clickCount === REQUIRED_CLICKS ? 'Link Liberado!' : 'Clique 2x para liberar'}
+                   </span>
+                </div>
+
+                {/* Right Video - PC Only */}
+                <SideVideoPlayer />
               </div>
               
               {/* Footer text (Ads Warning) */}
