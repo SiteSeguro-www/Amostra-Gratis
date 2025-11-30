@@ -192,24 +192,65 @@
         );
       };
 
-      // --- NEW: Side Video Player Component (PC Only) ---
+      // --- NEW: Side Video Player Component (PC Only) with Pre-roll Ad ---
       const SideVideoPlayer = () => {
-        // Updated to use the YouTube Shorts link: https://youtube.com/shorts/v3mmNebT48E?feature=share
+        // YouTube Shorts ID
         const videoId = "v3mmNebT48E";
+        // Pre-roll Ad State
+        const [isAdPlaying, setIsAdPlaying] = useState(true);
+        const [timeLeft, setTimeLeft] = useState(10);
+        const adUrl = "https://fpyf8.com/88/tag.min.js?zone=188187"; // Direct ad link
+
+        useEffect(() => {
+            if (isAdPlaying && timeLeft > 0) {
+                const timer = setInterval(() => {
+                    setTimeLeft((prev) => prev - 1);
+                }, 1000);
+                return () => clearInterval(timer);
+            } else if (timeLeft === 0) {
+                setIsAdPlaying(false);
+            }
+        }, [isAdPlaying, timeLeft]);
+
+        const handleAdClick = () => {
+             // Open ad in new tab on click
+             window.open(adUrl, '_blank');
+        };
+        
         const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&showinfo=0&modestbranding=1`;
         
         return (
-          <div className="w-24 h-40 hidden xl:block rounded-xl overflow-hidden border-2 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)] bg-black shrink-0 relative">
-             <iframe 
-               src={embedUrl}
-               className="w-[300%] h-full object-cover -ml-[100%]" // Zoom effect to fill vertical container
-               frameBorder="0" 
-               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-               allowFullScreen
-               title="Side Video"
-             ></iframe>
-             {/* Transparent overlay to prevent interaction (clicks) so it acts like a background video */}
-             <div className="absolute inset-0 bg-transparent z-10"></div>
+          <div className="w-24 h-40 hidden xl:flex flex-col rounded-xl overflow-hidden border-2 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)] bg-black shrink-0 relative">
+             {isAdPlaying ? (
+                 <div 
+                   className="w-full h-full bg-black flex flex-col items-center justify-center cursor-pointer relative"
+                   onClick={handleAdClick}
+                 >
+                    <div className="absolute top-1 right-1 bg-yellow-400 text-black text-[8px] font-bold px-1 rounded z-20">
+                        PUBLICIDADE
+                    </div>
+                    <div className="text-center z-10 px-1">
+                        <p className="text-white text-[10px] font-bold mb-1 leading-tight">O vídeo começa em</p>
+                        <span className="text-yellow-400 text-2xl font-black drop-shadow-md">{timeLeft}</span>
+                        <p className="text-white text-[8px] mt-1 opacity-70">Clique para abrir</p>
+                    </div>
+                    {/* Simulated progress bar */}
+                    <div className="absolute bottom-0 left-0 h-1 bg-yellow-500 transition-all duration-1000 ease-linear" style={{width: `${(timeLeft/10)*100}%`}}></div>
+                 </div>
+             ) : (
+                 <>
+                    <iframe 
+                    src={embedUrl}
+                    className="w-[300%] h-full object-cover -ml-[100%]" // Zoom effect to fill vertical container
+                    frameBorder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title="Side Video"
+                    ></iframe>
+                    {/* Transparent overlay to prevent interaction (clicks) so it acts like a background video */}
+                    <div className="absolute inset-0 bg-transparent z-10"></div>
+                 </>
+             )}
           </div>
         );
       };
