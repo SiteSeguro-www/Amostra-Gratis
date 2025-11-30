@@ -416,6 +416,8 @@
           );
         };
 
+        const isUnlocked = clickCount >= REQUIRED_CLICKS;
+
         // RGB Gradient for Footer
         const rgbGradient = "from-red-500 via-yellow-500 via-green-500 via-cyan-500 via-blue-500 via-purple-500 to-red-500";
 
@@ -509,7 +511,7 @@
                  </span>
               </div>
 
-              {/* === Main Button: White/Cyan/Blue Gradient Glass === */}
+              {/* === Main Button === */}
               <a 
                 href={targetUrl}
                 onClick={handleLinkClick}
@@ -517,9 +519,16 @@
                 rel="noopener noreferrer"
                 className="group relative w-auto max-w-[98%] mx-auto transform hover:scale-105 active:scale-95 transition-all duration-300 ease-out"
               >
-                {/* Updated Colors: Gradient from Blue to Cyan to White */}
-                {/* CHANGED: Replaced animate-pulse with animate-float-glow */}
-                <button className="relative w-full flex items-center justify-center px-4 py-3 rounded-full border border-cyan-300/50 bg-gradient-to-r from-blue-600/20 via-cyan-400/20 to-white/10 backdrop-blur-md shadow-[0_0_20px_rgba(6,182,212,0.6)] animate-float-glow transition-all duration-300 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.8)] overflow-hidden">
+                {/* 
+                   Dynamic Button Styling:
+                   - Unlocked (isUnlocked): Dark Purple background, Purple Border, Purple Shadow
+                   - Locked: Gradient White/Cyan/Blue background, Cyan Border, Cyan Shadow
+                */}
+                <button className={`relative w-full flex items-center justify-center px-4 py-3 rounded-full backdrop-blur-md animate-float-glow transition-all duration-300 overflow-hidden ${
+                    isUnlocked 
+                    ? "border border-purple-500/50 bg-[#1a0033] shadow-[0_0_20px_rgba(168,85,247,0.6)] group-hover:shadow-[0_0_30px_rgba(168,85,247,0.8)]" 
+                    : "border border-cyan-300/50 bg-gradient-to-r from-blue-600/20 via-cyan-400/20 to-white/10 shadow-[0_0_20px_rgba(6,182,212,0.6)] group-hover:shadow-[0_0_30px_rgba(34,211,238,0.8)]"
+                }`}>
                   
                   <div className="relative flex items-center gap-2 z-10 w-full justify-center">
                     {/* Render Text Content */}
