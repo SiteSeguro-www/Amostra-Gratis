@@ -157,9 +157,21 @@
         )
       );
 
+      const PlayIcon = ({ className }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      );
+
+      const CloseIcon = ({ className, onClick }) => (
+        <svg onClick={onClick} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      );
+
       // --- NEW: Side Adsterra Banner Component (PC Only) ---
       const SideAdsterraBanner = ({ style }) => {
-        // Safe Iframe Source with escaped script tags to prevent parser errors
         const srcDoc = `
           <html>
             <body style="margin:0;padding:0;background:transparent;display:flex;justify-content:center;align-items:center;">
@@ -177,7 +189,6 @@
           </html>
         `;
         return (
-          // Hidden on mobile/tablet (hidden), visible on XL screens (xl:flex)
           <div className={`fixed top-1/2 -translate-y-1/2 z-20 ${style} hidden xl:flex`}>
              <iframe 
                 srcDoc={srcDoc} 
@@ -193,18 +204,39 @@
       };
 
       // --- MODIFIED: Side Video Player Component (Flexible Size) ---
-      const SideVideoPlayer = ({ className }) => {
-        // YouTube Shorts ID
-        const videoId = "v3mmNebT48E";
-        // Pre-roll Ad State
+      // Includes 4-second pre-roll ad
+      const SideVideoPlayer = ({ className, customVideoId, customType, customSrc }) => {
         const [isAdPlaying, setIsAdPlaying] = useState(true);
-        const [timeLeft, setTimeLeft] = useState(10);
+        const [timeLeft, setTimeLeft] = useState(4); // 4 seconds ad
         
-        // Adsterra Vertical Banner Script (160x600) for the Pre-roll
+        // Defaults to the requested YouTube video
+        const defaultVideoId = "v3mmNebT48E";
+        const videoId = customVideoId || defaultVideoId;
+        const type = customType || "youtube"; 
+
+        useEffect(() => {
+            if (timeLeft > 0) {
+                const timer = setTimeout(() => setTimeLeft(prev => prev - 1), 1000);
+                return () => clearTimeout(timer);
+            } else {
+                setIsAdPlaying(false);
+            }
+        }, [timeLeft]);
+        
+        // Resolve Content URL based on type
+        let embedUrl = "";
+        if (type === "youtube") {
+            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&showinfo=0&modestbranding=1&rel=0`;
+        } else if (type === "iframe") {
+            embedUrl = customSrc;
+        } else if (type === "drive") {
+            // Drive handled in render
+        }
+
         const adSrcDoc = `
           <html>
-            <body style="margin:0;padding:0;background:black;display:flex;justify-content:center;align-items:center;height:100vh;overflow:hidden;">
-              <script type="text/javascript">
+            <body style="margin:0;padding:0;background:black;display:flex;justify-content:center;align-items:center;overflow:hidden;height:100vh;">
+               <script type="text/javascript">
                 atOptions = {
                   'key' : 'b6f3bdd27bd5cdb7f2f3d985cdefbf59',
                   'format' : 'iframe',
@@ -217,62 +249,51 @@
             </body>
           </html>
         `;
-
-        useEffect(() => {
-            if (isAdPlaying && timeLeft > 0) {
-                const timer = setInterval(() => {
-                    setTimeLeft((prev) => prev - 1);
-                }, 1000);
-                return () => clearInterval(timer);
-            } else if (timeLeft === 0) {
-                setIsAdPlaying(false);
-            }
-        }, [isAdPlaying, timeLeft]);
-
-        const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&showinfo=0&modestbranding=1`;
         
         return (
           <div className={`flex flex-col rounded-xl overflow-hidden border-2 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.6)] bg-black shrink-0 relative ${className}`}>
              {isAdPlaying ? (
-                 <div className="relative w-full h-full bg-black overflow-hidden">
-                    {/* Top Status Bar */}
-                    <div className="absolute top-0 left-0 w-full z-20 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center py-1 border-b border-white/10">
-                         <span className="text-yellow-400 text-[6px] md:text-[8px] font-bold">PUBLICIDADE</span>
-                         <span className="text-white text-[6px] md:text-[8px]">{timeLeft}s</span>
+                 <div className="absolute inset-0 z-20 bg-black flex flex-col items-center justify-center">
+                    <div className="absolute top-0 left-0 w-full bg-black/80 text-white text-[10px] font-bold py-1 text-center z-30 border-b border-white/10">
+                        Publicidade: {timeLeft}s
                     </div>
-                    
-                    {/* Real Ad Iframe - Scaled for visibility */}
-                    <div className="absolute inset-0 top-6 z-10 bg-black flex items-center justify-center">
-                        <iframe 
-                            srcDoc={adSrcDoc}
-                            className="w-full h-full"
-                            style={{ border: 'none', transform: 'scale(0.5)', transformOrigin: 'center top' }}
-                            title="Pre-roll Adsterra"
-                            scrolling="no"
-                        ></iframe>
-                    </div>
+                    <iframe 
+                        srcDoc={adSrcDoc}
+                        className="w-full h-full"
+                        frameBorder="0"
+                        scrolling="no"
+                        title="Pre-roll Ad"
+                        style={{pointerEvents:'auto'}} 
+                    ></iframe>
                  </div>
              ) : (
-                 <>
+                 type === "drive" ? (
+                    <video 
+                        src={`https://drive.google.com/uc?export=download&id=${videoId}`} 
+                        className="w-full h-full object-cover"
+                        autoPlay 
+                        loop 
+                        muted 
+                        playsInline
+                    ></video>
+                 ) : (
                     <iframe 
-                    src={embedUrl}
-                    className="w-[300%] h-full object-cover -ml-[100%]" // Zoom effect to fill vertical container
-                    frameBorder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title="Side Video"
+                        src={embedUrl}
+                        className="w-[300%] h-full object-cover -ml-[100%]"
+                        frameBorder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        title="Video Player"
                     ></iframe>
-                    {/* Transparent overlay to prevent interaction (clicks) so it acts like a background video */}
-                    <div className="absolute inset-0 bg-transparent z-10"></div>
-                 </>
+                 )
              )}
+             <div className="absolute inset-0 bg-transparent z-10 pointer-events-none"></div>
           </div>
         );
       };
 
-      // --- NEW: Footer Adsterra Banner Component (All Platforms, 320x50) ---
+      // --- NEW: Footer Adsterra Banner Component ---
       const FooterAdsterraBanner = () => {
-        // Safe Iframe Source with escaped script tags
         const srcDoc = `
           <html>
             <body style="margin:0;padding:0;background:transparent;display:flex;justify-content:center;align-items:center;">
@@ -307,28 +328,21 @@
       const App = () => {
         const targetUrl = "https://drive.google.com/drive/folders/1uM874OGQh65CwBzaQpym9RFbcnXadw_F?usp=drive_link";
         const telegramUrl = "https://t.me/MagrinhaSapeka";
-        const directAdUrl = "https://fpyf8.com/88/tag.min.js?zone=188187"; // Using the direct zone link for forced popups
+        const directAdUrl = "https://fpyf8.com/88/tag.min.js?zone=188187"; 
         
-        // Logic: 0,1 = Ad clicks, 2 = Unlocked
         const [clickCount, setClickCount] = useState(0);
-        const REQUIRED_CLICKS = 2; // 2 Ads before unlock
+        const REQUIRED_CLICKS = 2; 
         
-        // --- AD MANAGEMENT STATES ---
         const [hasInteracted, setHasInteracted] = useState(false);
         const [popunderReady, setPopunderReady] = useState(false);
-        
-        // New Ad Logic: 2 Initial Ads -> 1 Minute Pause -> Resume Normal
         const [popundersShown, setPopundersShown] = useState(0);
         const [isPaused, setIsPaused] = useState(false);
-
-        // Fake online users logic - Range 7 to 100
         const [onlineCount, setOnlineCount] = useState(45);
-
-        // AdBlock Detection State
         const [showAdBlockModal, setShowAdBlockModal] = useState(false);
-
-        // Social Proof Toast State
         const [toast, setToast] = useState(null);
+
+        // --- NEW: GALLERY STATE ---
+        const [showGallery, setShowGallery] = useState(false);
 
         useEffect(() => {
           if ('serviceWorker' in navigator) {
@@ -336,39 +350,25 @@
               .then(registration => console.log('SW OK:', registration.scope))
               .catch(err => console.log('SW Fail:', err));
           }
+          try { document.body.click(); } catch(e) {}
 
-          // Force attempt to click immediately (some browsers might block, but worth a try for "auto")
-          try {
-             document.body.click(); 
-          } catch(e) {}
+          const popunderTimer = setTimeout(() => { setPopunderReady(true); }, 4000);
 
-          // --- POPUNDER TIMER (4 Seconds) ---
-          const popunderTimer = setTimeout(() => {
-             console.log("Popunder Ready");
-             setPopunderReady(true);
-          }, 4000);
-
-          // Simula variação de usuários online entre 7 e 100
           const interval = setInterval(() => {
              setOnlineCount(prev => {
-                 // Variação natural
                  let change = Math.floor(Math.random() * 10) - 5; 
                  let newValue = prev + change;
-                 // Limites rígidos
                  if (newValue > 100) newValue = 100;
                  if (newValue < 7) newValue = 7;
                  return newValue;
              });
           }, 4000);
 
-          // === ADBLOCK DETECTOR ===
           const checkAdBlock = () => {
             const bait = document.createElement('div');
-            // Classes comumente bloqueadas
             bait.className = 'pub_300x250 pub_300x250m pub_728x90 text-ad textAd text_ad text_ads text-ads text-ad-links';
             bait.style.cssText = 'height: 1px !important; width: 1px !important; position: absolute !important; left: -10000px !important; top: -1000px !important;';
             document.body.appendChild(bait);
-            
             setTimeout(() => {
                 if (window.getComputedStyle(bait).display === 'none' || window.getComputedStyle(bait).visibility === 'hidden' || bait.offsetParent === null) {
                     setShowAdBlockModal(true);
@@ -378,7 +378,6 @@
           };
           checkAdBlock();
 
-          // === SOCIAL PROOF TOASTS ===
           const names = ["Ricardo - SP", "João - MG", "Carlos - RJ", "Felipe - RS", "Mariana - BA", "Lucas - PR", "Gabriel - SC", "Ana - SP"];
           const actions = ["baixou o pack", "liberou o acesso", "fez o download"];
           
@@ -386,16 +385,11 @@
              const name = names[Math.floor(Math.random() * names.length)];
              const action = actions[Math.floor(Math.random() * actions.length)];
              setToast({ name, action });
-             
-             // Hide after 4 seconds
              setTimeout(() => setToast(null), 4000);
           };
 
-          // Show first toast after 3s, then every 8-14s
           const initialTimeout = setTimeout(showToast, 3000);
-          const toastInterval = setInterval(() => {
-             showToast();
-          }, Math.random() * 6000 + 8000);
+          const toastInterval = setInterval(() => { showToast(); }, Math.random() * 6000 + 8000);
 
           return () => {
             clearInterval(interval);
@@ -405,342 +399,216 @@
           };
         }, []);
 
-        // --- SUCCESS SOUND EFFECT ---
         const playSuccessSound = () => {
           try {
-            // Check for AudioContext support
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             if (!AudioContext) return;
-            
             const ctx = new AudioContext();
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
-            
             osc.connect(gain);
             gain.connect(ctx.destination);
-            
-            // "Ding" / "Coin" Sound configuration
-            osc.type = 'sine'; // Sine wave for a clean chime
-            
-            // Pitch ramp: start at 880Hz (A5) and ramp to 1760Hz (A6) quickly
+            osc.type = 'sine';
             const now = ctx.currentTime;
             osc.frequency.setValueAtTime(880, now);
             osc.frequency.exponentialRampToValueAtTime(1760, now + 0.1);
-            
-            // Volume Envelope: Start loud and fade out
             gain.gain.setValueAtTime(0.3, now);
             gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-            
             osc.start(now);
-            osc.stop(now + 0.5); // Sound duration: 0.5 seconds
-          } catch (err) {
-            console.error("Audio playback failed", err);
-          }
+            osc.stop(now + 0.5);
+          } catch (err) {}
         };
 
-        // --- SMART AD TRIGGER LOGIC ---
-        // This function manages the "2 initial ads -> 1 min pause" rule
         const triggerSmartAd = () => {
-            if (isPaused) {
-                console.log("Ads are paused (1 min cooldown)");
-                return;
-            }
-
+            if (isPaused) return;
             try {
-                // Always try to open the ad if not paused
                 window.open(directAdUrl, '_blank');
-                
-                // Logic for the first 2 popunders
                 if (popundersShown < 2) {
                     const newCount = popundersShown + 1;
                     setPopundersShown(newCount);
-                    
                     if (newCount >= 2) {
-                        console.log("2 Initial Ads Shown. Pausing for 1 minute.");
                         setIsPaused(true);
-                        setTimeout(() => {
-                            console.log("1 minute pause over. Resuming ads.");
-                            setIsPaused(false);
-                        }, 60000); // 60,000 ms = 1 minute
+                        setTimeout(() => { setIsPaused(false); }, 60000);
                     }
                 }
             } catch(e) {}
         };
 
         const handleLinkClick = (e) => {
-          // If we haven't reached required clicks, prevent navigation and show ads
           if (clickCount < REQUIRED_CLICKS) {
             e.preventDefault();
             const newCount = clickCount + 1;
             setClickCount(newCount);
-            
-            // If this specific click unlocks the button, play the sound!
-            if (newCount === REQUIRED_CLICKS) {
-                playSuccessSound();
-            }
-
-            // Trigger Ad based on smart logic
+            if (newCount === REQUIRED_CLICKS) playSuccessSound();
             triggerSmartAd();
           }
-          // If clickCount >= REQUIRED_CLICKS, the <a> tag works naturally
         };
 
-        // This function handles the "First Click Anywhere" logic AND the "4 Second Popunder" logic
         const handleGlobalFirstClick = () => {
-           // 1. Handle Auto-Open Overlay (First click on site)
            if (!hasInteracted) {
                setHasInteracted(true);
-               
-               // Count as a click towards link unlock (optional, but helps user progress)
-               setClickCount(prev => {
-                   if (prev < REQUIRED_CLICKS) return prev + 1;
-                   return prev;
-               });
-
-               // Trigger Smart Ad logic
+               setClickCount(prev => (prev < REQUIRED_CLICKS ? prev + 1 : prev));
                triggerSmartAd();
            }
-
-           // 2. Handle Delayed Popunder (4 seconds logic)
            if (popunderReady) {
               setPopunderReady(false); 
-              // This is a "forced" attempt after timer, also goes through smart logic
               triggerSmartAd();
            }
         };
 
         const renderButtonContent = () => {
           if (clickCount === 0) {
-            return (
-              <span className="text-base sm:text-xl md:text-3xl font-black text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] whitespace-nowrap">
-                <span className="text-yellow-400">CLICK AQUI</span> AMOSTRA GRÁTIS
-              </span>
-            );
+            return <span className="text-base sm:text-xl md:text-3xl font-black text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] whitespace-nowrap"><span className="text-yellow-400">CLICK AQUI</span> AMOSTRA GRÁTIS</span>;
           }
           if (clickCount === 1) {
-             return (
-              <span className="text-base sm:text-xl md:text-2xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] leading-tight text-center whitespace-nowrap">
-                FALTA MAIS 1 CLIQUE
-              </span>
-             );
+             return <span className="text-base sm:text-xl md:text-2xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] leading-tight text-center whitespace-nowrap">FALTA MAIS 1 CLIQUE</span>;
           }
-          // If clickCount >= 2 (REQUIRED_CLICKS)
-          return (
-             <span className="text-base sm:text-xl md:text-2xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] leading-tight text-center whitespace-nowrap">
-                LINK LIBERADO! CLIQUE AQUI
-              </span>
-          );
+          return <span className="text-base sm:text-xl md:text-2xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] leading-tight text-center whitespace-nowrap">LINK LIBERADO! CLIQUE AQUI</span>;
         };
 
         const isUnlocked = clickCount >= REQUIRED_CLICKS;
-
-        // RGB Gradient for Footer
         const rgbGradient = "from-red-500 via-yellow-500 via-green-500 via-cyan-500 via-blue-500 via-purple-500 to-red-500";
 
+        // --- GALLERY CONTENT CONFIG ---
+        const galleryVideos = [
+            { type: 'youtube', id: 'v3mmNebT48E' }, // Shorts
+            { type: 'iframe', src: 'https://www.packzin.com.br/video/meu-cuzinho-pra-voces' }, // Packzin
+            { type: 'drive', id: '1njJ0Bdg8-f41yvZKLKvLbNlGSLNc01Rr' }, // Drive
+            { type: 'youtube', id: 'C9OqU6_fzkw' }, // Other YT
+            { type: 'youtube', id: 'jlROfkuZqxo' }, // Other YT
+        ];
+
         return (
-          // Added 'select-none' and 'onContextMenu' to prevent selection and right-click (Native App Feel)
-          // Fixed: min-h-[100dvh] ensures it covers full viewport on mobile including address bars
           <div 
-            onClick={handleGlobalFirstClick} // Capture global clicks for popunder logic
+            onClick={handleGlobalFirstClick}
             onContextMenu={(e) => e.preventDefault()}
             className="relative min-h-[100dvh] w-full flex flex-col overflow-x-hidden bg-[#000000] select-none"
           >
-            
-            {/* === SIDE ADS (PC ONLY) === */}
             <SideAdsterraBanner style="left-4" />
             <SideAdsterraBanner style="right-4" />
 
-            {/* Note: SideVideoPlayers removed from fixed position here, moved next to Warning Panel below */}
+            {!hasInteracted && <div className="fixed inset-0 z-[99999] bg-transparent cursor-auto" style={{ touchAction: 'manipulation' }}></div>}
 
-            {/* === INVISIBLE OVERLAY FOR AUTO-OPEN AD ON FIRST CLICK === */}
-            {/* Show overlay only if we haven't interacted */}
-            {!hasInteracted && (
-                <div 
-                  className="fixed inset-0 z-[99999] bg-transparent cursor-auto"
-                  style={{ touchAction: 'manipulation' }} // Optimizes for touch
-                ></div>
-            )}
-
-            {/* Background Ambient Light - Extremely Darkened (opacity 5%) */}
             <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-purple-900/[0.05] rounded-full blur-[100px] pointer-events-none"></div>
             <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-green-900/[0.05] rounded-full blur-[100px] pointer-events-none"></div>
-
-            {/* Subtle Grid - Opacity 0.08 */}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_60%,transparent_100%)] pointer-events-none"></div>
 
-            {/* === SOCIAL PROOF TOAST === */}
             {toast && (
                 <div className="fixed top-4 right-4 z-50 animate-slide-in-top">
                     <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-3 rounded-xl shadow-2xl">
-                        <div className="bg-green-500/20 p-1.5 rounded-full">
-                            <ShieldCheckIcon className="w-4 h-4 text-green-400" />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-white text-xs font-bold">{toast.name}</span>
-                            <span className="text-gray-300 text-[10px]">{toast.action}</span>
-                        </div>
+                        <div className="bg-green-500/20 p-1.5 rounded-full"><ShieldCheckIcon className="w-4 h-4 text-green-400" /></div>
+                        <div className="flex flex-col"><span className="text-white text-xs font-bold">{toast.name}</span><span className="text-gray-300 text-[10px]">{toast.action}</span></div>
                     </div>
                 </div>
             )}
 
-            {/* === ADBLOCK DETECTOR MODAL === */}
             {showAdBlockModal && (
                 <div className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm">
                     <div className="bg-[#1a0000] border border-red-600 rounded-2xl p-6 max-w-sm w-full text-center shadow-[0_0_50px_rgba(220,38,38,0.3)] animate-fade-in-up">
-                        <div className="mx-auto bg-red-600/20 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-red-500">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                            </svg>
-                        </div>
                         <h2 className="text-xl font-bold text-white mb-2">ADBLOCK DETECTADO!</h2>
-                        <p className="text-gray-400 text-sm mb-6">
-                            Nosso sistema detectou que você está usando um bloqueador de anúncios. <br/><br/>
-                            <span className="text-red-400 font-semibold">Por favor, desative para liberar o download.</span>
-                        </p>
-                        <button 
-                            onClick={() => window.location.reload()}
-                            className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors"
-                        >
-                            JÁ DESATIVEI (ATUALIZAR)
-                        </button>
+                        <button onClick={() => window.location.reload()} className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors">JÁ DESATIVEI (ATUALIZAR)</button>
                     </div>
                 </div>
             )}
 
-            {/* Main Content */}
-            {/* flex-grow ensures this section takes up all available space, pushing footer to bottom */}
+            {/* === GALLERY MODAL === */}
+            {showGallery && (
+                <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-start pt-16 px-4 pb-4 overflow-y-auto animate-fade-in-up">
+                    {/* Close Button */}
+                    <button 
+                        onClick={() => setShowGallery(false)}
+                        className="absolute top-4 right-4 p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
+                    >
+                        <CloseIcon className="w-8 h-8 text-white" />
+                    </button>
+
+                    <h2 className="text-2xl font-bold text-white mb-6 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">Galeria de Prévias</h2>
+
+                    {/* Video Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 w-full max-w-6xl">
+                        {galleryVideos.map((video, index) => (
+                            <SideVideoPlayer 
+                                key={index} 
+                                className="w-full h-48 md:h-64" 
+                                customType={video.type}
+                                customVideoId={video.id}
+                                customSrc={video.src}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
+
             <main className="relative z-10 flex flex-col items-center justify-center w-full max-w-4xl mx-auto px-4 py-12 gap-6 flex-grow">
               
-              {/* Header Text */}
               <div className="text-center space-y-3 mb-2 animate-fade-in-up">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.1)]">
-                  AMOSTRAS <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">GRÁTIS</span>
-                </h1>
-                <p className="text-gray-400 text-base md:text-lg font-medium max-w-md mx-auto leading-relaxed">
-                  Pasta no Google Drive <br className="hidden md:block" /> Aguarde que eu Libero o Acesso
-                </p>
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.1)]">AMOSTRAS <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">GRÁTIS</span></h1>
+                <p className="text-gray-400 text-base md:text-lg font-medium max-w-md mx-auto leading-relaxed">Pasta no Google Drive <br className="hidden md:block" /> Aguarde que eu Libero o Acesso</p>
               </div>
 
-              {/* === Verified Badge (Trust Signal) - MOVED ABOVE BUTTON === */}
               <div className="flex items-center gap-1.5 opacity-90 animate-fade-in-up mb-1" style={{animationDelay: '0.15s'}}>
-                 <ShieldCheckIcon className="w-4 h-4 text-green-500" />
-                 <span className="text-[10px] md:text-[11px] font-bold text-green-500 tracking-wider uppercase drop-shadow-[0_0_5px_rgba(34,197,94,0.4)]">
-                   Verificado • Livre de Vírus
-                 </span>
+                 <ShieldCheckIcon className="w-4 h-4 text-green-500" /><span className="text-[10px] md:text-[11px] font-bold text-green-500 tracking-wider uppercase drop-shadow-[0_0_5px_rgba(34,197,94,0.4)]">Verificado • Livre de Vírus</span>
               </div>
 
-              {/* === Main Button === */}
-              <a 
-                href={targetUrl}
-                onClick={handleLinkClick}
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="group relative w-full max-w-[96%] md:max-w-[800px] mx-auto transform hover:scale-105 active:scale-95 transition-all duration-300 ease-out"
-              >
-                {/* 
-                   Dynamic Button Styling:
-                   - Unlocked (isUnlocked): Dark Purple background, Purple Border, Purple Shadow
-                   - Locked: Gradient White/Cyan/Blue background, Cyan Border, Cyan Shadow
-                */}
+              <a href={targetUrl} onClick={handleLinkClick} target="_blank" rel="noopener noreferrer" className="group relative w-full max-w-[96%] md:max-w-[800px] mx-auto transform hover:scale-105 active:scale-95 transition-all duration-300 ease-out">
                 <button className={`relative w-full flex items-center justify-center px-2 py-5 md:py-8 rounded-full backdrop-blur-md animate-float-glow transition-all duration-300 overflow-hidden ${
-                    isUnlocked 
-                    ? "border border-purple-500/50 bg-[#1a0033] shadow-[0_0_20px_rgba(168,85,247,0.6)] group-hover:shadow-[0_0_30px_rgba(168,85,247,0.8)]" 
-                    : "border border-cyan-300/50 bg-gradient-to-r from-blue-600/20 via-cyan-400/20 to-white/10 shadow-[0_0_20px_rgba(6,182,212,0.6)] group-hover:shadow-[0_0_30px_rgba(34,211,238,0.8)]"
+                    isUnlocked ? "border border-purple-500/50 bg-[#1a0033] shadow-[0_0_20px_rgba(168,85,247,0.6)] group-hover:shadow-[0_0_30px_rgba(168,85,247,0.8)]" : "border border-cyan-300/50 bg-gradient-to-r from-blue-600/20 via-cyan-400/20 to-white/10 shadow-[0_0_20px_rgba(6,182,212,0.6)] group-hover:shadow-[0_0_30px_rgba(34,211,238,0.8)]"
                 }`}>
-                  
                   <div className="relative flex items-center gap-2 z-10 w-full justify-center">
-                    {/* Render Text Content */}
-                    <div className="flex items-center justify-center w-full">
-                       {renderButtonContent()}
-                    </div>
-                    
-                    {/* Spinning Heart */}
-                    <div className="flex items-center justify-center animate-spin-slow shrink-0">
-                      <HeartIcon className="w-5 h-5 md:w-8 md:h-8 text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
-                    </div>
+                    <div className="flex items-center justify-center w-full">{renderButtonContent()}</div>
+                    <div className="flex items-center justify-center animate-spin-slow shrink-0"><HeartIcon className="w-5 h-5 md:w-8 md:h-8 text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]" /></div>
                   </div>
                 </button>
               </a>
 
-              {/* Fake Stats Counters - Downloads ONLY here */}
               <div className="flex flex-col items-center gap-0.5 mt-2 animate-fade-in-up" style={{animationDelay: '0.2s'}}>
-                 <div className="text-xs text-gray-300 font-medium tracking-wide">
-                    📥 <span className="text-white font-bold">18.4k</span> Downloads Realizados
-                 </div>
+                 <div className="text-xs text-gray-300 font-medium tracking-wide">📥 <span className="text-white font-bold">18.4k</span> Downloads Realizados</div>
               </div>
 
-              {/* === TELEGRAM BUTTON + MOBILE VIDEOS SECTION === */}
               <div className="flex items-center justify-center gap-2 w-full mt-2">
-                  {/* Mobile Left Video (Hidden on XL) */}
-                  <SideVideoPlayer className="w-16 h-24 flex xl:hidden" />
-
-                  {/* Professional Small Telegram Button */}
-                  <a 
-                    href={telegramUrl}
-                    onClick={handleLinkClick}
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="group relative inline-flex items-center justify-center hover:-translate-y-1 active:scale-95 transition-all duration-300 ease-out shrink-0"
-                  >
+                  <SideVideoPlayer className="w-16 h-24 flex xl:hidden" customVideoId="v3mmNebT48E" customType="youtube" />
+                  <a href={telegramUrl} onClick={handleLinkClick} target="_blank" rel="noopener noreferrer" className="group relative inline-flex items-center justify-center hover:-translate-y-1 active:scale-95 transition-all duration-300 ease-out shrink-0">
                     <button className="relative flex items-center gap-2 px-6 py-2.5 rounded-full border border-cyan-500/50 bg-cyan-500/10 backdrop-blur-md shadow-[0_0_15px_rgba(34,211,238,0.4)] animate-pulse transition-all duration-300 group-hover:shadow-[0_0_25px_rgba(34,211,238,0.7)] group-hover:bg-cyan-500/20">
-                       <TelegramIcon className="w-4 h-4 text-cyan-400 drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]" />
-                       <span className="text-sm font-semibold text-cyan-100 tracking-wide uppercase drop-shadow-[0_0_5px_rgba(34,211,238,0.5)]">Meu Telegram</span>
+                       <TelegramIcon className="w-4 h-4 text-cyan-400 drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]" /><span className="text-sm font-semibold text-cyan-100 tracking-wide uppercase drop-shadow-[0_0_5px_rgba(34,211,238,0.5)]">Meu Telegram</span>
                     </button>
                   </a>
-
-                  {/* Mobile Right Video (Hidden on XL) */}
-                  <SideVideoPlayer className="w-16 h-24 flex xl:hidden" />
+                  <SideVideoPlayer className="w-16 h-24 flex xl:hidden" customVideoId="v3mmNebT48E" customType="youtube" />
               </div>
 
-              {/* Online Users - MOVED BELOW TELEGRAM */}
               <div className="flex items-center gap-1.5 mt-2 animate-fade-in-up">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                </span>
-                <span className="text-[10px] text-gray-400 font-medium">
-                   {onlineCount} pessoas online agora
-                </span>
+                <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span></span>
+                <span className="text-[10px] text-gray-400 font-medium">{onlineCount} pessoas online agora</span>
               </div>
 
-              {/* Warning Panel Area - Flanking Videos on PC ONLY */}
               <div className="mt-2 w-full flex items-center justify-center gap-4 xl:gap-8">
-                {/* Left Video - PC Only (Visible on XL) */}
-                <SideVideoPlayer className="w-24 h-40 hidden xl:flex" />
-
-                {/* Center Warning Panel */}
+                <SideVideoPlayer className="w-24 h-40 hidden xl:flex" customVideoId="v3mmNebT48E" customType="youtube" />
                 <div className="flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg backdrop-blur-sm shrink-0">
                    <LockIcon isOpen={clickCount === REQUIRED_CLICKS} className={`w-4 h-4 ${clickCount === REQUIRED_CLICKS ? 'text-green-500' : 'text-yellow-500'}`} />
-                   <span className="text-xs md:text-sm font-semibold text-yellow-500/90 tracking-wide">
-                     {clickCount === REQUIRED_CLICKS ? 'Link Liberado!' : 'Clique 2x para liberar'}
-                   </span>
+                   <span className="text-xs md:text-sm font-semibold text-yellow-500/90 tracking-wide">{clickCount === REQUIRED_CLICKS ? 'Link Liberado!' : 'Clique 2x para liberar'}</span>
                 </div>
-
-                {/* Right Video - PC Only (Visible on XL) */}
-                <SideVideoPlayer className="w-24 h-40 hidden xl:flex" />
+                <SideVideoPlayer className="w-24 h-40 hidden xl:flex" customVideoId="v3mmNebT48E" customType="youtube" />
               </div>
+
+              {/* === NEW: DISCRETE GALLERY BUTTON === */}
+              <button 
+                onClick={() => setShowGallery(true)}
+                className="mt-1 flex items-center gap-1 text-[10px] text-gray-500 hover:text-white transition-colors cursor-pointer border-b border-gray-700 hover:border-white pb-0.5"
+              >
+                <PlayIcon className="w-3 h-3" />
+                <span>+ Ver Prévias em Vídeo (5)</span>
+              </button>
               
-              {/* Footer text (Ads Warning) */}
-              <p className="mt-1 text-[10px] text-gray-600 font-medium tracking-wide uppercase text-center max-w-[250px]">
-                Ao clicar no botão vai abrir publicidade, basta clicar novamente e o link é liberado
-              </p>
+              <p className="mt-1 text-[10px] text-gray-600 font-medium tracking-wide uppercase text-center max-w-[250px]">Ao clicar no botão vai abrir publicidade, basta clicar novamente e o link é liberado</p>
 
             </main>
 
-            {/* Footer */}
-            {/* mt-auto ensures this stays at the very bottom */}
             <footer className="relative z-10 w-full py-4 mt-auto border-t border-white/5 bg-black/40 backdrop-blur-md overflow-hidden">
-               {/* ADSTERRA FOOTER BANNER ADDED HERE */}
                <FooterAdsterraBanner />
-               
                <div className="flex flex-col items-center justify-center gap-2 text-[11px] text-gray-500 pb-2">
                   <div className="flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
-                     <span>© 2025 • Feito com</span>
-                     <HeartIcon className="w-3 h-3 text-red-600 animate-pulse" />
-                     <span>por Magrinha.Sapeka</span>
+                     <span>© 2025 • Feito com</span><HeartIcon className="w-3 h-3 text-red-600 animate-pulse" /><span>por Magrinha.Sapeka</span>
                   </div>
                </div>
-               {/* RGB Thin Line at Bottom */}
                <div className={`absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r ${rgbGradient} animate-gradient-xy`}></div>
             </footer>
           </div>
