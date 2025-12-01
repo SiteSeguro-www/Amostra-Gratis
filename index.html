@@ -29,21 +29,6 @@
 
     <title>Amostra Grátis - Clique Aqui</title>
     
-    <!-- === MAX ADS STRATEGY: HEAD === -->
-    <!-- Scripts de publicidade carregados de forma assíncrona para não travar o visual -->
-    
-    <!-- Zone 1: Direct Link/Banner -->
-    <script src="https://fpyf8.com/88/tag.min.js" data-zone="188187" async data-cfasync="false"></script>
-
-    <!-- Zone 2: Popup/Vignette ID 10238532 -->
-    <script src="https://3nbf4.com/act/files/tag.min.js?z=10238532" data-cfasync="false" async></script>
-
-    <!-- Zone 3: Popup/Vignette ID 10238511 -->
-    <script src="https://3nbf4.com/act/files/tag.min.js?z=10238511" data-cfasync="false" async></script>
-
-    <!-- Zone 4: Popup/Vignette ID 10238498 -->
-    <script src="https://3nbf4.com/act/files/tag.min.js?z=10238498" data-cfasync="false" async></script>
-    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -117,9 +102,6 @@
     </style>
   </head>
   <body>
-    <!-- Estratégia de Backup para Ads no Body -->
-    <script src="https://fpyf8.com/88/tag.min.js" data-zone="188187" async data-cfasync="false"></script>
-    <script src="https://3nbf4.com/act/files/tag.min.js?z=10238532" data-cfasync="false" async></script>
     
     <div id="root"></div>
 
@@ -338,11 +320,6 @@
         const [showGallery, setShowGallery] = useState(false);
 
         useEffect(() => {
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-              .then(registration => console.log('SW OK:', registration.scope))
-              .catch(err => console.log('SW Fail:', err));
-          }
           try { document.body.click(); } catch(e) {}
 
           const popunderTimer = setTimeout(() => { setPopunderReady(true); }, 4000);
