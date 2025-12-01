@@ -13,12 +13,6 @@
     <meta property="og:title" content="Amostra Grátis - Magrinha.sapeka">
     <meta property="og:description" content="Confira o Packzin e amostra grátis de fotos de pé. Acesse agora.">
     <meta property="og:type" content="website">
-
-    <!-- Monetag Verification -->
-    <meta name="monetag" content="9171508b202e7a5ccf6afc7ebb1713fc">
-    
-    <!-- Push Notifications Script (Zone 10264503) -->
-    <script src="https://3nbf4.com/act/files/tag.min.js?z=10264503" data-cfasync="false" async></script>
     
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-F2G3BLR9FC"></script>
@@ -106,6 +100,9 @@
   </head>
   <body>
     
+    <!-- Monetag Popunder Script (Zone 10264515) -->
+    <script>(function(s){s.dataset.zone='10264515',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+
     <div id="root"></div>
 
     <script type="text/babel">
@@ -306,7 +303,6 @@
       const App = () => {
         const targetUrl = "https://drive.google.com/drive/folders/1uM874OGQh65CwBzaQpym9RFbcnXadw_F?usp=drive_link";
         const telegramUrl = "https://t.me/MagrinhaSapeka";
-        const directAdUrl = "https://fpyf8.com/88/tag.min.js?zone=188187"; 
         
         const [clickCount, setClickCount] = useState(0);
         const REQUIRED_CLICKS = 2; 
@@ -394,17 +390,15 @@
 
         const triggerSmartAd = () => {
             if (isPaused) return;
-            try {
-                window.open(directAdUrl, '_blank');
-                if (popundersShown < 2) {
-                    const newCount = popundersShown + 1;
-                    setPopundersShown(newCount);
-                    if (newCount >= 2) {
-                        setIsPaused(true);
-                        setTimeout(() => { setIsPaused(false); }, 60000);
-                    }
+            // Removed directAdUrl logic as requested, relying on the injected script for popunders
+            if (popundersShown < 2) {
+                const newCount = popundersShown + 1;
+                setPopundersShown(newCount);
+                if (newCount >= 2) {
+                    setIsPaused(true);
+                    setTimeout(() => { setIsPaused(false); }, 60000);
                 }
-            } catch(e) {}
+            }
         };
 
         const handleLinkClick = (e) => {
