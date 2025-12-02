@@ -139,19 +139,6 @@
         )
       );
 
-      const PlayIcon = ({ className }) => (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
-          <path d="M8 5v14l11-7z" />
-        </svg>
-      );
-
-      const CloseIcon = ({ className, onClick }) => (
-        <svg onClick={onClick} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      );
-
       // --- NEW: Side Adsterra Banner Component (PC Only) ---
       const SideAdsterraBanner = ({ style }) => {
         const srcDoc = `
@@ -181,88 +168,6 @@
                 style={{border:'none', overflow:'hidden'}}
                 title="Adsterra Banner"
              ></iframe>
-          </div>
-        );
-      };
-
-      // --- MODIFIED: Side Video Player Component (Flexible Size) ---
-      // Includes 4-second pre-roll ad (Now Native Adsterra)
-      const SideVideoPlayer = ({ className, customVideoId, customType, customSrc }) => {
-        const [isAdPlaying, setIsAdPlaying] = useState(true);
-        const [timeLeft, setTimeLeft] = useState(10); // 10 seconds ad as requested
-        
-        // Defaults to the requested YouTube video
-        const defaultVideoId = "C9OqU6_fzkw";
-        const videoId = customVideoId || defaultVideoId;
-        const type = customType || "youtube"; 
-
-        useEffect(() => {
-            if (timeLeft > 0) {
-                const timer = setTimeout(() => setTimeLeft(prev => prev - 1), 1000);
-                return () => clearTimeout(timer);
-            } else {
-                setIsAdPlaying(false);
-            }
-        }, [timeLeft]);
-        
-        // Resolve Content URL based on type
-        let embedUrl = "";
-        if (type === "youtube") {
-            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&showinfo=0&modestbranding=1&rel=0`;
-        } else if (type === "iframe") {
-            embedUrl = customSrc;
-        } else if (type === "drive") {
-            // Drive handled in render
-        }
-
-        // --- UPDATED: Native Adsterra Script ---
-        const adSrcDoc = `
-          <html>
-            <body style="margin:0;padding:0;background:black;display:flex;justify-content:center;align-items:center;overflow:hidden;height:100vh;">
-               <script async="async" data-cfasync="false" src="//pl28162927.effectivegatecpm.com/01a2fa85fb758fa11fdefd9679f30476/invoke.js"><\/script>
-               <div id="container-01a2fa85fb758fa11fdefd9679f30476"></div>
-            </body>
-          </html>
-        `;
-        
-        return (
-          <div className={`flex flex-col rounded-xl overflow-hidden border-2 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.6)] bg-black shrink-0 relative ${className}`}>
-             {isAdPlaying ? (
-                 <div className="absolute inset-0 z-20 bg-black flex flex-col items-center justify-center">
-                    <div className="absolute top-0 left-0 w-full bg-black/80 text-white text-[10px] font-bold py-1 text-center z-30 border-b border-white/10">
-                        Publicidade: {timeLeft}s
-                    </div>
-                    <iframe 
-                        srcDoc={adSrcDoc}
-                        className="w-full h-full"
-                        frameBorder="0"
-                        scrolling="no"
-                        title="Pre-roll Ad"
-                        style={{pointerEvents:'auto'}} 
-                    ></iframe>
-                 </div>
-             ) : (
-                 type === "drive" ? (
-                    <video 
-                        src={`https://drive.google.com/uc?export=download&id=${videoId}`} 
-                        className="w-full h-full object-cover"
-                        autoPlay 
-                        loop 
-                        muted 
-                        playsInline
-                    ></video>
-                 ) : (
-                    <iframe 
-                        src={embedUrl}
-                        className="w-[300%] h-full object-cover -ml-[100%]"
-                        frameBorder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        title="Video Player"
-                    ></iframe>
-                 )
-             )}
-             <div className="absolute inset-0 bg-transparent z-10 pointer-events-none"></div>
           </div>
         );
       };
@@ -314,9 +219,6 @@
         const [onlineCount, setOnlineCount] = useState(45);
         const [showAdBlockModal, setShowAdBlockModal] = useState(false);
         const [toast, setToast] = useState(null);
-
-        // --- NEW: GALLERY STATE ---
-        const [showGallery, setShowGallery] = useState(false);
 
         useEffect(() => {
           try { document.body.click(); } catch(e) {}
@@ -436,15 +338,6 @@
         const isUnlocked = clickCount >= REQUIRED_CLICKS;
         const rgbGradient = "from-red-500 via-yellow-500 via-green-500 via-cyan-500 via-blue-500 via-purple-500 to-red-500";
 
-        // --- GALLERY CONTENT CONFIG ---
-        const galleryVideos = [
-            { type: 'youtube', id: 'C9OqU6_fzkw' }, 
-            { type: 'youtube', id: 'C9OqU6_fzkw' }, 
-            { type: 'youtube', id: 'C9OqU6_fzkw' }, 
-            { type: 'youtube', id: 'C9OqU6_fzkw' }, 
-            { type: 'youtube', id: 'C9OqU6_fzkw' }, 
-        ];
-
         return (
           <div 
             onClick={handleGlobalFirstClick}
@@ -478,34 +371,6 @@
                 </div>
             )}
 
-            {/* === GALLERY MODAL === */}
-            {showGallery && (
-                <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-start pt-16 px-4 pb-4 overflow-y-auto animate-fade-in-up">
-                    {/* Close Button */}
-                    <button 
-                        onClick={() => setShowGallery(false)}
-                        className="absolute top-4 right-4 p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
-                    >
-                        <CloseIcon className="w-8 h-8 text-white" />
-                    </button>
-
-                    <h2 className="text-2xl font-bold text-white mb-6 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">Galeria de Prévias</h2>
-
-                    {/* Video Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 w-full max-w-6xl">
-                        {galleryVideos.map((video, index) => (
-                            <SideVideoPlayer 
-                                key={index} 
-                                className="w-full h-48 md:h-64" 
-                                customType={video.type}
-                                customVideoId={video.id}
-                                customSrc={video.src}
-                            />
-                        ))}
-                    </div>
-                </div>
-            )}
-
             <main className="relative z-10 flex flex-col items-center justify-center w-full max-w-4xl mx-auto px-4 py-12 gap-6 flex-grow">
               
               <div className="text-center space-y-3 mb-2 animate-fade-in-up">
@@ -533,13 +398,11 @@
               </div>
 
               <div className="flex items-center justify-center gap-2 w-full mt-2">
-                  <SideVideoPlayer className="w-16 h-24 flex xl:hidden" customVideoId="C9OqU6_fzkw" customType="youtube" />
                   <a href={telegramUrl} onClick={handleLinkClick} target="_blank" rel="noopener noreferrer" className="group relative inline-flex items-center justify-center hover:-translate-y-1 active:scale-95 transition-all duration-300 ease-out shrink-0">
                     <button className="relative flex items-center gap-2 px-6 py-2.5 rounded-full border border-cyan-500/50 bg-cyan-500/10 backdrop-blur-md shadow-[0_0_15px_rgba(34,211,238,0.4)] animate-pulse transition-all duration-300 group-hover:shadow-[0_0_25px_rgba(34,211,238,0.7)] group-hover:bg-cyan-500/20">
                        <TelegramIcon className="w-4 h-4 text-cyan-400 drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]" /><span className="text-sm font-semibold text-cyan-100 tracking-wide uppercase drop-shadow-[0_0_5px_rgba(34,211,238,0.5)]">Meu Telegram</span>
                     </button>
                   </a>
-                  <SideVideoPlayer className="w-16 h-24 flex xl:hidden" customVideoId="C9OqU6_fzkw" customType="youtube" />
               </div>
 
               <div className="flex items-center gap-1.5 mt-2 animate-fade-in-up">
@@ -548,22 +411,11 @@
               </div>
 
               <div className="mt-2 w-full flex items-center justify-center gap-4 xl:gap-8">
-                <SideVideoPlayer className="w-24 h-40 hidden xl:flex" customVideoId="C9OqU6_fzkw" customType="youtube" />
                 <div className="flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg backdrop-blur-sm shrink-0">
                    <LockIcon isOpen={clickCount === REQUIRED_CLICKS} className={`w-4 h-4 ${clickCount === REQUIRED_CLICKS ? 'text-green-500' : 'text-yellow-500'}`} />
                    <span className="text-xs md:text-sm font-semibold text-yellow-500/90 tracking-wide">{clickCount === REQUIRED_CLICKS ? 'Link Liberado!' : 'Clique 2x para liberar'}</span>
                 </div>
-                <SideVideoPlayer className="w-24 h-40 hidden xl:flex" customVideoId="C9OqU6_fzkw" customType="youtube" />
               </div>
-
-              {/* === NEW: DISCRETE GALLERY BUTTON === */}
-              <button 
-                onClick={() => setShowGallery(true)}
-                className="mt-1 flex items-center gap-1 text-[10px] text-gray-500 hover:text-white transition-colors cursor-pointer border-b border-gray-700 hover:border-white pb-0.5"
-              >
-                <PlayIcon className="w-3 h-3" />
-                <span>+ Ver Prévias em Vídeo (5)</span>
-              </button>
               
               <p className="mt-1 text-[10px] text-gray-600 font-medium tracking-wide uppercase text-center max-w-[250px]">Ao clicar no botão vai abrir publicidade, basta clicar novamente e o link é liberado</p>
 
