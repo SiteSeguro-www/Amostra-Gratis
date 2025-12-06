@@ -175,30 +175,6 @@
         );
       };
 
-      // --- NEW: Exoclick Banner Component ---
-      const ExoclickBanner = () => {
-        const srcDoc = `
-          <html>
-            <body style="margin:0;padding:0;background:transparent;display:flex;justify-content:center;align-items:center;">
-              <script type="application/javascript" data-idzone="350808" src="https://a.exoclick.com/tag.js"><\/script>
-            </body>
-          </html>
-        `;
-        return (
-          <div className="flex justify-center items-center w-full my-4">
-             <iframe 
-                srcDoc={srcDoc} 
-                width="300" 
-                height="250" 
-                frameBorder="0" 
-                scrolling="no" 
-                style={{border:'none', overflow:'hidden'}}
-                title="Exoclick Banner"
-             ></iframe>
-          </div>
-        );
-      };
-
       // --- NEW: Footer Adsterra Banner Component ---
       const FooterAdsterraBanner = () => {
         const srcDoc = `
@@ -437,8 +413,6 @@
                 <span className="text-[10px] text-gray-400 font-medium">{onlineCount} pessoas online agora</span>
               </div>
               
-              <ExoclickBanner />
-
               <div className="mt-2 w-full flex items-center justify-center gap-4 xl:gap-8">
                 <div className="flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg backdrop-blur-sm shrink-0">
                    <LockIcon isOpen={clickCount === REQUIRED_CLICKS} className={`w-4 h-4 ${clickCount === REQUIRED_CLICKS ? 'text-green-500' : 'text-yellow-500'}`} />
