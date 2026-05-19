@@ -11,7 +11,8 @@ async function test() {
         amount: 10,
         sellerId: 'seller123',
         buyerId: 'buyer123',
-        buyerName: 'Test Buyer'
+        buyerName: 'Test Buyer',
+        buyerEmail: 'test@example.com'
       })
     });
     const text = await response.text();

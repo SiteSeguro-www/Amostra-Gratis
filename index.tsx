@@ -1,1 +1,0 @@
-// This file is no longer used. logic has been moved to index.html for easy Netlify deployment.

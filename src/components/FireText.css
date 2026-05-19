@@ -1,0 +1,165 @@
+.fire-desktop-container {
+  display: inline-flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  height: 24px;
+}
+
+.fire-desktop-text {
+  position: relative;
+  color: #d1d5db; /* Default gray for inactive menu items */
+  transition: all 0.3s ease;
+  z-index: 2;
+  font-weight: 500;
+}
+
+.fire-desktop-sprite {
+  position: absolute;
+  top: 50%;
+  left: 50%; /* Center relative to text */
+  transform: translate(-50%, -50%);
+  width: 50px; /* Reduced from 100px. Perfect fit. */
+  height: 50px;
+  background-image: var(--fire-sprite-url, url('/fire-sprite.png'));
+  background-size: 350px 100%; /* Exactly 50px * 7 frames = 350px width */
+  background-position: 0px center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 3;
+  mix-blend-mode: screen; 
+}
+
+.fire-desktop-container:hover .fire-desktop-text {
+  /* Text remains visible and gets lit up on hover alongside the flame */
+  color: #ffffff;
+  text-shadow: 0 0 6px rgba(255, 140, 0, 0.8), 0 -2px 10px rgba(255, 50, 0, 0.6);
+}
+
+.fire-desktop-container:hover .fire-desktop-sprite,
+.fire-desktop-container.is-active .fire-desktop-sprite {
+  opacity: 1;
+  animation: play-fire-sprite 0.7s steps(7, start) infinite;
+}
+
+/* Explosion Particles using Sprite */
+.ignite-desktop-particles {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.desktop-particle {
+  position: absolute;
+  width: 20px; 
+  height: 20px;
+  background-image: var(--fire-sprite-url, url('/fire-sprite.png'));
+  background-size: 140px 100%; /* Exactly 20px * 7 frames = 140px width */
+  background-repeat: no-repeat;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  opacity: 0;
+  animation: play-particle-sprite 0.7s steps(7, start) infinite;
+}
+
+/* Mapping individual particles to shoot out in different directions, 
+   the 'animation' includes two parts: trajectory and sprite stepping concurrently */
+.desktop-particle.p-0 { animation: dt-burst-1 0.8s forwards, play-particle-sprite 0.7s steps(7, start) infinite; }
+.desktop-particle.p-1 { animation: dt-burst-2 0.7s forwards 0.1s, play-particle-sprite 0.7s steps(7, start) infinite; }
+.desktop-particle.p-2 { animation: dt-burst-3 0.9s forwards 0.05s, play-particle-sprite 0.7s steps(7, start) infinite; }
+.desktop-particle.p-3 { animation: dt-burst-4 0.6s forwards 0.15s, play-particle-sprite 0.7s steps(7, start) infinite; }
+.desktop-particle.p-4 { animation: dt-burst-5 0.75s forwards 0.1s, play-particle-sprite 0.7s steps(7, start) infinite; }
+
+@keyframes dt-burst-1 {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+  100% { transform: translate(-30px, -30px) scale(1.5); opacity: 0; }
+}
+@keyframes dt-burst-2 {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+  100% { transform: translate(0px, -40px) scale(1.2); opacity: 0; }
+}
+@keyframes dt-burst-3 {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+  100% { transform: translate(30px, -25px) scale(1.4); opacity: 0; }
+}
+@keyframes dt-burst-4 {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+  100% { transform: translate(-40px, -5px) scale(1.1); opacity: 0; }
+}
+@keyframes dt-burst-5 {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+  100% { transform: translate(40px, -5px) scale(1.3); opacity: 0; }
+}
+
+@keyframes play-fire-sprite {
+  from { background-position: 0px center; }
+  to { background-position: -350px center; } /* Smooth pixel step exact boundary */
+}
+
+@keyframes play-particle-sprite {
+  from { background-position: 0px center; }
+  to { background-position: -140px center; }
+}
+
+/* Mobile Icon Animation - Always On Fire */
+.fire-icon-mobile {
+  animation: fire-flicker-mobile 1.2s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 8px rgba(255, 140, 0, 0.8));
+  transform-origin: center bottom;
+}
+
+@keyframes fire-flicker-mobile {
+  0% { transform: scale(1) translateY(0) rotate(-2deg); opacity: 0.9; filter: drop-shadow(0 0 8px rgba(255, 140, 0, 0.8)); }
+  33% { transform: scale(1.1) translateY(-2px) rotate(3deg); opacity: 1; filter: drop-shadow(0 -2px 12px rgba(255, 69, 0, 0.9)); }
+  66% { transform: scale(1.05) translateY(-1px) rotate(-2deg); opacity: 0.8; filter: drop-shadow(0 0 5px rgba(255, 160, 0, 0.7)); }
+  100% { transform: scale(1.15) translateY(-3px) rotate(2deg); opacity: 1; filter: drop-shadow(0 -3px 15px rgba(255, 100, 0, 1)); }
+}
+
+/* Mobile Ignite Burst (on active) */
+.ignite-particles {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 0; height: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.ignite-particles::before,
+.ignite-particles::after,
+.ignite-particle-extra {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50% 0 50% 50%;
+  background: radial-gradient(circle at 30% 30%, #fff 10%, #ffeb3b 40%, #ff5722 80%);
+  box-shadow: 0 0 10px #ff5722;
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.ignite-particles::before { animation: mini-flame-left 0.7s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+.ignite-particles::after { animation: mini-flame-right 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards 0.1s; }
+.ignite-particle-extra { animation: mini-flame-center 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards 0.05s; }
+
+@keyframes mini-flame-left {
+  0% { left: 0; top: 0; opacity: 1; transform: translate(-50%, -50%) rotate(-45deg) scale(0.5); }
+  100% { left: -25px; top: -35px; opacity: 0; transform: translate(-50%, -50%) rotate(-60deg) scale(1.5); filter: hue-rotate(-10deg); }
+}
+
+@keyframes mini-flame-right {
+  0% { left: 0; top: 0; opacity: 1; transform: translate(-50%, -50%) rotate(-45deg) scale(0.5); }
+  100% { left: 25px; top: -30px; opacity: 0; transform: translate(-50%, -50%) rotate(-20deg) scale(1.3); filter: hue-rotate(10deg); }
+}
+
+@keyframes mini-flame-center {
+  0% { left: 0; top: 0; opacity: 1; transform: translate(-50%, -50%) rotate(-45deg) scale(0.5); }
+  100% { left: 0; top: -45px; opacity: 0; transform: translate(-50%, -50%) rotate(-45deg) scale(1.8); filter: hue-rotate(-20deg); }
+}

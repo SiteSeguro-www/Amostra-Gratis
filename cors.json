@@ -1,0 +1,16 @@
+{
+  "CORSRules": [
+    {
+      "AllowedOrigins": [
+        "*",
+        "https://packzinhu.online",
+        "https://www.packzinhu.online",
+        "https://packzinhu-4hozjwxx2-davids-projects-d2bd0ecd.vercel.app"
+      ],
+      "AllowedMethods": ["GET", "PUT", "POST", "DELETE", "HEAD", "OPTIONS"],
+      "AllowedHeaders": ["*"],
+      "ExposeHeaders": ["ETag"],
+      "MaxAgeSeconds": 3000
+    }
+  ]
+}

@@ -14,3 +14,30 @@
   - Barra de categorias horizontal logo abaixo do header.
   - Grid de serviços estilo miniaturas de vídeo com informações claras de vendedor e preço.
   - Tema escuro unificado (#0f0f0f).
+- **Sitemap Sempre Atualizado:** Sempre que uma nova página (rota) for criada no `App.tsx`, adicione-a imediatamente ao arquivo `/public/sitemap.xml` com a data atual e prioridade adequada.
+
+## 🔥 DIRETRIZ DE BLINDAGEM MÁXIMA PARA PRODUÇÃO 🔥
+
+**ATENÇÃO CRÍTICA: O SITE ESTÁ ONLINE COM USUÁRIOS REAIS E ATIVOS EM TEMPO REAL NESTE MOMENTO.**
+- **NENHUMA INTERRUPÇÃO TOLERADA:** Sob nenhuma circunstância uma alteração pode quebrar aplicações globais, fluxos de login, ou sistema de vendas.
+- **RREGRA DE PRESERVAÇÃO:** Antes de editar qualquer código, avalie o impacto. NÃO faça refatorações de grande escala. FAÇA EDITS CIRÚRGICOS e adiciones apenas o estritamente necessário.
+- **PREVENÇÃO DE FALHA EM CASCATA:** Nunca remova tratamentos de erro existentes, nunca remova dependências ou comentários importantes, e não sobreescreva funcionalidades que já estão em uso. Use `setDoc(..., { merge: true })` em vez de reescrever documentos inteiros. Use backups mentais da estrutura ou confira duas vezes sempre que rodar um regex ou edição em massa.
+
+## Proteção de Código e Layout Oficial (MUITO IMPORTANTE)
+
+- **SITE EM PRODUÇÃO (EXTREMO CUIDADO):** O site já está publicado e possui usuários ativos. Tenha o **máximo de cuidado** ao fazer qualquer alteração para não quebrar o site inteiro. Modifique as coisas em passos pequenos e seguros.
+- **Congelamento de Layout:** O layout de todas as páginas construídas até agora é a **versão oficial** do `packzinhu.online`. É ESTRITAMENTE PROIBIDO alterar, redesenhar ou modificar o visual, a navegação ou o CSS de arquivos já existentes, a menos que o usuário exija isso com instruções diretas e explícitas no chat.
+- **Prevenção de Bugs ("Amnésia" do Bot):** Quando sessões são reiniciadas ou o limite de cota voltar, assuma de forma absoluta que o código base e a interface já estão corretos e aprovados. **NUNCA** reescreva componentes só para "melhorar o código" internamente. Limite suas edições *cirurgicamente* apenas aos arquivos afetados por onde a nova dúvida ou problema está, não modifique lógicas que o usuário não pediu.
+- **Proteção Total de Pagamentos:** O sistema de checkout, Mercado Pago, Webhooks, liberação de saldo e configurações de banco/PIX está 100% funcional. É terminantemente PROIBIDO alterar qualquer lógica nesses módulos (especialmente no `server.ts`, `Checkout.tsx` e `config.ts`) a menos que haja um pedido explícito e direto para mudança de funcionalidade de pagamento.
+
+## MinIO Configuration (Golden State)
+A configuração abaixo é a funcional para https://packzinhu.online e o ambiente de desenvolvimento. NUNCA altere estes valores a menos que solicitado.
+
+- **Endpoint:** `https://minio.packzinhu.online`
+- **Bucket:** `packzinhu-db`
+- **Port:** `443`
+- **Use SSL:** `true`
+- **Region:** `us-east-1`
+- **Access Key:** `(definido no .env)`
+- **Secret Key:** `(definido no .env)`
+- **Force Path Style:** `true`

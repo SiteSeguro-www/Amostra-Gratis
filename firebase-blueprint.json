@@ -1,266 +1,220 @@
 {
   "entities": {
     "User": {
-      "title": "User",
-      "description": "User profile for sellers and buyers",
-      "type": "object",
-      "properties": {
-        "uid": { "type": "string" },
-        "displayName": { "type": "string" },
-        "username": { "type": "string" },
-        "email": { "type": "string" },
-        "photoURL": { "type": "string" },
-        "bio": { "type": "string" },
-        "coverURL": { "type": "string" },
-        "isSeller": { "type": "boolean" },
-        "stripeAccountId": { "type": "string" },
-        "mercadoPagoId": { "type": "string" },
-        "mercadoPagoAccessToken": { "type": "string" },
-        "mercadoPagoPublicKey": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" },
-        "followersCount": { "type": "number" },
-        "followingCount": { "type": "number" },
-        "rating": { "type": "number" },
-        "reviewCount": { "type": "number" },
-        "balance": { "type": "number" },
-        "hotCoins": { "type": "number" },
-        "fontStyle": { "type": "string" },
-        "borderStyle": { "type": "string" },
-        "backgroundStyle": { "type": "string" },
-        "lastRewardDate": { "type": "string" },
-        "badges": { "type": "array", "items": { "type": "string" } }
-      },
-      "required": ["uid", "displayName", "username", "createdAt"]
-    },
-    "Service": {
-      "title": "Service",
-      "description": "A service offered by a seller",
+      "title": "User Profile",
+      "description": "User profile data stored in both Firebase and Supabase.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "sellerId": { "type": "string" },
-        "sellerName": { "type": "string" },
-        "sellerPhoto": { "type": "string" },
+        "username": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "coverURL": { "type": "string" },
+        "bio": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "creator", "admin"] },
+        "isPremium": { "type": "boolean" },
+        "borderStyle": { "type": "string" },
+        "pix_key": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "username"]
+    },
+    "Service": {
+      "title": "Service Card",
+      "description": "Services offered by creators.",
+      "type": "object",
+      "properties": {
+        "authorId": { "type": "string" },
         "title": { "type": "string" },
         "description": { "type": "string" },
         "price": { "type": "number" },
-        "imageUrl": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" },
-        "updatedAt": { "type": "string", "format": "date-time" },
-        "rating": { "type": "number" },
-        "reviewCount": { "type": "number" }
+        "coverUrl": { "type": "string" },
+        "coverType": { "type": "string" },
+        "category": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "inactive", "pending"] },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["sellerId", "title", "price", "createdAt"]
+      "required": ["authorId", "title", "price"]
     },
     "Post": {
-      "title": "Post",
-      "description": "A post in the global feed",
+      "title": "Feed Post",
+      "description": "Content posted to the social feed.",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
         "authorId": { "type": "string" },
-        "authorName": { "type": "string" },
-        "authorPhoto": { "type": "string" },
         "content": { "type": "string" },
         "mediaUrl": { "type": "string" },
         "mediaType": { "type": "string" },
+        "type": { "type": "string", "enum": ["public", "private"] },
         "createdAt": { "type": "string", "format": "date-time" },
-        "likesCount": { "type": "number" }
+        "likesCount": { "type": "number" },
+        "commentsCount": { "type": "number" }
       },
-      "required": ["authorId", "createdAt"]
-    },
-    "Order": {
-      "title": "Order",
-      "description": "A transaction/order for a service",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string", "description": "payment_id" },
-        "product_id": { "type": "string" },
-        "buyer_email": { "type": "string" },
-        "seller_id": { "type": "string" },
-        "price": { "type": "number" },
-        "status": { "type": "string", "enum": ["pending", "paid", "accepted", "delivered", "refused", "cancelled"] },
-        "seller_amount": { "type": "number" },
-        "platform_fee": { "type": "number" },
-        "created_at": { "type": "string", "format": "date-time" },
-        "mpPaymentId": { "type": "string" }
-      },
-      "required": ["product_id", "buyer_email", "seller_id", "price", "status", "created_at"]
-    },
-    "Purchase": {
-      "title": "Purchase",
-      "description": "A purchase record for a user",
-      "type": "object",
-      "properties": {
-        "user_email": { "type": "string" },
-        "order_id": { "type": "string" },
-        "product_id": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["user_email", "order_id", "product_id"]
-    },
-    "Follow": {
-      "title": "Follow",
-      "description": "Follow relationship",
-      "type": "object",
-      "properties": {
-        "followerId": { "type": "string" },
-        "followingId": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["followerId", "followingId", "createdAt"]
+      "required": ["authorId", "content"]
     },
     "Chat": {
-      "title": "Chat",
-      "description": "Chat conversation between two users",
+      "title": "Chat Session",
+      "description": "Messaging thread between two users.",
       "type": "object",
       "properties": {
         "participants": { "type": "array", "items": { "type": "string" } },
-        "updatedAt": { "type": "string", "format": "date-time" },
-        "lastMessage": { "type": "string" }
-      },
-      "required": ["participants", "updatedAt"]
-    },
-    "Message": {
-      "title": "Message",
-      "description": "A message in a chat",
-      "type": "object",
-      "properties": {
-        "chatId": { "type": "string" },
-        "senderId": { "type": "string" },
-        "text": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["chatId", "senderId", "text", "createdAt"]
-    },
-    "Like": {
-      "title": "Like",
-      "description": "Like on a post",
-      "type": "object",
-      "properties": {
-        "postId": { "type": "string" },
-        "userId": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["postId", "userId", "createdAt"]
-    },
-    "Comment": {
-      "title": "Comment",
-      "description": "Comment on a post",
-      "type": "object",
-      "properties": {
-        "postId": { "type": "string" },
-        "authorId": { "type": "string" },
-        "authorName": { "type": "string" },
-        "authorPhoto": { "type": "string" },
-        "text": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["postId", "authorId", "text", "createdAt"]
-    },
-    "WithdrawalRequest": {
-      "title": "WithdrawalRequest",
-      "description": "A request to withdraw funds from balance",
-      "type": "object",
-      "properties": {
-        "userId": { "type": "string" },
-        "amount": { "type": "number" },
-        "status": { "type": "string", "enum": ["pending", "completed", "rejected"] },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["userId", "amount", "status", "createdAt"]
-    },
-    "Stats": {
-      "title": "Stats",
-      "description": "Global application statistics",
-      "type": "object",
-      "properties": {
-        "totalVisits": { "type": "number" }
+        "last_message": { "type": "string" },
+        "updated_at": { "type": "string", "format": "date-time" }
       }
     },
-    "UserItem": {
-      "title": "UserItem",
-      "description": "Premium items owned by a user",
+    "Message": {
+      "title": "Chat Message",
+      "description": "Individual message in a chat.",
       "type": "object",
       "properties": {
-        "userId": { "type": "string" },
-        "itemId": { "type": "string" },
-        "itemType": { "type": "string", "enum": ["font", "border", "background", "extra"] },
-        "active": { "type": "boolean" },
-        "purchasedAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["userId", "itemId", "itemType", "active", "purchasedAt"]
+        "chat_id": { "type": "string" },
+        "sender_id": { "type": "string" },
+        "text": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
     },
-    "HotCoinTransaction": {
-      "title": "HotCoinTransaction",
-      "description": "Transactions involving internal currency",
+    "Notification": {
+      "title": "Notification",
+      "description": "Alert for user activity.",
       "type": "object",
       "properties": {
-        "userId": { "type": "string" },
-        "amount": { "type": "number" },
-        "type": { "type": "string", "enum": ["purchase", "spend", "reward"] },
+        "recipient_id": { "type": "string" },
+        "sender_id": { "type": "string" },
+        "sender_name": { "type": "string" },
+        "type": { "type": "string", "enum": ["follow", "like", "comment", "message", "order"] },
+        "message": { "type": "string" },
+        "post_id": { "type": "string" },
+        "read": { "type": "boolean" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Follow": {
+      "title": "User Follow Relation",
+      "description": "Tracks who is following whom.",
+      "type": "object",
+      "properties": {
+        "follower_id": { "type": "string" },
+        "following_id": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Like": {
+      "title": "Post Like",
+      "description": "Indicates a user liked a post.",
+      "type": "object",
+      "properties": {
+        "post_id": { "type": "string" },
+        "user_id": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Comment": {
+      "title": "Post Comment",
+      "description": "Comment on a feed post.",
+      "type": "object",
+      "properties": {
+        "post_id": { "type": "string" },
+        "user_id": { "type": "string" },
+        "user_name": { "type": "string" },
+        "user_photo": { "type": "string" },
+        "text": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "SecretContent": {
+      "title": "Secret Content",
+      "description": "Locked content that must be purchased.",
+      "type": "object",
+      "properties": {
+        "authorId": { "type": "string" },
+        "title": { "type": "string" },
         "description": { "type": "string" },
+        "price": { "type": "number" },
+        "url": { "type": "string" },
+        "type": { "type": "string", "enum": ["image", "video"] },
+        "status": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["userId", "amount", "type", "createdAt"]
+      }
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Purchase transaction.",
+      "type": "object",
+      "properties": {
+        "buyer_id": { "type": "string" },
+        "seller_id": { "type": "string" },
+        "item_id": { "type": "string" },
+        "item_type": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Withdrawal": {
+      "title": "Withdrawal Request",
+      "description": "Creator withdrawal request.",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string" },
+        "pix_key": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
     }
   },
   "firestore": {
-    "/users/{userId}": {
+    "users/{userId}": {
       "schema": { "$ref": "#/entities/User" },
-      "description": "User profiles"
+      "description": "Individual user profile by UID."
     },
-    "/services/{serviceId}": {
+    "services/{serviceId}": {
       "schema": { "$ref": "#/entities/Service" },
-      "description": "Services offered by sellers"
+      "description": "Service listings."
     },
-    "/posts/{postId}": {
+    "posts/{postId}": {
       "schema": { "$ref": "#/entities/Post" },
-      "description": "Global feed posts"
+      "description": "Feed posts."
     },
-    "/orders/{orderId}": {
-      "schema": { "$ref": "#/entities/Order" },
-      "description": "Orders and transactions"
-    },
-    "/purchases/{purchaseId}": {
-      "schema": { "$ref": "#/entities/Purchase" },
-      "description": "User purchase records"
-    },
-    "/follows/{followId}": {
-      "schema": { "$ref": "#/entities/Follow" },
-      "description": "Follow relationships"
-    },
-    "/chats/{chatId}": {
+    "chats/{chatId}": {
       "schema": { "$ref": "#/entities/Chat" },
-      "description": "Chat conversations"
+      "description": "Chat metadata."
     },
-    "/messages/{messageId}": {
+    "messages/{messageId}": {
       "schema": { "$ref": "#/entities/Message" },
-      "description": "Chat messages"
+      "description": "Chat messages."
     },
-    "/likes/{likeId}": {
+    "notifications/{notifId}": {
+      "schema": { "$ref": "#/entities/Notification" },
+      "description": "User notifications."
+    },
+    "follows/{followId}": {
+      "schema": { "$ref": "#/entities/Follow" },
+      "description": "Follow relationships."
+    },
+    "likes/{likeId}": {
       "schema": { "$ref": "#/entities/Like" },
-      "description": "Post likes"
+      "description": "Likes on posts."
     },
-    "/comments/{commentId}": {
+    "comments/{commentId}": {
       "schema": { "$ref": "#/entities/Comment" },
-      "description": "Post comments"
+      "description": "Comments on posts."
     },
-    "/withdrawal_requests/{requestId}": {
-      "schema": { "$ref": "#/entities/WithdrawalRequest" },
-      "description": "User withdrawal requests"
+    "secret_contents/{contentId}": {
+      "schema": { "$ref": "#/entities/SecretContent" },
+      "description": "Purchasable secret content."
     },
-    "/stats/{statId}": {
-      "schema": { "$ref": "#/entities/Stats" },
-      "description": "Global statistics"
+    "orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Transactions."
     },
-    "/user_items/{userItemId}": {
-      "schema": { "$ref": "#/entities/UserItem" },
-      "description": "Premium items owned by users"
+    "withdrawals/{withdrawId}": {
+      "schema": { "$ref": "#/entities/Withdrawal" },
+      "description": "Withdrawal requests."
     },
-    "/hotcoin_transactions/{transactionId}": {
-      "schema": { "$ref": "#/entities/HotCoinTransaction" },
-      "description": "HotCoin transaction history"
+    "admins/{userId}": {
+      "schema": { "type": "object", "properties": { "id": { "type": "string" } } },
+      "description": "Admin list."
     }
   }
 }
