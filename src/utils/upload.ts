@@ -13,6 +13,7 @@ export async function uploadToStorage(
   if (!token) throw new Error('Não autenticado');
 
   // Request a presigned URL from our API
+  console.log('[Upload] Solicitando Presigned URL para upload DIRETO no MinIO...');
   const presignedRes = await fetch(getApiUrl('/api/presigned-url'), {
     method: 'POST',
     headers: {
@@ -59,9 +60,10 @@ export async function uploadToStorage(
     };
 
     xhr.onerror = () => {
-      reject(new Error('Erro de conexão ao fazer upload direto'));
+      reject(new Error('Erro de conexão ao fazer upload direto (Verifique o CORS e SSL do MinIO)'));
     };
 
+    console.log('[Upload] Enviando arquivo DIRETO para MinIO bypassando Vercel...');
     xhr.send(file);
   });
 }
