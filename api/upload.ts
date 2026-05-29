@@ -1,12 +1,12 @@
 import { PassThrough } from 'stream';
 import formidable from 'formidable';
 import express from 'express';
-import { minioClient, ensureBucketAndPolicy } from '../src/lib/minio-client';
+import { minioClient, ensureBucketAndPolicy } from '../src/lib/minio-client.js';
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { initializeApp, getApps, cert } from "firebase-admin/app";
 import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
-import { s3Client } from '../src/lib/s3';
+import { s3Client } from '../src/lib/s3.js';
 import fs from "fs";
 import path from "path";
 

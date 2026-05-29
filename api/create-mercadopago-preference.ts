@@ -2,7 +2,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { initializeApp, getApps, cert } from "firebase-admin/app";
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { s3Client } from "../src/lib/s3";
+import { s3Client } from '../src/lib/s3.js';
 import fs from 'fs';
 import path from 'path';
 

@@ -1,6 +1,6 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { s3Client, MINIO_BUCKET } from '../src/lib/s3';
-import * as localDb from "../src/lib/db";
+import { s3Client, MINIO_BUCKET } from '../src/lib/s3.js';
+import * as localDb from '../src/lib/db.js';
 
 
 export default async function handler(req: any, res: any) {

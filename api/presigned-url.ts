@@ -1,5 +1,5 @@
 import express from 'express';
-import { minioClient } from '../src/lib/minio-client';
+import { minioClient } from '../src/lib/minio-client.js';
 import { getAuth } from "firebase-admin/auth";
 import { initializeApp, getApps, cert } from "firebase-admin/app";
 import fs from "fs";
