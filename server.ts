@@ -874,6 +874,79 @@ async function startServer() {
   });
 
   // Mercado Pago: Create Preference
+  // MERCADOPAGO OAUTH FLOW
+  app.get('/api/auth/mercadopago/url', (req, res) => {
+    const { userId } = req.query;
+    if (!userId) return res.status(400).json({ error: 'userId is required' });
+    
+    // https://auth.mercadopago.com/authorization?client_id=APP_ID&response_type=code&platform_id=mp&state=RANDOM_ID&redirect_uri=YOUR_URL
+    const clientId = process.env.MERCADOPAGO_CLIENT_ID;
+    if (!clientId) return res.status(500).json({ error: 'MERCADOPAGO_CLIENT_ID is not configured' });
+    
+    const SITE_URL = process.env.VITE_URL || process.env.SITE_URL || 'https://packzinhu.online';
+    const redirectUri = `${SITE_URL}/callback`;
+    const authUrl = `https://auth.mercadopago.com/authorization?client_id=${clientId}&response_type=code&platform_id=mp&state=${userId}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+    
+    res.json({ url: authUrl });
+  });
+
+  app.post('/api/auth/mercadopago/exchange', async (req, res) => {
+    try {
+      const { code, userId } = req.body;
+      if (!code || !userId) return res.status(400).json({ error: 'Missing code or userId' });
+
+      // In a real app we need to exchange this code for an access token
+      // POST https://api.mercadopago.com/oauth/token
+      const clientId = process.env.MERCADOPAGO_CLIENT_ID;
+      const clientSecret = process.env.MERCADOPAGO_CLIENT_SECRET;
+      
+      const SITE_URL = process.env.VITE_URL || process.env.SITE_URL || 'https://packzinhu.online';
+      const redirectUri = `${SITE_URL}/callback`;
+
+      const response = await fetch('https://api.mercadopago.com/oauth/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_secret: clientSecret || '',
+          client_id: clientId || '',
+          grant_type: 'authorization_code',
+          code,
+          redirect_uri: redirectUri
+        })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error('MercadoPago Auth Error:', data);
+        return res.status(400).json({ error: 'Failed to authenticate with Mercado Pago', details: data });
+      }
+
+      // Save the credentials to user
+      const userRef = db.collection('users').doc(userId as string);
+      
+      const mpData = {
+        hasMercadoPago: true,
+        mercadoPagoAccessToken: data.access_token,
+        mercadoPagoRefreshToken: data.refresh_token,
+        mercadoPagoUserId: data.user_id,
+        mercadoPagoPublicKey: data.public_key,
+        mercadoPagoExpiresIn: data.expires_in,
+        updatedAt: new Date().toISOString()
+      };
+      
+      await userRef.set(mpData, { merge: true });
+      
+      const currentData = (await userRef.get()).data() || {};
+      saveToMinioDB('users', userId as string, { ...currentData, ...mpData }).catch(() => {});
+
+      return res.json({ success: true });
+    } catch (error: any) {
+      console.error('MercadoPago Exchange error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post('/api/create-mercadopago-preference', async (req, res) => {
     const { serviceId, serviceTitle, amount, sellerId, buyerId, buyerName, buyerEmail } = req.body;
 
