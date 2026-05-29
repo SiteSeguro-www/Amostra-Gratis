@@ -76,11 +76,11 @@ export default async function handler(req: any, res: any) {
 
     const { serviceId, serviceTitle, amount, sellerId, buyerId, buyerName, buyerEmail } = req.body;
 
-    if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
+    if (!process.env.MERCADOPAGO_ACCESS_TOKEN || !process.env.MERCADOPAGO_ACCESS_TOKEN.trim()) {
       return res.status(500).json({ error: 'MERCADOPAGO_ACCESS_TOKEN não configurado no servidor.' });
     }
 
-    const client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN });
+    const client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN.trim() });
     const preference = new Preference(client);
     
     // Fallback if req.headers.host isn't set perfectly

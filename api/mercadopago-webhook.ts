@@ -69,7 +69,7 @@ export default async function handler(req: any, res: any) {
       // Fetch details from MercadoPago
       const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments/${dataId}`, {
         headers: {
-          Authorization: `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}`
+          Authorization: `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN?.trim()}`
         }
       });
       

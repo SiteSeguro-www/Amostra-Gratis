@@ -23,7 +23,7 @@ import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { s3Client, MINIO_BUCKET, MINIO_ENDPOINT_RAW } from './src/lib/s3.js';
 import firebaseConfig from './firebase-applet-config.json' assert { type: 'json' };
 
-dotenv.config();
+dotenv.config({ override: true });
 
 // Readable Stream helper for MinIO proxy
 async function streamToBuffer(stream: any): Promise<Buffer> {
@@ -75,7 +75,7 @@ const adminAuth = getAuth();
 
 // Initialize Mercado Pago
 const client = new MercadoPagoConfig({
-  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || '',
+  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN ? process.env.MERCADOPAGO_ACCESS_TOKEN.trim() : '',
   options: { timeout: 5000 }
 });
 
@@ -951,11 +951,11 @@ async function startServer() {
     try {
       const { serviceId, serviceTitle, amount, sellerId, buyerId, buyerName, buyerEmail } = req.body;
 
-      if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
+      if (!process.env.MERCADOPAGO_ACCESS_TOKEN || !process.env.MERCADOPAGO_ACCESS_TOKEN.trim()) {
         return res.status(500).json({ error: 'MERCADOPAGO_ACCESS_TOKEN não configurado no servidor.' });
       }
 
-      const client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN });
+      const client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN.trim() });
       const preference = new Preference(client);
       
       const siteUrl = process.env.SITE_URL || `https://${req.get('host')}`;
@@ -1060,7 +1060,7 @@ async function startServer() {
         // Fetch payment details
         const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments/${dataId}`, {
           headers: {
-            Authorization: `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}`
+            Authorization: `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN?.trim()}`
           }
         });
         
