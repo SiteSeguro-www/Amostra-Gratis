@@ -1,5 +1,5 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { s3Client, MINIO_BUCKET } from "../src/lib/s3";
+import { s3Client, MINIO_BUCKET } from '../src/lib/s3';
 import * as localDb from "../src/lib/db";
 
 

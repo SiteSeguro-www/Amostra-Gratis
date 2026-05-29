@@ -948,13 +948,14 @@ async function startServer() {
   });
 
   app.post('/api/create-mercadopago-preference', async (req, res) => {
-    const { serviceId, serviceTitle, amount, sellerId, buyerId, buyerName, buyerEmail } = req.body;
-
-    if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
-      return res.status(500).json({ error: 'MERCADOPAGO_ACCESS_TOKEN não configurado no servidor.' });
-    }
-
     try {
+      const { serviceId, serviceTitle, amount, sellerId, buyerId, buyerName, buyerEmail } = req.body;
+
+      if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
+        return res.status(500).json({ error: 'MERCADOPAGO_ACCESS_TOKEN não configurado no servidor.' });
+      }
+
+      const client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN });
       const preference = new Preference(client);
       
       const siteUrl = process.env.SITE_URL || `https://${req.get('host')}`;

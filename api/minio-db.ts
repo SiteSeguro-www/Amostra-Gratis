@@ -1,5 +1,5 @@
 import { PutObjectCommand, GetObjectCommand, ListObjectsV2Command, CreateBucketCommand, HeadBucketCommand, PutBucketPolicyCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { s3Client, MINIO_ENDPOINT } from "../src/lib/s3";
+import { s3Client, MINIO_ENDPOINT } from '../src/lib/s3';
 
 const DB_BUCKET = process.env.MINIO_DB_BUCKET || 'packzinhu-db';
 
