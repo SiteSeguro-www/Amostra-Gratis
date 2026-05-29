@@ -983,7 +983,7 @@ async function startServer() {
             pending: `${siteUrl}/payment/success`,
           },
           auto_return: 'approved',
-          notification_url: `${siteUrl}/api/mercadopago-webhook`,
+          notification_url: `${siteUrl}/api/webhook`,
           external_reference: JSON.stringify({
             orderId,
             serviceId,
@@ -1029,7 +1029,7 @@ async function startServer() {
   });
 
   // Mercado Pago: Webhook Segura
-  app.all('/api/mercadopago-webhook', async (req: any, res: any) => {
+  app.all(['/api/mercadopago-webhook', '/api/webhook'], async (req: any, res: any) => {
     // Tratamento de OPTIONS-CORS ou Métodos de teste do MP
     if (req.method !== 'GET' && req.method !== 'POST') {
       return res.status(200).send('OK');

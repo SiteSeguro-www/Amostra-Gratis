@@ -112,7 +112,7 @@ export default async function handler(req: any, res: any) {
           pending: `${siteUrl}/payment/success`,
         },
         auto_return: 'approved',
-        notification_url: `${siteUrl}/api/mercadopago-webhook`,
+        notification_url: `${siteUrl}/api/webhook`,
         external_reference: JSON.stringify({
           orderId,
           serviceId,
