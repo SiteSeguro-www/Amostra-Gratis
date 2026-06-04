@@ -229,11 +229,15 @@ export default function Feed() {
         const likeId = `${postId}_${user.uid}`;
         try {
           await deleteDoc(doc(db, "likes", likeId));
+          deleteFromMonio('likes', likeId);
         } catch (e) {
           // Fallback delete if old likes exist without deterministic ID
           const qL = query(collection(db, "likes"), where("post_id", "==", postId), where("user_id", "==", user.uid));
           const fsL = await getDocs(qL);
-          fsL.forEach(d => deleteDoc(d.ref));
+          fsL.forEach(d => {
+            deleteDoc(d.ref);
+            deleteFromMonio('likes', d.id);
+          });
         }
 
         await updateDoc(postRef, {
@@ -296,8 +300,7 @@ export default function Feed() {
         const snapshot = await getDocs(q);
         snapshot.forEach(async (d) => {
           await deleteDoc(doc(db, "bookmarks", d.id));
-          // For delete, we don't have an easy way to delete from Minio yet via saveToMonio
-          // but we can at least try to remove it if we had an internal saveToMonio helper for delete
+          deleteFromMonio('bookmarks', d.id);
         });
       } else {
         const bookmarkData = {
@@ -379,6 +382,7 @@ export default function Feed() {
       }
 
       await deleteDoc(doc(db, "posts", postId));
+      deleteFromMonio('posts', postId);
       // Dual-delete from MinIO
       deleteFromMonio('posts', postId);
       alert("Post deletado com sucesso!");

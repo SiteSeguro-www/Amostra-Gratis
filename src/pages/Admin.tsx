@@ -407,33 +407,23 @@ const Admin = () => {
     }
   };
 
-  const handleSyncAllToMinio = async () => {
-    if (!window.confirm('Deseja sincronizar TODOS os dados (Usuários, serviços, posts, pedidos, etc) do Firebase para o MinIO? Isso garantirá uma cópia completa no storage.')) return;
+  const handleSyncSupabaseToFirebase = async () => {
+    if (!window.confirm('Tem certeza? Isso iniciará a sincronização do Supabase para o Firebase/MinIO em background.')) return;
     
-    setLoading(true);
     try {
-      const collectionsToSync = ['users', 'services', 'posts', 'banners', 'customAds', 'reviews', 'bank_accounts', 'orders'];
-      let totalSynced = 0;
-
-      for (const collName of collectionsToSync) {
-        try {
-          const snap = await getDocs(collection(db, collName));
-          for (const d of snap.docs) {
-            saveToMonio(collName, { id: d.id, ...d.data() });
-            totalSynced++;
-          }
-        } catch (e: any) {
-          console.error(`Failed at ${collName}:`, e);
-          throw new Error(`[Coleção: ${collName}] ` + e.message);
+      const token = await user?.getIdToken();
+      const response = await fetch(getApiUrl('/api/admin/sync-supabase'), {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`
         }
-      }
+      });
 
-      alert(`Sincronização concluída! ${totalSynced} documentos enviados para o MinIO.`);
-    } catch (error: any) {
-      console.error('Error syncing to MinIO:', error);
-      alert('Erro durante a sincronização: ' + error.message);
-    } finally {
-      setLoading(false);
+      if (!response.ok) throw new Error('Erro ao iniciar sync');
+      
+      alert('Sincronização iniciada com sucesso!');
+    } catch (e: any) {
+      alert('Erro ao iniciar sync: ' + e.message);
     }
   };
 
@@ -609,6 +599,15 @@ const Admin = () => {
         <div className="mb-8">
           <h1 className="text-4xl font-black text-white mb-2">Painel de Gestão</h1>
           <p className="text-gray-400">Visão geral do fluxo financeiro e operacional.</p>
+        </div>
+
+        <div className="mb-8 flex gap-4">
+          <button 
+            onClick={handleSyncSupabaseToFirebase}
+            className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-full transition-all text-sm"
+          >
+            <Database className="w-5 h-5" /> Sincronizar Supabase → Firebase
+          </button>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-8 bg-[#1C1E32] p-2 rounded-[2.5rem] border border-white/5 shadow-2xl h-fit">

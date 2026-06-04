@@ -438,11 +438,12 @@ export default function Profile() {
         const likeId = `${postId}_${user.uid}`;
         try {
           await deleteDoc(doc(db, "likes", likeId));
+          deleteFromMonio('likes', likeId);
         } catch (e) {
           // Fallback delete for old data
           const qL = query(collection(db, "likes"), where("post_id", "==", postId), where("user_id", "==", user.uid));
           const fsL = await getDocs(qL);
-          fsL.forEach(d => deleteDoc(d.ref));
+          fsL.forEach(d => { deleteDoc(d.ref); deleteFromMonio('likes', d.id); });
         }
 
         await updateDoc(postRef, {
@@ -507,6 +508,7 @@ export default function Profile() {
         const snapshot = await getDocs(q);
         snapshot.forEach(async (d) => {
           await deleteDoc(doc(db, "bookmarks", d.id));
+          deleteFromMonio('bookmarks', d.id);
         });
       } else {
         const bookmarkData = {
@@ -600,6 +602,7 @@ export default function Profile() {
       }
 
       await deleteDoc(doc(db, "posts", postId));
+      deleteFromMonio('posts', postId);
       // Dual-delete from MinIO
       deleteFromMonio('posts', postId);
       alert("Post deletado com sucesso!");
@@ -612,6 +615,7 @@ export default function Profile() {
     if (!window.confirm("Deletar comentário?")) return;
     try {
       await deleteDoc(doc(db, "comments", commentId));
+      deleteFromMonio('comments', commentId);
       // Dual-delete from MinIO
       deleteFromMonio('comments', commentId);
 
@@ -652,7 +656,10 @@ export default function Profile() {
 
       if (currentlyFollowing) {
         // Unfollow: delete from Firestore
-        fsF.forEach(d => deleteDoc(d.ref));
+        fsF.forEach(d => {
+          deleteDoc(d.ref);
+          deleteFromMonio('follows', d.id);
+        });
 
         await updateDoc(userRef, {
           followersCount: Math.max(0, currentFollowers - 1),
@@ -805,6 +812,7 @@ export default function Profile() {
     if (!window.confirm("Tem certeza que deseja deletar este serviço?")) return;
     try {
       await deleteDoc(doc(db, "services", serviceId));
+      deleteFromMonio('services', serviceId);
       alert("Serviço deletado com sucesso!");
     } catch (error) {
       console.error("Error deleting service:", error);

@@ -64,18 +64,9 @@ service cloud.firestore {
              data.text is string && data.text.size() <= 1000;
     }
 
-    function isValidLike(data) {
-      return data.keys().hasAll(['postId', 'userId']) &&
-             data.userId == request.auth.uid &&
-             data.postId is string && data.postId.size() > 0;
-    }
+    function isValidLike(data) { return (data.userId == request.auth.uid || data.user_id == request.auth.uid); }
 
-    function isValidFollow(data) {
-      return data.keys().hasAll(['followerId', 'followedId']) &&
-             data.followerId == request.auth.uid &&
-             data.followedId is string && data.followedId.size() > 0 &&
-             data.followedId != request.auth.uid;
-    }
+    function isValidFollow(data) { return (data.followerId == request.auth.uid || data.follower_id == request.auth.uid); }
 
     // -------------------------------------------------------------------------
     // SECRET CONTENTS

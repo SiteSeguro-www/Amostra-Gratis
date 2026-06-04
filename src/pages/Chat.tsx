@@ -62,6 +62,7 @@ export default function Chat() {
             last_message: ''
           };
           await setDoc(doc(db, 'chats', newFsChatId), chatData);
+          saveToMonio('chats', { id: newFsChatId, ...chatData });
           setChatId(newFsChatId);
         }
       } catch (err) {
@@ -137,7 +138,7 @@ export default function Chat() {
       };
 
       try { await addDoc(collection(db, 'messages'), messageObj); } catch(err) {}
-      
+
       // Dual-write to MinIO
       saveToMonio('messages', messageObj);
 
@@ -145,6 +146,7 @@ export default function Chat() {
       try {
         const chatRef = doc(db, 'chats', chatId);
         await updateDoc(chatRef, { updated_at: new Date().toISOString(), last_message });
+        saveToMonio('chats', { id: chatId, updated_at: new Date().toISOString(), last_message });
       } catch(err) {}
 
       // Send notification
@@ -160,7 +162,10 @@ export default function Chat() {
           read: false,
           created_at: new Date().toISOString()
         };
-        try { await addDoc(collection(db, 'notifications'), notifObj); } catch(e) {}
+        try { 
+          const notifFsRef = await addDoc(collection(db, 'notifications'), notifObj); 
+          saveToMonio('notifications', { id: notifFsRef.id, ...notifObj });
+        } catch(e) {}
       }
     } catch (error) {
       console.error("Error uploading file:", error);
@@ -189,12 +194,11 @@ export default function Chat() {
     try {
       // 1. Firestore Write
       try {
-        await addDoc(collection(db, 'messages'), messageObj);
+        const msgFsRef = await addDoc(collection(db, 'messages'), messageObj);
+        saveToMonio('messages', { id: msgFsRef.id, ...messageObj });
         await updateDoc(doc(db, 'chats', chatId), { updated_at: now, last_message: text });
+        saveToMonio('chats', { id: chatId, updated_at: now, last_message: text });
       } catch (fsErr) { console.error("Firestore message send failed:", fsErr); }
-
-      // 2. Save to Monio
-      saveToMonio('messages', messageObj);
 
       // 3. Notification
       if (otherUser && id) {
@@ -210,7 +214,10 @@ export default function Chat() {
           created_at: now
         };
 
-        try { await addDoc(collection(db, 'notifications'), notifObj); } catch(e) {}
+        try { 
+          const notifFsRef = await addDoc(collection(db, 'notifications'), notifObj); 
+          saveToMonio('notifications', { id: notifFsRef.id, ...notifObj });
+        } catch(e) {}
       }
       
       // Local optimistic update if needed, or just let the fetch handle it
