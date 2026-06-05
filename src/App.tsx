@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useEffect, Suspense, lazy } from 'react';
 import { doc, getDocFromServer } from 'firebase/firestore';
 import { db } from './firebase';
+import { requestNotificationPermission } from './utils/notifications';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -72,6 +73,17 @@ function App() {
       }
     }
     testConnection();
+
+    // Auto-request notifications on first load and every return
+    const requestNotifications = async () => {
+      // Small delay to ensure browser readiness
+      setTimeout(async () => {
+        const permission = await requestNotificationPermission();
+        console.log('Notification permission status:', permission);
+      }, 3000);
+    };
+    
+    requestNotifications();
   }, []);
 
   return (

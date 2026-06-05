@@ -14,9 +14,11 @@ import { db } from '../firebase';
 import { saveToMonio } from '../lib/monio';
 import { uploadToStorage } from '../utils/upload';
 import { CachedImage, CachedVideo } from './CachedMedia';
-import { Lock, Eye, Plus, Trash2, Image as ImageIcon, Video, X, Loader2, Play, Maximize } from 'lucide-react';
+import { Lock, Eye, Plus, Trash2, Image as ImageIcon, Video, X, Loader2, Play, Maximize, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdPlayerModal from './AdPlayerModal';
+import NotificationGateway from './NotificationGateway';
+import { isNotificationActive } from '../utils/notifications';
 import { compressImage } from '../utils/imageCompression';
 
 interface SecretContent {
@@ -39,6 +41,7 @@ export default function SecretContentSection({ userId, isOwner }: SecretContentS
   const [isAdsModalOpen, setIsAdsModalOpen] = useState(false);
   const [pendingUnlockId, setPendingUnlockId] = useState<string | null>(null);
   const [viewingContent, setViewingContent] = useState<SecretContent | null>(null);
+  const [showNotificationGateway, setShowNotificationGateway] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -135,6 +138,12 @@ export default function SecretContentSection({ userId, isOwner }: SecretContentS
   };
 
   const handleItemClick = (item: SecretContent) => {
+    // Check for notifications first
+    if (!isNotificationActive()) {
+      setShowNotificationGateway(true);
+      return;
+    }
+
     // If owner, unlock without ad
     if (isOwner) {
       setViewingContent(item);
@@ -336,6 +345,28 @@ export default function SecretContentSection({ userId, isOwner }: SecretContentS
         }}
         onComplete={handleAdComplete}
       />
+
+      {/* Notification Gateway Overlay */}
+      <AnimatePresence>
+        {showNotificationGateway && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
+          >
+            <div className="relative w-full max-w-2xl">
+              <button 
+                onClick={() => setShowNotificationGateway(false)}
+                className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors z-50"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <NotificationGateway onActivated={() => setShowNotificationGateway(false)} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

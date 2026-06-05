@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
-import { Lock, Eye, AlertTriangle, Flame, ShieldAlert, Sparkles, ChevronRight, CheckCircle2, Zap, X, Maximize } from 'lucide-react';
+import { Lock, Eye, AlertTriangle, Flame, ShieldAlert, Sparkles, ChevronRight, CheckCircle2, Zap, X, Maximize, Bell } from 'lucide-react';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import AdPlayerModal from '../components/AdPlayerModal';
+import NotificationGateway from '../components/NotificationGateway';
+import { isNotificationActive } from '../utils/notifications';
 import { getApiUrl } from '../config';
 
 export default function Exclusivos() {
@@ -16,7 +18,18 @@ export default function Exclusivos() {
   const [activePostId, setActivePostId] = useState<string | null>(null);
   const [viewingContent, setViewingContent] = useState<any | null>(null);
   const [bgImage, setBgImage] = useState<string | null>(null);
+  const [showNotificationGateway, setShowNotificationGateway] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check on mount
+    if (!isNotificationActive()) {
+      const timer = setTimeout(() => {
+        setShowNotificationGateway(true);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchBg = async () => {
@@ -56,6 +69,10 @@ export default function Exclusivos() {
   }, []);
 
   const handleUnlockRequest = (postId: string) => {
+    if (!isNotificationActive()) {
+      setShowNotificationGateway(true);
+      return;
+    }
     setActivePostId(postId);
     setAdModalOpen(true);
   };
@@ -236,6 +253,28 @@ export default function Exclusivos() {
         onClose={() => setAdModalOpen(false)}
         onComplete={handleAdComplete}
       />
+
+      {/* Notification Gateway Overlay */}
+      <AnimatePresence>
+        {showNotificationGateway && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
+          >
+            <div className="relative w-full max-w-2xl">
+              <button 
+                onClick={() => setShowNotificationGateway(false)}
+                className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors z-50"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <NotificationGateway onActivated={() => setShowNotificationGateway(false)} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
        {/* Full Screen Viewer */}
        <AnimatePresence>

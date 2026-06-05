@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { getApiUrl } from "../config";
+import { requestNotificationPermission, getNotificationPermission } from "../utils/notifications";
 import AdPlacement from './AdPlacement';
 import {
   Home,
@@ -152,6 +153,19 @@ export default function Layout() {
   const currentLang = languages.find(l => 
     l.path === location.pathname || (l.path === '/' && location.pathname === '')
   ) || languages[0];
+
+  useEffect(() => {
+    const handleFocusOrLoad = async () => {
+      if (getNotificationPermission() === 'default') {
+        const result = await requestNotificationPermission();
+        console.log('[Layout] Initial notification request:', result);
+      }
+    };
+
+    handleFocusOrLoad();
+    window.addEventListener('focus', handleFocusOrLoad);
+    return () => window.removeEventListener('focus', handleFocusOrLoad);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
