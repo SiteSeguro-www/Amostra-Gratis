@@ -114,12 +114,16 @@ export default function Checkout() {
         throw new Error("Erro no servidor ao processar o pagamento. Por favor, tente novamente mais tarde.");
       }
 
-      if (!response.ok) {
+      if (data.error) {
         let msg = data.error || 'Erro ao processar pagamento.';
         if (msg.includes('16 UNAUTHENTICATED')) {
-          msg = 'Erro de Autenticação no Firebase: Verifique se a chave FIREBASE_SERVICE_ACCOUNT foi configurada corretamente nas Settings do AI Studio.';
+          msg = 'Erro de Autenticação no Firebase: A chave FIREBASE_SERVICE_ACCOUNT está ausente ou inválida.';
         }
         throw new Error(msg);
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Erro no servidor ao processar pagamento.');
       }
 
       if (data.init_point) {

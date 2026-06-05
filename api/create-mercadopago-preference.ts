@@ -21,23 +21,29 @@ function ensureFirebase() {
     const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
     if (serviceAccount) {
       try {
-        const parsedAccount = JSON.parse(serviceAccount);
+        let parsedAccount = JSON.parse(serviceAccount);
+        if (typeof parsedAccount === 'string') parsedAccount = JSON.parse(parsedAccount);
         initializeApp({
           credential: cert(parsedAccount),
           projectId: (firebaseConfig as any).projectId,
           storageBucket: (firebaseConfig as any).storageBucket
         });
       } catch (e) {
-        initializeApp({ 
-          projectId: (firebaseConfig as any).projectId || "packzinhu",
-          storageBucket: (firebaseConfig as any).storageBucket 
-        });
+        console.error('FIREBASE_SERVICE_ACCOUNT parse error:', e);
+        try {
+          const sanitized = serviceAccount.replace(/\\n/g, '\n').replace(/^"|"$/g, '');
+          const parsed = JSON.parse(sanitized);
+          initializeApp({
+            credential: cert(parsed),
+            projectId: (firebaseConfig as any).projectId,
+            storageBucket: (firebaseConfig as any).storageBucket
+          });
+        } catch (e2) {
+          throw new Error("A chave FIREBASE_SERVICE_ACCOUNT está formatada incorretamente. Verifique as variáveis de ambiente na sua hospedagem (Vercel). Colete a chave JSON inteira sem ser em uma única linha se possível, ou verifique as aspas.");
+        }
       }
     } else {
-      initializeApp({ 
-        projectId: (firebaseConfig as any).projectId || "packzinhu",
-        storageBucket: (firebaseConfig as any).storageBucket
-      });
+      throw new Error("FIREBASE_SERVICE_ACCOUNT não está configurado nas variáveis de ambiente da hospedagem (ex: Vercel). Vá nas configurações do Vercel e adicione esta variável com o JSON do Firebase.");
     }
   }
 }
@@ -130,15 +136,15 @@ export default async function handler(req: any, res: any) {
 
     const orderData = {
       id: orderId,
-      serviceId,
-      serviceTitle,
-      amount,
-      seller_id: sellerId,
-      sellerId, 
-      buyer_id: buyerId,
-      buyerId, 
-      buyerName,
-      buyerEmail,
+      serviceId: serviceId || '',
+      serviceTitle: serviceTitle || '',
+      amount: amount || 0,
+      seller_id: sellerId || '',
+      sellerId: sellerId || '', 
+      buyer_id: buyerId || '',
+      buyerId: buyerId || '', 
+      buyerName: buyerName || 'Anônimo',
+      buyerEmail: buyerEmail || 'anonimo@example.com',
       status: 'pending',
       paymentMethod: 'mercado_pago',
       preferenceId: response.id,

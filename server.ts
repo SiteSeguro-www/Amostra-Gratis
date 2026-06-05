@@ -44,7 +44,8 @@ function initializeFirebase() {
     const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
     if (serviceAccount) {
       try {
-        const parsedAccount = JSON.parse(serviceAccount);
+        let parsedAccount = JSON.parse(serviceAccount);
+        if (typeof parsedAccount === 'string') parsedAccount = JSON.parse(parsedAccount);
         initializeApp({
           credential: cert(parsedAccount),
           projectId: firebaseConfig.projectId,
@@ -52,11 +53,23 @@ function initializeFirebase() {
         });
         console.log('Firebase Admin initialized with Service Account');
       } catch (e) {
-        console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT:', e);
-        initializeApp({
-          projectId: firebaseConfig.projectId,
-          storageBucket: firebaseConfig.storageBucket
-        });
+        console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT. Attempting fallback parse...');
+        try {
+          const sanitized = serviceAccount.replace(/\\n/g, '\n').replace(/^"|"$/g, '');
+          const parsed = JSON.parse(sanitized);
+          initializeApp({
+            credential: cert(parsed),
+            projectId: firebaseConfig.projectId,
+            storageBucket: firebaseConfig.storageBucket
+          });
+          console.log('Firebase Admin initialized with Service Account (sanitized)');
+        } catch (e2) {
+          console.error("FIREBASE_SERVICE_ACCOUNT is malformed. Admin tools will fail.", e2);
+          initializeApp({
+            projectId: firebaseConfig.projectId,
+            storageBucket: firebaseConfig.storageBucket
+          });
+        }
       }
     } else {
       console.warn('FIREBASE_SERVICE_ACCOUNT not found, using default initialization');
@@ -999,7 +1012,7 @@ async function startServer() {
             }
           ],
           payer: {
-            name: buyerName,
+            name: buyerName || 'Anônimo',
             email: buyerEmail || 'test@example.com', // Mercado Pago requires an email
           },
           back_urls: {
@@ -1027,15 +1040,15 @@ async function startServer() {
       // Optionally save order as pending here
       const orderData = {
         id: orderId,
-        serviceId,
-        serviceTitle,
-        amount,
-        seller_id: sellerId,
-        sellerId, // Compatibility
-        buyer_id: buyerId,
-        buyerId, // Compatibility
-        buyerName,
-        buyerEmail,
+        serviceId: serviceId || '',
+        serviceTitle: serviceTitle || '',
+        amount: amount || 0,
+        seller_id: sellerId || '',
+        sellerId: sellerId || '', // Compatibility
+        buyer_id: buyerId || '',
+        buyerId: buyerId || '', // Compatibility
+        buyerName: buyerName || 'Anônimo',
+        buyerEmail: buyerEmail || 'anonimo@example.com',
         status: 'pending',
         paymentMethod: 'mercado_pago',
         preferenceId: response.id,

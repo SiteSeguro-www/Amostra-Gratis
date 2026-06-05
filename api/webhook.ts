@@ -16,23 +16,29 @@ function ensureFirebase() {
     const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
     if (serviceAccount) {
       try {
-        const parsedAccount = JSON.parse(serviceAccount);
+        let parsedAccount = JSON.parse(serviceAccount);
+        if (typeof parsedAccount === 'string') parsedAccount = JSON.parse(parsedAccount);
         initializeApp({
           credential: cert(parsedAccount),
           projectId: (firebaseConfig as any).projectId,
           storageBucket: (firebaseConfig as any).storageBucket
         });
       } catch (e) {
-        initializeApp({ 
-          projectId: (firebaseConfig as any).projectId || "packzinhu",
-          storageBucket: (firebaseConfig as any).storageBucket
-        });
+        console.error('FIREBASE_SERVICE_ACCOUNT parse error:', e);
+        try {
+          const sanitized = serviceAccount.replace(/\\n/g, '\n').replace(/^"|"$/g, '');
+          const parsed = JSON.parse(sanitized);
+          initializeApp({
+            credential: cert(parsed),
+            projectId: (firebaseConfig as any).projectId,
+            storageBucket: (firebaseConfig as any).storageBucket
+          });
+        } catch (e2) {
+          throw new Error("FIREBASE_SERVICE_ACCOUNT invalid format");
+        }
       }
     } else {
-      initializeApp({ 
-        projectId: (firebaseConfig as any).projectId || "packzinhu",
-        storageBucket: (firebaseConfig as any).storageBucket
-      });
+      throw new Error("FIREBASE_SERVICE_ACCOUNT not configured");
     }
   }
 }
