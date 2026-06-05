@@ -555,6 +555,31 @@ async function startServer() {
   });
 
   // Admin: Sync global data
+  app.post('/api/admin/sync-supabase', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Não autorizado' });
+    
+    try {
+      const token = authHeader.split('Bearer ')[1];
+      await adminAuth.verifyIdToken(token);
+      
+      console.log('[AdminSync] Sync triggered for Supabase -> MinIO and Firebase');
+      
+      import('child_process').then(({ exec }) => {
+        exec('npx tsx scripts/sync-supabase-to-minio.js && npx tsx scripts/sync-supabase-db.js && npx tsx scripts/update-firebase-urls.js', (err, stdout, stderr) => {
+          if (err) console.error('Sync error:', err);
+          console.log('Sync output:', stdout);
+          if (stderr) console.error('Sync stderr:', stderr);
+        });
+      });
+      
+      res.json({ success: true, message: 'Sincronização iniciada com sucesso.' });
+    } catch (error: any) {
+      console.error('Sync auth error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post('/api/admin/sync-all-data', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Não autorizado' });

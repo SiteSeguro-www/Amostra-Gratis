@@ -24,7 +24,8 @@ if (getApps().length === 0) {
 
 const db = getFirestore(firebaseConfig.firestoreDatabaseId);
 
-const OLD_SUPABASE_DOMAIN = 'usdzlpaletfbvvhkvaki.supabase.co/storage/v1/object/public/media/';
+const OLD_SUPABASE_DOMAIN = 'https://usdzlpaletfbvvhkvaki.supabase.co/storage/v1/object/public/media/';
+const OLD_SUPABASE_HTTP = 'http://usdzlpaletfbvvhkvaki.supabase.co/storage/v1/object/public/media/';
 const OLD_CLOUDFLARE_DOMAIN = 'https://accompanied-circumstances-above-numeric.trycloudflare.com/uploads/';
 const NEW_MINIO_DOMAIN = 'https://cdn.packzinhu.online/uploads/';
 
@@ -35,12 +36,19 @@ function replaceUrls(str) {
   if (newStr.includes(OLD_CLOUDFLARE_DOMAIN)) {
     newStr = newStr.replace(OLD_CLOUDFLARE_DOMAIN, NEW_MINIO_DOMAIN);
   }
-  // Handle Supabase domain
+  // Handle Supabase domain (it includes the protocol)
   if (newStr.includes(OLD_SUPABASE_DOMAIN)) {
-    // Supabase URLs usually have the folder as the next part of the path, e.g. /media/profiles/filename.png
-    // The new domain just wants /uploads/foldername/filename.png
     newStr = newStr.replace(OLD_SUPABASE_DOMAIN, NEW_MINIO_DOMAIN);
   }
+  if (newStr.includes(OLD_SUPABASE_HTTP)) {
+    newStr = newStr.replace(OLD_SUPABASE_HTTP, NEW_MINIO_DOMAIN);
+  }
+  // also fix if someone used without protocol
+  if (newStr.includes('usdzlpaletfbvvhkvaki.supabase.co/storage/v1/object/public/media/')) {
+     newStr = newStr.replace('usdzlpaletfbvvhkvaki.supabase.co/storage/v1/object/public/media/', NEW_MINIO_DOMAIN);
+     newStr = newStr.replace('https://https://', 'https://');
+  }
+  newStr = newStr.replace('https://https://', 'https://');
   return newStr;
 }
 
@@ -89,6 +97,8 @@ async function run() {
   await fixUrlsInCollection('profiles', ['photoURL', 'coverUrl', 'avatarUrl']);
   await fixUrlsInCollection('services', ['coverUrl', 'imageUrl', 'mediaUrl']);
   await fixUrlsInCollection('posts', ['mediaUrl', 'imageUrl']);
+  await fixUrlsInCollection('secret_contents', ['url', 'mediaUrl', 'imageUrl']);
+  await fixUrlsInCollection('messages', ['mediaUrl', 'imageUrl']);
   console.log('Finalizado!');
 }
 

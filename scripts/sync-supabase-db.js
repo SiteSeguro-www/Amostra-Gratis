@@ -58,11 +58,13 @@ async function saveToMinio(collection, docId, data) {
   }
 }
 
-const client = new pg.Client('postgresql://postgres:5rAV9fwkbP02GYUo@db.usdzlpaletfbvvhkvaki.supabase.co:5432/postgres');
+const CONNECTION_STRING = process.env.SUPABASE_CONNECTION_STRING || 'postgresql://postgres:5rAV9fwkbP02GYUo@db.usdzlpaletfbvvhkvaki.supabase.co:5432/postgres';
+const client = new pg.Client(CONNECTION_STRING);
 const OLD_SUPABASE_DOMAIN = 'usdzlpaletfbvvhkvaki.supabase.co/storage/v1/object/public/media/';
-const NEW_MINIO_DOMAIN = 'minio.packzinhu.online/packzinhu-db/';
+const NEW_MINIO_DOMAIN = 'cdn.packzinhu.online/uploads/'; // Maps correctly to our new storage setup
 
 function fixDataUrls(data) {
+  if (!data) return data;
   let JSONString = JSON.stringify(data);
   if (JSONString.includes(OLD_SUPABASE_DOMAIN)) {
     JSONString = JSONString.split(OLD_SUPABASE_DOMAIN).join(NEW_MINIO_DOMAIN);
@@ -74,7 +76,13 @@ function fixDataUrls(data) {
 const tables = ['likes', 'follows', 'comments', 'chats', 'messages', 'notifications', 'profiles', 'services', 'orders'];
 
 async function syncAll() {
-  await client.connect();
+  try {
+    await client.connect();
+    console.log('Conectado ao Supabase com sucesso.');
+  } catch (err) {
+    console.error('Falha ao conectar ao Supabase:', err.message);
+    return;
+  }
   await verifyMinioBucket();
 
   for (const table of tables) {
