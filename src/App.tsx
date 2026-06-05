@@ -78,12 +78,32 @@ function App() {
     const requestNotifications = async () => {
       // Small delay to ensure browser readiness
       setTimeout(async () => {
-        const permission = await requestNotificationPermission();
-        console.log('Notification permission status:', permission);
-      }, 3000);
+        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+          try {
+             // We attempt to trigger the browser prompt. 
+             // Note: Most browsers block this without user interaction, 
+             // but we try anyway as per user "Nativo Persistente" requirement.
+             await requestNotificationPermission();
+          } catch (e) {
+            console.warn('Initial notification request ignored/blocked by browser. User gesture will be required via UI.');
+          }
+        }
+      }, 2000);
     };
     
     requestNotifications();
+
+    const handleFocus = () => {
+      // Re-request if still default when returning to the tab
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+        requestNotificationPermission().catch(() => {});
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   return (

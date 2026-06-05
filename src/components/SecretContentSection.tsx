@@ -18,7 +18,7 @@ import { Lock, Eye, Plus, Trash2, Image as ImageIcon, Video, X, Loader2, Play, M
 import { motion, AnimatePresence } from 'framer-motion';
 import AdPlayerModal from './AdPlayerModal';
 import NotificationGateway from './NotificationGateway';
-import { isNotificationActive } from '../utils/notifications';
+import { isNotificationActive, useNotificationStatus } from '../utils/notifications';
 import { compressImage } from '../utils/imageCompression';
 
 interface SecretContent {
@@ -35,6 +35,7 @@ interface SecretContentSectionProps {
 }
 
 export default function SecretContentSection({ userId, isOwner }: SecretContentSectionProps) {
+  const status = useNotificationStatus();
   const [contents, setContents] = useState<SecretContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -42,6 +43,15 @@ export default function SecretContentSection({ userId, isOwner }: SecretContentS
   const [pendingUnlockId, setPendingUnlockId] = useState<string | null>(null);
   const [viewingContent, setViewingContent] = useState<SecretContent | null>(null);
   const [showNotificationGateway, setShowNotificationGateway] = useState(false);
+
+  useEffect(() => {
+    if (status !== 'granted') {
+      // Don't automatically show here to avoid annoying profile visitors
+      // but keep it ready for handleItemClick
+    } else {
+      setShowNotificationGateway(false);
+    }
+  }, [status]);
 
   useEffect(() => {
     setLoading(true);
@@ -139,7 +149,7 @@ export default function SecretContentSection({ userId, isOwner }: SecretContentS
 
   const handleItemClick = (item: SecretContent) => {
     // Check for notifications first
-    if (!isNotificationActive()) {
+    if (status !== 'granted') {
       setShowNotificationGateway(true);
       return;
     }
@@ -353,16 +363,18 @@ export default function SecretContentSection({ userId, isOwner }: SecretContentS
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
+            className="fixed inset-0 z-[150] flex items-center justify-center bg-black/80 backdrop-blur-3xl p-4"
           >
-            <div className="relative w-full max-w-2xl">
+            <div className="relative w-full max-w-2xl px-2">
+              <NotificationGateway onActivated={() => setShowNotificationGateway(false)} />
+              
+              {/* Optional escape button for accessibility, but very subtle */}
               <button 
                 onClick={() => setShowNotificationGateway(false)}
-                className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors z-50"
+                className="mt-6 text-gray-600 text-[10px] font-black uppercase tracking-[0.2em] hover:text-white transition-colors block mx-auto underline"
               >
-                <X className="w-6 h-6" />
+                Continuar sem notificações (Não recomendado)
               </button>
-              <NotificationGateway onActivated={() => setShowNotificationGateway(false)} />
             </div>
           </motion.div>
         )}

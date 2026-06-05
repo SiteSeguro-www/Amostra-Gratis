@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { Bell, Lock, ShieldCheck, ChevronRight, AlertCircle, X } from 'lucide-react';
+import { Bell, Lock, ShieldCheck, ChevronRight, AlertCircle, X, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { requestNotificationPermission, getNotificationPermission } from '../utils/notifications';
+import { requestNotificationPermission, getNotificationPermission, useNotificationStatus } from '../utils/notifications';
 
 interface NotificationGatewayProps {
   onActivated?: () => void;
@@ -10,27 +10,27 @@ interface NotificationGatewayProps {
 }
 
 export default function NotificationGateway({ onActivated, showAlways = false }: NotificationGatewayProps) {
-  const [permission, setPermission] = useState(getNotificationPermission());
+  const status = useNotificationStatus();
   const [isVisible, setIsVisible] = useState(false);
 
-  useEffect(() => {
-    // Check permission on mount and set visibility
-    const currentPermission = getNotificationPermission();
-    setPermission(currentPermission);
-    
-    if (currentPermission !== 'granted' || showAlways) {
-      setIsVisible(true);
-    }
-  }, [showAlways]);
+  const [requesting, setRequesting] = useState(false);
 
-  const handleActivate = async () => {
-    const result = await requestNotificationPermission();
-    setPermission(result);
-    if (result === 'granted') {
+  useEffect(() => {
+    if (status !== 'granted' || showAlways) {
+      setIsVisible(true);
+    } else {
       setIsVisible(false);
       onActivated?.();
-    } else if (result === 'denied') {
-      alert('Você bloqueou as notificações. Para ver o conteúdo, você precisa permitir as notificações nas configurações do seu navegador.');
+    }
+  }, [status, showAlways, onActivated]);
+
+  const handleActivate = async () => {
+    setRequesting(true);
+    const result = await requestNotificationPermission();
+    setRequesting(false);
+    
+    if (result === 'granted') {
+      onActivated?.();
     }
   };
 
@@ -76,11 +76,20 @@ export default function NotificationGateway({ onActivated, showAlways = false }:
 
       <button
         onClick={handleActivate}
-        className="group relative w-full h-16 bg-gradient-to-r from-purple-600 via-fuchsia-600 to-purple-600 bg-[length:200%_auto] hover:bg-[100%_center] p-[1px] rounded-2xl transition-all duration-500 active:scale-95 shadow-xl shadow-purple-500/20"
+        disabled={requesting}
+        className="group relative w-full h-16 bg-gradient-to-r from-purple-600 via-fuchsia-600 to-purple-600 bg-[length:200%_auto] hover:bg-[100%_center] p-[1px] rounded-2xl transition-all duration-500 active:scale-95 shadow-xl shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <div className="w-full h-full bg-[#0f0f0f] group-hover:bg-transparent rounded-2xl flex items-center justify-center transition-all duration-500">
           <span className="text-white text-lg font-black uppercase italic tracking-tighter flex items-center gap-3">
-            Ativar Notificações do Navegador <ChevronRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+            {requesting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" /> Verificando...
+              </>
+            ) : (
+              <>
+                Ativar Notificações do Navegador <ChevronRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+              </>
+            )}
           </span>
         </div>
       </button>
@@ -89,7 +98,7 @@ export default function NotificationGateway({ onActivated, showAlways = false }:
         Ambiente Seguro & Protegido
       </p>
       
-      {permission === 'denied' && (
+      {status === 'denied' && (
         <div className="mt-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-start gap-3 animate-bounce">
           <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
           <p className="text-[11px] text-red-400 font-bold text-left leading-relaxed lowercase tracking-tight">

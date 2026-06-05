@@ -7,10 +7,11 @@ import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import AdPlayerModal from '../components/AdPlayerModal';
 import NotificationGateway from '../components/NotificationGateway';
-import { isNotificationActive } from '../utils/notifications';
+import { isNotificationActive, useNotificationStatus } from '../utils/notifications';
 import { getApiUrl } from '../config';
 
 export default function Exclusivos() {
+  const status = useNotificationStatus();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [unlockedPosts, setUnlockedPosts] = useState<string[]>([]);
@@ -22,14 +23,13 @@ export default function Exclusivos() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check on mount
-    if (!isNotificationActive()) {
-      const timer = setTimeout(() => {
-        setShowNotificationGateway(true);
-      }, 2000);
-      return () => clearTimeout(timer);
+    // Immediate check on mount and status change
+    if (status !== 'granted') {
+      setShowNotificationGateway(true);
+    } else {
+      setShowNotificationGateway(false);
     }
-  }, []);
+  }, [status]);
 
   useEffect(() => {
     const fetchBg = async () => {
@@ -261,16 +261,18 @@ export default function Exclusivos() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
+            className="fixed inset-0 z-[150] flex items-center justify-center bg-black/80 backdrop-blur-3xl p-4"
           >
-            <div className="relative w-full max-w-2xl">
+            <div className="relative w-full max-w-2xl px-2">
+              <NotificationGateway onActivated={() => setShowNotificationGateway(false)} />
+              
+              {/* Optional escape button for accessibility, but very subtle */}
               <button 
                 onClick={() => setShowNotificationGateway(false)}
-                className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors z-50"
+                className="mt-6 text-gray-600 text-[10px] font-black uppercase tracking-[0.2em] hover:text-white transition-colors block mx-auto underline"
               >
-                <X className="w-6 h-6" />
+                Continuar sem notificações (Não recomendado)
               </button>
-              <NotificationGateway onActivated={() => setShowNotificationGateway(false)} />
             </div>
           </motion.div>
         )}

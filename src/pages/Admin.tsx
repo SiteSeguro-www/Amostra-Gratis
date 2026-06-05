@@ -490,6 +490,27 @@ const Admin = () => {
     }
   };
 
+  const handleSyncAllToMinio = async () => {
+    if (!window.confirm('Sincronizar todos os dados do Firestore para o MinIO? Isso garantirá o backup redundante.')) return;
+    setLoading(true);
+    try {
+      // Sync Users
+      for (const u of users) {
+        await saveToMonio('users', u);
+      }
+      // Sync Services
+      for (const s of allServices) {
+        await saveToMonio('services', s);
+      }
+      alert('Sincronização global para MinIO concluída!');
+    } catch (err: any) {
+      console.error(err);
+      alert('Erro na sincronização: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDeleteService = async (serviceId: string) => {
     if (!window.confirm('Tem certeza que deseja deletar este serviço permanentemente?')) return;
     try {
