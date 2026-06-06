@@ -593,6 +593,39 @@ async function startServer() {
     }
   });
 
+  app.post('/api/admin/sync-all-to-minio', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Não autorizado' });
+    
+    try {
+        const token = authHeader.split('Bearer ')[1];
+        await adminAuth.verifyIdToken(token);
+        
+        console.log('[AdminSync] Total sync triggered...');
+        
+        // Asynchronous processing (non-blocking)
+        (async () => {
+            try {
+                const collections = await db.listCollections();
+                for (const col of collections) {
+                  const docs = await col.listDocuments();
+                  for (const docRef of docs) {
+                     const doc = await docRef.get();
+                     await saveToMinioDB(col.id, doc.id, doc.data());
+                  }
+                }
+                console.log('[AdminSync] Total sync finished.');
+            } catch(e) {
+                console.error('[AdminSync] Error:', e);
+            }
+        })();
+
+        res.json({ success: true, message: 'Sincronização Total iniciada em segundo plano.' });
+    } catch (e: any) {
+        res.status(500).json({ error: e.message });
+    }
+  });
+
   app.post('/api/admin/sync-all-data', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Não autorizado' });
