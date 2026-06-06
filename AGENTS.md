@@ -41,3 +41,9 @@ A configuração abaixo é a funcional para https://packzinhu.online e o ambient
 - **Access Key:** `(definido no .env)`
 - **Secret Key:** `(definido no .env)`
 - **Force Path Style:** `true`
+
+## Ambientes e Domínio Próprio (Prioridade Total)
+
+Tudo que for desenvolvido, ajustado ou configurado pelo agente **DEVE REFLETIR E FUNCIONAR PERFEITAMENTE NO DOMÍNIO PRINCIPAL `https://packzinhu.online/`**.
+- O domínio principal é a prioridade absoluta. O ambiente de desenvolvimento (`https://ais-dev...`) serve apenas para originarmos e validarmos as mudanças, mas o código não pode ter amarras (ex: URLs hardcoded) que quebrem na produção oficial.
+- Sempre que for necessário o uso de domínios ou URLs em configs (como webhooks, endpoints ou callbacks), o agente deve focar na compatibilidade para `https://packzinhu.online`.
