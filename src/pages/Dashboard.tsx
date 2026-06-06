@@ -1112,11 +1112,11 @@ export default function Dashboard() {
                         <div className="mt-4 flex flex-wrap justify-center md:justify-start gap-4">
                           <div className="flex flex-col">
                             <span className="text-[10px] text-gray-600 uppercase font-black tracking-widest">Valor</span>
-                            <span className="text-white font-black">R$ {sale.amount?.toFixed(2)}</span>
+                            <span className="text-white font-black">R$ {typeof sale.amount === 'number' ? sale.amount.toFixed(2) : '0.00'}</span>
                           </div>
                           <div className="flex flex-col">
                             <span className="text-[10px] text-gray-600 uppercase font-black tracking-widest">Seu Ganho</span>
-                            <span className="text-green-400 font-black">R$ {(sale.seller_amount || sale.amount * 0.95).toFixed(2)}</span>
+                            <span className="text-green-400 font-black">R$ {typeof (sale.seller_amount || (sale.amount * 0.95)) === 'number' ? (sale.seller_amount || sale.amount * 0.95).toFixed(2) : '0.00'}</span>
                           </div>
                           <div className="flex flex-col">
                             <span className="text-[10px] text-gray-600 uppercase font-black tracking-widest">Data</span>
