@@ -681,12 +681,9 @@ async function startServer() {
     if (!authHeader) return res.status(401).json({ error: 'Unauthorized' });
 
     try {
-      // In a real app, verify Firebase ID Token here
-      // const decodedToken = await admin.auth().verifyIdToken(token);
-      // const userId = decodedToken.uid;
-      
-      const { userId } = req.body || {}; // For demo/simplicity, we'll use body if token verification is skipped
-      // Let's assume we get userId from a verified source
+      const token = authHeader.split(' ')[1];
+      const decodedToken = await getAuth().verifyIdToken(token);
+      const userId = decodedToken.uid;
       
       const userRef = db.collection('users').doc(userId);
       const userSnap = await userRef.get();
@@ -1279,6 +1276,50 @@ async function startServer() {
   });
 
   // Change order status manually (Dashboard)
+  app.post('/api/admin/resolve-dispute', async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Não autorizado' });
+      const token = authHeader.split('Bearer ')[1];
+      await adminAuth.verifyIdToken(token);
+
+      const { orderId, resolution } = req.body;
+      if (!orderId || !resolution) return res.status(400).json({ error: 'Faltam parâmetros' });
+
+      const orderRef = db.collection('orders').doc(orderId);
+      const orderSnap = await orderRef.get();
+      if (!orderSnap.exists) return res.status(404).json({ error: 'Pedido não encontrado' });
+
+      const orderData = orderSnap.data()!;
+      if (orderData.status !== 'disputed') return res.status(400).json({ error: 'Pedido não está em disputa' });
+
+      if (resolution === 'release') {
+        const amount = Number(orderData.amount);
+        const sellerNetAmount = amount * 0.95;
+        const sellerRef = db.collection('users').doc(orderData.sellerId);
+
+        await db.runTransaction(async (t) => {
+          const sellerDoc = await t.get(sellerRef);
+          const sellerData = sellerDoc.data() || {};
+          const currentBalance = Number(sellerData.balance || 0);
+          
+          t.update(sellerRef, { balance: currentBalance + sellerNetAmount });
+          t.update(orderRef, { status: 'delivered', resolvedAt: new Date().toISOString() });
+        });
+        
+        saveToMinioDB('orders', orderId, { ...orderData, status: 'delivered' }).catch(() => {});
+      } else if (resolution === 'refund') {
+        await orderRef.update({ status: 'refunded', resolvedAt: new Date().toISOString() });
+        saveToMinioDB('orders', orderId, { ...orderData, status: 'refunded' }).catch(() => {});
+      }
+
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('Error resolving dispute:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post('/api/orders/:orderId/status', async (req, res) => {
     try {
       const authHeader = req.headers.authorization;

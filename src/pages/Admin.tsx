@@ -610,7 +610,9 @@ const Admin = () => {
     return matchesStatus && matchesSearch;
   });
 
-  const totalFaturado = sales.reduce((acc, curr) => acc + Number(curr.amount), 0);
+  const validStatusForFaturamento = ['paid', 'accepted', 'completed_by_seller', 'delivered', 'completed', 'disputed'];
+  const totalFaturado = sales.filter(s => validStatusForFaturamento.includes(s.status)).reduce((acc, curr) => acc + Number(curr.amount), 0);
+  const vendasPendentes = sales.filter(s => s.status === 'pending').reduce((acc, curr) => acc + Number(curr.amount), 0);
   const totalAPagar = withdrawals.filter(w => w.status === 'pending').reduce((acc, curr) => acc + Number(curr.amount), 0);
   const lucroPlataforma = totalFaturado * 0.05;
 
@@ -808,9 +810,10 @@ const Admin = () => {
           </div>
         ) : activeTab === 'dashboard' ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
               {[
                 { title: 'Total Faturado', value: `R$ ${totalFaturado.toFixed(2)}`, icon: TrendingUp, color: 'text-purple-500', bg: 'bg-purple-500/20' },
+                { title: 'Vendas Pendentes', value: `R$ ${vendasPendentes.toFixed(2)}`, icon: Clock, color: 'text-blue-500', bg: 'bg-blue-500/20' },
                 { title: 'Total a Pagar', value: `R$ ${totalAPagar.toFixed(2)}`, icon: Clock, color: 'text-yellow-500', bg: 'bg-yellow-500/20' },
                 { title: 'Lucro Plataforma', value: `R$ ${lucroPlataforma.toFixed(2)}`, icon: DollarSign, color: 'text-green-500', bg: 'bg-green-500/20' },
               ].map((stat, i) => (

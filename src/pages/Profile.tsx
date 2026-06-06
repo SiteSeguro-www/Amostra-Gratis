@@ -420,12 +420,26 @@ export default function Profile() {
     }
   };
 
+  const [doubleTapAnimationId, setDoubleTapAnimationId] = useState<string | null>(null);
+
+  const handleDoubleTap = (postId: string, authorId: string, currentLikes: number) => {
+    if (!user) return;
+    setDoubleTapAnimationId(postId);
+    setTimeout(() => setDoubleTapAnimationId(null), 1000);
+    handleLike(postId, currentLikes, authorId, true);
+  };
+
   const handleLike = async (
     postId: string,
     currentLikes: number,
     authorId: string,
+    forceLike = false
   ) => {
     if (!user) return alert("Faça login para curtir.");
+    
+    const isLiked = userLikes.includes(postId);
+    if (forceLike && isLiked) return; // Already liked, just the visual animation triggered above
+
     if (processingLikesRef.current.has(postId)) return;
     
     processingLikesRef.current.add(postId);
@@ -433,9 +447,8 @@ export default function Profile() {
 
     try {
       const postRef = doc(db, "posts", postId);
-      const isLiked = userLikes.includes(postId);
 
-      if (isLiked) {
+      if (isLiked && !forceLike) {
         // FS Backup unlike using deterministic ID
         const likeId = `${postId}_${user.uid}`;
         try {
@@ -1355,7 +1368,10 @@ export default function Profile() {
                       ) : null}
 
                       {post?.mediaUrl && (
-                        <div className="w-full max-h-[500px] bg-black/20 flex items-center justify-center overflow-hidden">
+                        <div 
+                          className="w-full max-h-[500px] bg-black/20 flex items-center justify-center overflow-hidden relative"
+                          onDoubleClick={() => handleDoubleTap(post.id, post.authorId, post.likesCount || 0)}
+                        >
                           {post?.mediaType === "video" ? (
                             <video
                               src={post.mediaUrl}
@@ -1366,8 +1382,15 @@ export default function Profile() {
                             <img
                               src={post.mediaUrl}
                               alt="Post media"
-                              className="max-w-full max-h-[500px] object-contain"
+                              className="max-w-full max-h-[500px] object-contain cursor-pointer"
                             />
+                          )}
+
+                          {/* Heart Animation Overlay */}
+                          {doubleTapAnimationId === post.id && (
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                              <Heart className="w-24 h-24 text-white fill-white drop-shadow-2xl animate-ping opacity-80" />
+                            </div>
                           )}
                         </div>
                       )}
