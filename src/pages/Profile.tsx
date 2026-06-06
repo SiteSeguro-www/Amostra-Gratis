@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import {
   doc,
@@ -101,6 +101,7 @@ export default function Profile() {
   const [editingPostContent, setEditingPostContent] = useState("");
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState("");
+  const processingLikesRef = useRef<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<"services" | "feed" | "reviews" | "secret">(
     "feed",
   );
@@ -425,8 +426,9 @@ export default function Profile() {
     authorId: string,
   ) => {
     if (!user) return alert("Faça login para curtir.");
-    if (isLikeLoading[postId]) return;
-
+    if (processingLikesRef.current.has(postId)) return;
+    
+    processingLikesRef.current.add(postId);
     setIsLikeLoading((prev) => ({ ...prev, [postId]: true }));
 
     try {
@@ -489,6 +491,7 @@ export default function Profile() {
       console.error("Error toggling like:", error);
       alert("Erro ao processar curtida.");
     } finally {
+      processingLikesRef.current.delete(postId);
       setIsLikeLoading((prev) => ({ ...prev, [postId]: false }));
     }
   };

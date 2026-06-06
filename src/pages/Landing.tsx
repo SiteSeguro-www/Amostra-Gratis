@@ -127,9 +127,9 @@ export default function Landing() {
                 loading="lazy"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 bg-gray-900"
               />
-              <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-6">
-                <h3 className="text-white font-bold text-lg md:text-2xl [text-shadow:_0_2px_4px_rgb(0_0_0_/_80%)]">{cat.title}</h3>
-                <span className="text-purple-400 text-xs md:text-sm font-semibold mt-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 [text-shadow:_0_1px_2px_rgb(0_0_0_/_80%)]">Explorar &rarr;</span>
+              <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-6 bg-gradient-to-t from-black/80 via-black/20 to-transparent">
+                <h3 className="text-white font-bold text-lg md:text-2xl [text-shadow:_0_2px_4px_rgb(0_0_0_/_80%),_0_0_15px_rgba(255,0,0,0.8)]">{cat.title}</h3>
+                <span className="text-red-400 text-xs md:text-sm font-semibold mt-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 [text-shadow:_0_1px_2px_rgb(0_0_0_/_80%)]">Explorar &rarr;</span>
               </div>
             </div>
           ))}
