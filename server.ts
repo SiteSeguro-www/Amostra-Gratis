@@ -1056,6 +1056,43 @@ async function startServer() {
       await db.collection('orders').doc(orderId).set(orderData);
       saveToMinioDB('orders', orderId, orderData).catch(() => {});
 
+      if (sellerId && buyerId) {
+        try {
+          const sellerNotif = {
+            recipient_id: sellerId,
+            sender_id: 'system',
+            type: 'sale_pending',
+            message: `Visite seu chat! Um cliente iniciou a compra de "${serviceTitle}" e pagará em instantes.`,
+            read: false,
+            created_at: new Date().toISOString()
+          };
+          const notifRef = await db.collection('notifications').add(sellerNotif);
+          saveToMinioDB('notifications', notifRef.id, sellerNotif).catch(() => {});
+
+          const chatId = [buyerId, sellerId].sort().join('_');
+          await db.collection('chats').doc(chatId).collection('messages').add({
+            senderId: buyerId,
+            text: `🛒 Olá! Acabei de iniciar a compra do serviço "${serviceTitle}". Estou finalizando o pagamento.`,
+            timestamp: new Date().toISOString()
+          });
+
+          await db.collection('chats').doc(chatId).collection('messages').add({
+            senderId: sellerId,
+            text: `Olá! Vi que você iniciou o pedido de "${serviceTitle}". Assim que o pagamento for aprovado, eu serei notificado e entregarei no prazo! 💜`,
+            timestamp: new Date(Date.now() + 1000).toISOString()
+          });
+
+          await db.collection('chats').doc(chatId).set({
+            participants: [buyerId, sellerId],
+            lastMessage: `Aguardando a confirmação do pagamento do pedido...`,
+            lastMessageTime: new Date(Date.now() + 1000).toISOString(),
+            id: chatId
+          }, { merge: true });
+        } catch (e) {
+          console.error("Error sending pending order notifications/chats: ", e);
+        }
+      }
+
       res.json({ init_point: response.init_point, id: response.id });
     } catch (error: any) {
       console.error('Mercado Pago Error:', error);
@@ -1195,8 +1232,23 @@ async function startServer() {
               const bNotifRef = await db.collection('notifications').add(buyerNotif);
               saveToMinioDB('notifications', bNotifRef.id, buyerNotif).catch(() => {});
             }
+
+            // Msg no chat confirmando pagamento pro vendedor e cobrando iniciar!
+            const chatId = [externalReference.buyerId, externalReference.sellerId].sort().join('_');
+            await db.collection('chats').doc(chatId).collection('messages').add({
+              senderId: 'system',
+              text: `✅ Pagamento de R$ ${externalReference.amount} aprovado para o pedido... O vendedor já pode iniciar o serviço!`,
+              timestamp: new Date().toISOString()
+            });
+
+            await db.collection('chats').doc(chatId).set({
+              participants: [externalReference.buyerId, externalReference.sellerId],
+              lastMessage: `✅ Pagamento aprovado! O serviço será iniciado.`,
+              lastMessageTime: new Date().toISOString(),
+              id: chatId
+            }, { merge: true });
           } catch (e) {
-            console.error('[Webhook] Failed to send emails:', e);
+            console.error('[Webhook] Failed to send emails/notifications:', e);
           }
         }
       }

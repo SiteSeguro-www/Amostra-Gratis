@@ -90,12 +90,13 @@ export default function Dashboard() {
     });
 
     // Listen for user's orders (sales) in real-time
-    // Since some old orders might use sellerId and others seller_id, we can listen to both if needed, 
-    // but for now let's prioritize consistency.
-    const qSalesInternalId = query(collection(db, 'orders'), where('sellerId', '==', user.uid));
-    const qSalesExternalId = query(collection(db, 'orders'), where('seller_id', '==', user.uid));
+    const qSalesSellerId = query(collection(db, 'orders'), where('sellerId', '==', user.uid));
+    const qSalesSeller_id = query(collection(db, 'orders'), where('seller_id', '==', user.uid));
+    const qSalesSellerUid = query(collection(db, 'orders'), where('sellerUid', '==', user.uid));
+    const qSalesSeller_uid = query(collection(db, 'orders'), where('seller_uid', '==', user.uid));
     
     const updateSales = (snap: any) => {
+      console.log(`Debug: Received ${snap.docs.length} orders for seller ${user.uid}`);
       const data = snap.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
       setSales(prev => {
         const combined = [...prev];
@@ -115,8 +116,10 @@ export default function Dashboard() {
       });
     };
 
-    const unsubSales1 = onSnapshot(qSalesInternalId, updateSales);
-    const unsubSales2 = onSnapshot(qSalesExternalId, updateSales);
+    const unsubSales1 = onSnapshot(qSalesSellerId, updateSales);
+    const unsubSales2 = onSnapshot(qSalesSeller_id, updateSales);
+    const unsubSales3 = onSnapshot(qSalesSellerUid, updateSales);
+    const unsubSales4 = onSnapshot(qSalesSeller_uid, updateSales);
 
     // Listen for user's purchases (orders where user is buyer) in real-time
     const qPurchasesInternalId = query(collection(db, 'orders'), where('buyerId', '==', user.uid));
@@ -210,6 +213,8 @@ export default function Dashboard() {
       unsubServices();
       unsubSales1();
       unsubSales2();
+      unsubSales3();
+      unsubSales4();
       unsubPurchases1();
       unsubPurchases2();
       unsubPurchases3();
@@ -985,14 +990,24 @@ export default function Dashboard() {
                     </div>
                     
                     <button 
-                      onClick={() => {
-                        if ('Notification' in window && Notification.permission === 'granted') {
+                      onClick={async () => {
+                        if (!('Notification' in window)) {
+                          alert('Seu navegador não suporta notificações.');
+                          return;
+                        }
+                        
+                        let permission = Notification.permission;
+                        if (permission !== 'granted') {
+                          permission = await Notification.requestPermission();
+                        }
+
+                        if (permission === 'granted') {
                           new Notification("PackZinhu - Teste", { 
                             body: "Este é um alerta da sua central de notificações real!",
                             icon: "/favicon.ico"
                           });
                         } else {
-                          alert('Ative as notificações do navegador primeiro!');
+                          alert('As notificações foram bloqueadas. Você precisa permitir nas configurações de site do navegador.');
                         }
                       }}
                       className="w-full py-5 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-black rounded-3xl transition-all shadow-2xl uppercase tracking-widest text-xs flex items-center justify-center gap-3"
@@ -1117,7 +1132,7 @@ export default function Dashboard() {
                           {sale.status === 'delivered' ? 'Entregue' : sale.status === 'completed' ? 'Concluído' : 'Pendente'}
                         </span>
                         <Link 
-                          to={`/orders/${sale.id}`}
+                          to={`/chat/${sale.buyerId || sale.buyer_id}`}
                           className="px-6 py-2 bg-white/5 hover:bg-white/10 text-white text-[10px] font-black rounded-xl border border-white/10 transition-all uppercase"
                         >
                           Detalhes
@@ -1168,7 +1183,7 @@ export default function Dashboard() {
                       </div>
                       <div className="flex gap-2">
                         <Link 
-                          to={`/orders/${purchase.id}`}
+                          to={purchase.status === 'pending' ? `/checkout/${purchase.serviceId || purchase.service_id}` : `/chat/${purchase.sellerId || purchase.seller_id}`}
                           className="px-6 py-4 bg-purple-600 hover:bg-purple-500 text-white text-xs font-black rounded-2xl transition-all shadow-xl shadow-purple-600/20 uppercase"
                         >
                           Acessar Conteúdo

@@ -59,9 +59,7 @@ service cloud.firestore {
     }
 
     function isValidComment(data) {
-      return data.keys().hasAll(['postId', 'userId', 'text']) &&
-             data.userId == request.auth.uid &&
-             data.text is string && data.text.size() <= 1000;
+      return data.post_id is string && data.author_id is string && data.text is string;
     }
 
     function isValidLike(data) { return (data.userId == request.auth.uid || data.user_id == request.auth.uid); }
@@ -86,7 +84,7 @@ service cloud.firestore {
       allow create: if isOwner(userId) && isValidUser(incoming());
       allow update: if (isOwner(userId) || isAdmin()) && (
         isAdmin() || 
-        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'bio', 'username', 'links', 'mercadoPagoId', 'balance', 'totalRating', 'reviewCount', 'rating'])
+        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'coverURL', 'bio', 'username', 'links', 'mercadoPagoId', 'balance', 'totalRating', 'reviewCount', 'rating', 'followersCount', 'followingCount'])
       );
       allow delete: if isAdmin();
     }
@@ -198,7 +196,7 @@ service cloud.firestore {
     match /follows/{id} {
       allow read: if true;
       allow create: if isSignedIn() && isValidFollow(incoming());
-      allow delete: if isSignedIn() && (isAdmin() || resource.data.followerId == request.auth.uid);
+      allow delete: if isSignedIn() && (isAdmin() || resource.data.follower_id == request.auth.uid);
     }
 
     match /followers/{id} {

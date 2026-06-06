@@ -360,7 +360,7 @@ export default function Feed() {
       };
 
       const docRef = await addDoc(collection(db, "comments"), commentObj);
-      saveToMonio('comments', { id: docRef.id, ...commentObj });
+      // saveToMonio('comments', { id: docRef.id, ...commentObj });
 
       // Update comments count in Firestore
       const postRef = doc(db, "posts", postId);
@@ -375,9 +375,9 @@ export default function Feed() {
           "comentou no seu post",
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding comment:", error);
-      alert("Erro ao enviar comentário. Tente novamente.");
+      alert(`Erro ao enviar comentário: ${error.message || 'Erro desconhecido'}`);
     } finally {
       setIsCommentLoading(false);
     }

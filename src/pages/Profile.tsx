@@ -661,14 +661,8 @@ export default function Profile() {
       const fsF = await getDocs(qF);
       const currentlyFollowing = !fsF.empty;
 
-      // Fetch current counts to prevent negatives
       const userRef = doc(db, "users", id);
       const currentUserRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
-      const currentUserSnap = await getDoc(currentUserRef);
-
-      const currentFollowers = userSnap.data()?.followersCount || 0;
-      const currentFollowingCount = currentUserSnap.data()?.followingCount || 0;
 
       if (currentlyFollowing) {
         // Unfollow: delete from Firestore
@@ -678,10 +672,10 @@ export default function Profile() {
         });
 
         await updateDoc(userRef, {
-          followersCount: Math.max(0, currentFollowers - 1),
+          followersCount: increment(-1),
         });
         await updateDoc(currentUserRef, {
-          followingCount: Math.max(0, currentFollowingCount - 1),
+          followingCount: increment(-1),
         });
 
         // Sync to Local Backup
@@ -691,52 +685,44 @@ export default function Profile() {
         setFollowId(null);
       } else {
         // Follow in Firestore
-        let success = false;
-        let newFollowId = '';
+        const followObj = {
+          follower_id: user.uid,
+          following_id: id,
+          created_at: new Date().toISOString()
+        };
+        const docRef = await addDoc(collection(db, "follows"), followObj);
+        saveToMonio('follows', { id: docRef.id, ...followObj });
         
+        await updateDoc(userRef, { followersCount: increment(1) });
+        await updateDoc(currentUserRef, {
+          followingCount: increment(1),
+        });
+
+        // Sync to Local Backup
+        await syncToLocalBackup('follow', { id: docRef.id, followerId: user.uid, followingId: id });
+
+        createNotification(id, "follow", user.uid, "começou a te seguir");
+        setIsFollowing(true);
+        setFollowId(docRef.id);
+
+        // Email Notification for New Follower
         try {
-          const followObj = {
-            follower_id: user.uid,
-            following_id: id,
-            created_at: new Date().toISOString()
-          };
-          const docRef = await addDoc(collection(db, "follows"), followObj);
-          saveToMonio('follows', { id: docRef.id, ...followObj });
-          success = true;
-          newFollowId = docRef.id;
-        } catch (err) { console.error(err) }
-
-        if (success) {
-          await updateDoc(userRef, { followersCount: currentFollowers + 1 });
-          await updateDoc(currentUserRef, {
-            followingCount: currentFollowingCount + 1,
+          const idToken = await user.getIdToken();
+          fetch(getApiUrl("/api/notify-follow"), {
+            method: "POST",
+            headers: { 
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${idToken}`
+            },
+            body: JSON.stringify({ followerId: user.uid, followedId: id }),
           });
-
-          // Sync to Local Backup
-          await syncToLocalBackup('follow', { id: newFollowId, followerId: user.uid, followingId: id });
-
-          createNotification(id, "follow", user.uid, "começou a te seguir");
-          setIsFollowing(true);
-          setFollowId(newFollowId);
-
-          // Email Notification for New Follower
-          try {
-            const idToken = await user.getIdToken();
-            fetch(getApiUrl("/api/notify-follow"), {
-              method: "POST",
-              headers: { 
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${idToken}`
-              },
-              body: JSON.stringify({ followerId: user.uid, followedId: id }),
-            });
-          } catch (e) {
-            console.error("Failed to send follow email notify:", e);
-          }
+        } catch (e) {
+          console.error("Failed to send follow email notify:", e);
         }
       }
     } catch (error) {
       console.error("Error toggling follow:", error);
+      alert("Erro ao processar seguimento.");
     } finally {
       setIsFollowLoading(false);
     }
