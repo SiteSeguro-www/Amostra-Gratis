@@ -1066,6 +1066,33 @@ const Admin = () => {
                   >
                     <Database className="w-4 h-4" /> Sincronizar Tudo (Global)
                   </button>
+                  <button 
+                    onClick={async () => {
+                      setLoading(true);
+                      try {
+                        const token = await user?.getIdToken();
+                        const response = await fetch(getApiUrl('/api/admin/fix-follower-counts'), {
+                          method: 'POST',
+                          headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (!response.ok) {
+                          const text = await response.text();
+                          try {
+                            const err = JSON.parse(text);
+                            throw new Error(err.error || response.statusText);
+                          } catch (e) {
+                            throw new Error(text || response.statusText);
+                          }
+                        }
+                        const data = await response.json();
+                        alert(data.message || data.success ? 'Contagens corrigidas com sucesso.' : 'Erro desconhecido');
+                      } catch (e: any) { alert('Erro: ' + e.message); }
+                      finally { setLoading(false); }
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 bg-teal-600 hover:bg-teal-700 rounded-xl text-xs font-bold transition-colors shadow-lg shadow-teal-500/20"
+                  >
+                    <RefreshCcw className="w-4 h-4" /> Corrigir Seguidores
+                  </button>
                 </div>
               </div>
             </div>
