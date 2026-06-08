@@ -665,18 +665,28 @@ export default function Profile() {
       const currentUserRef = doc(db, "users", user.uid);
 
       if (currentlyFollowing) {
-        // Unfollow: delete from Firestore
-        fsF.forEach(d => {
-          deleteDoc(d.ref);
-          deleteFromMonio('follows', d.id);
-        });
+        // Unfollow: call API
+        try {
+          const idToken = await user.getIdToken();
+          const response = await fetch(getApiUrl("/api/toggle-follow"), {
+            method: "POST",
+            headers: { 
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${idToken}`
+            },
+            body: JSON.stringify({ followingId: id, action: 'unfollow' }),
+          });
 
-        await updateDoc(userRef, {
-          followersCount: increment(-1),
-        });
-        await updateDoc(currentUserRef, {
-          followingCount: increment(-1),
-        });
+          if (!response.ok) throw new Error("Failed to unfollow");
+          const data = await response.json();
+          
+          if (data.newFollowersCount !== undefined) {
+              setProfile((prev: any) => prev ? { ...prev, followersCount: data.newFollowersCount } : prev);
+          }
+        } catch (err) {
+            console.error(err);
+            throw new Error("Erro ao deixar de seguir");
+        }
 
         // Sync to Local Backup
         await syncToLocalBackup('unfollow', { followerId: user.uid, followingId: id });
@@ -685,25 +695,38 @@ export default function Profile() {
         setFollowId(null);
       } else {
         // Follow in Firestore
-        const followObj = {
-          follower_id: user.uid,
-          following_id: id,
-          created_at: new Date().toISOString()
-        };
-        const docRef = await addDoc(collection(db, "follows"), followObj);
-        saveToMonio('follows', { id: docRef.id, ...followObj });
-        
-        await updateDoc(userRef, { followersCount: increment(1) });
-        await updateDoc(currentUserRef, {
-          followingCount: increment(1),
-        });
+        let docId = '';
+        try {
+          const idToken = await user.getIdToken();
+          const response = await fetch(getApiUrl("/api/toggle-follow"), {
+            method: "POST",
+            headers: { 
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${idToken}`
+            },
+            body: JSON.stringify({ followingId: id, action: 'follow' }),
+          });
+          
+          if (!response.ok) throw new Error("Failed to follow");
+          const data = await response.json();
+          docId = data.followId;
+
+          // Update UI immediately (optimistic update fallback)
+          if (data.newFollowersCount !== undefined) {
+              setProfile((prev: any) => prev ? { ...prev, followersCount: data.newFollowersCount } : prev);
+          }
+
+        } catch (err) {
+            console.error(err);
+            throw new Error("Erro ao seguir");
+        }
 
         // Sync to Local Backup
-        await syncToLocalBackup('follow', { id: docRef.id, followerId: user.uid, followingId: id });
+        await syncToLocalBackup('follow', { id: docId, followerId: user.uid, followingId: id });
 
         createNotification(id, "follow", user.uid, "começou a te seguir");
         setIsFollowing(true);
-        setFollowId(docRef.id);
+        setFollowId(docId);
 
         // Email Notification for New Follower
         try {

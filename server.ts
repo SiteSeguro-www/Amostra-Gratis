@@ -593,6 +593,128 @@ async function startServer() {
     }
   });
 
+  app.post('/api/admin/fix-follower-counts', async (req, res) => {
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Não autorizado' });
+      
+      try {
+          const token = authHeader.split('Bearer ')[1];
+          const decodedToken = await adminAuth.verifyIdToken(token);
+          
+          // Only allow admin to run this
+          if (decodedToken.email !== 'dweminem@gmail.com' && decodedToken.email !== 'contato.packzinhu@gmail.com') {
+              return res.status(403).json({ error: 'Proibido' });
+          }
+          
+          console.log('[AdminFix] Fixing follower counts...');
+          
+          const users = await db.collection('users').get();
+          
+          for (const userDoc of users.docs) {
+              const userId = userDoc.id;
+              
+              const followersSnap = await db.collection('follows').where('following_id', '==', userId).get();
+              const followingSnap = await db.collection('follows').where('follower_id', '==', userId).get();
+              
+              await userDoc.ref.update({
+                  followersCount: followersSnap.size,
+                  followingCount: followingSnap.size
+              });
+          }
+          
+          console.log('[AdminFix] Follower counts fixed.');
+          res.json({ success: true, message: 'Contagens de seguidores corrigidas.' });
+      } catch (e: any) {
+          console.error('[AdminFix] Error:', e);
+          res.status(500).json({ error: e.message });
+      }
+    });
+
+  app.post('/api/toggle-follow', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Não autorizado' });
+    
+    try {
+        const token = authHeader.split('Bearer ')[1];
+        const decodedToken = await adminAuth.verifyIdToken(token);
+        const followerId = decodedToken.uid;
+        const { followingId, action } = req.body; // action: 'follow' | 'unfollow'
+
+        console.log(`[FollowInfo] Follower ${followerId} ${action}ing ${followingId}`);
+
+        if (!followingId || !action) return res.status(400).json({ error: 'Dados incompletos' });
+
+        const followRef = db.collection('follows');
+        const userRef = db.collection('users').doc(followingId);
+        const currentUserRef = db.collection('users').doc(followerId);
+
+        if (action === 'follow') {
+            const followObj = {
+                follower_id: followerId,
+                following_id: followingId,
+                created_at: new Date().toISOString()
+            };
+            const docRef = await followRef.add(followObj);
+            
+            let newFollowersCount = 0;
+            await db.runTransaction(async (t) => {
+                const userDoc = await t.get(userRef);
+                const currentUserDoc = await t.get(currentUserRef);
+                
+                const currentFollowers = Number(userDoc.data()?.followersCount) || 0;
+                const currentFollowing = Number(currentUserDoc.data()?.followingCount) || 0;
+                
+                newFollowersCount = currentFollowers + 1;
+                console.log(`[FollowInfo] Transaction: User ${followingId} followers: ${currentFollowers} (after: ${newFollowersCount})`);
+
+                t.set(userRef, { followersCount: newFollowersCount }, { merge: true });
+                t.set(currentUserRef, { followingCount: currentFollowing + 1 }, { merge: true });
+            });
+            
+            try {
+                const updatedDoc = await userRef.get();
+                await saveToMinioDB('users', followingId, updatedDoc.data());
+            } catch(e) { console.error('Failed to sync follow to minio', e); }
+            
+            res.json({ success: true, followId: docRef.id, newFollowersCount });
+        } else {
+            // Unfollow logic
+            const q = followRef.where('follower_id', '==', followerId).where('following_id', '==', followingId);
+            const snaps = await q.get();
+            
+            if (snaps.empty) return res.json({ success: true }); // Already unfollowed
+            
+            for (const doc of snaps.docs) {
+                await doc.ref.delete();
+            }
+            
+            let newFollowersCount = 0;
+            await db.runTransaction(async (t) => {
+                const userDoc = await t.get(userRef);
+                const currentUserDoc = await t.get(currentUserRef);
+                
+                const currentFollowers = Number(userDoc.data()?.followersCount) || 0;
+                const currentFollowing = Number(currentUserDoc.data()?.followingCount) || 0;
+
+                newFollowersCount = Math.max(0, currentFollowers - 1);
+                t.set(userRef, { followersCount: newFollowersCount }, { merge: true });
+                t.set(currentUserRef, { followingCount: Math.max(0, currentFollowing - 1) }, { merge: true });
+            });
+            
+            try {
+                const updatedDoc = await userRef.get();
+                await saveToMinioDB('users', followingId, updatedDoc.data());
+            } catch(e) { console.error('Failed to sync unfollow to minio', e); }
+            
+            res.json({ success: true, newFollowersCount });
+        }
+
+    } catch (e: any) {
+        console.error("Follow error:", e);
+        res.status(500).json({ error: e.message });
+    }
+  });
+
   app.post('/api/admin/sync-all-to-minio', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Não autorizado' });
