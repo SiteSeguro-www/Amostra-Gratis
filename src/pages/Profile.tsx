@@ -114,6 +114,10 @@ export default function Profile() {
 
     const fetchStats = async () => {
       try {
+        if (!user || (user.uid !== id && user.email !== 'dweminem@gmail.com' && user.email !== 'contato.packzinhu@gmail.com')) {
+          return;
+        }
+
         const q = query(
           collection(db, "orders"),
           where("seller_id", "==", id),
@@ -677,15 +681,18 @@ export default function Profile() {
             body: JSON.stringify({ followingId: id, action: 'unfollow' }),
           });
 
-          if (!response.ok) throw new Error("Failed to unfollow");
+          if (!response.ok) {
+            const errData = await response.text();
+            throw new Error(`Failed to unfollow: ${response.status} ${errData}`);
+          }
           const data = await response.json();
           
           if (data.newFollowersCount !== undefined) {
               setProfile((prev: any) => prev ? { ...prev, followersCount: data.newFollowersCount } : prev);
           }
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            throw new Error("Erro ao deixar de seguir");
+            throw new Error(err.message || "Erro ao deixar de seguir");
         }
 
         // Sync to Local Backup
@@ -707,7 +714,10 @@ export default function Profile() {
             body: JSON.stringify({ followingId: id, action: 'follow' }),
           });
           
-          if (!response.ok) throw new Error("Failed to follow");
+          if (!response.ok) {
+            const errData = await response.text();
+            throw new Error(`Failed to follow: ${response.status} ${errData}`);
+          }
           const data = await response.json();
           docId = data.followId;
 
@@ -716,9 +726,9 @@ export default function Profile() {
               setProfile((prev: any) => prev ? { ...prev, followersCount: data.newFollowersCount } : prev);
           }
 
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            throw new Error("Erro ao seguir");
+            throw new Error(err.message || "Erro ao seguir");
         }
 
         // Sync to Local Backup
@@ -743,9 +753,9 @@ export default function Profile() {
           console.error("Failed to send follow email notify:", e);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error toggling follow:", error);
-      alert("Erro ao processar seguimento.");
+      alert(`Erro ao processar seguimento: ${error.message}`);
     } finally {
       setIsFollowLoading(false);
     }

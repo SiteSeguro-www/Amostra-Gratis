@@ -630,6 +630,35 @@ async function startServer() {
       }
     });
 
+  app.get('/api/test-t-follow', async (req, res) => {
+    try {
+        const followerId = 'TEST_FOLLOWER';
+        const followingId = 'TEST_FOLLOWING';
+        
+        const followRef = db.collection('follows');
+        const userRef = db.collection('users').doc(followingId);
+        const currentUserRef = db.collection('users').doc(followerId);
+
+        let newFollowersCount = 0;
+        await db.runTransaction(async (t) => {
+            const userDoc = await t.get(userRef);
+            const currentUserDoc = await t.get(currentUserRef);
+            
+            const currentFollowers = Number(userDoc.data()?.followersCount) || 0;
+            const currentFollowing = Number(currentUserDoc.data()?.followingCount) || 0;
+            
+            newFollowersCount = currentFollowers + 1;
+            console.log(`[TestFollowInfo] Transaction: User ${followingId} followers: ${currentFollowers} (after: ${newFollowersCount})`);
+
+            t.set(userRef, { followersCount: newFollowersCount }, { merge: true });
+            t.set(currentUserRef, { followingCount: currentFollowing + 1 }, { merge: true });
+        });
+        res.json({ success: true, newFollowersCount });
+    } catch (e: any) {
+        res.status(500).json({ error: e.message, stack: e.stack });
+    }
+  });
+
   app.post('/api/toggle-follow', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Não autorizado' });
