@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, CheckCircle2, Shield, Lock } from 'lucide-react';
+import { X, CheckCircle2, Shield, Lock, SkipForward } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface AdPlayerModalProps {
@@ -164,7 +164,7 @@ export default function AdPlayerModal({ isOpen, onClose, onComplete }: AdPlayerM
           </div>
 
            {/* Ad Content */}
-          <div className="w-full bg-[#050505] flex-1 flex flex-col items-center relative overflow-hidden">
+          <div className="w-full bg-[#050505] flex-1 flex flex-col items-center relative overflow-hidden min-h-[400px] md:min-h-[500px]">
             {/* ExoClick Video Background/Player */}
             {videoUrl && (
               <div 
@@ -174,9 +174,8 @@ export default function AdPlayerModal({ isOpen, onClose, onComplete }: AdPlayerM
                 <video 
                   src={videoUrl} 
                   autoPlay 
-                  muted 
                   loop 
-                  className="w-full h-full object-cover opacity-60"
+                  className="w-full h-full object-contain bg-black"
                   playsInline
                 />
               </div>
@@ -184,32 +183,22 @@ export default function AdPlayerModal({ isOpen, onClose, onComplete }: AdPlayerM
             
              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent z-10 pointer-events-none" />
 
-             <div className="z-20 w-full p-8 md:p-12 flex flex-col items-center justify-center min-h-[400px]">
-               <div className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-[0_0_50px_rgba(168,85,247,0.1)] mb-6">
-                  <Shield className="w-6 h-6 text-purple-500/80" />
-               </div>
-               
-               <div className="space-y-4 px-6 max-w-md mx-auto text-center w-full">
+             <div className="absolute bottom-6 right-0 z-30 pointer-events-none">
                   {!canUnlock ? (
-                    <div className="bg-black/60 backdrop-blur-md p-6 rounded-3xl border border-white/10 shadow-2xl">
-                      <div className="text-2xl font-black text-white tracking-widest uppercase animate-pulse mb-3">
-                        Desbloqueando em {timer}s
+                    <div className="bg-black/80 backdrop-blur-sm px-4 py-3 rounded-l border border-r-0 border-white/10 pointer-events-auto">
+                      <div className="text-white text-sm font-medium">
+                        O vídeo será liberado em <span className="font-bold tracking-widest">{timer}s</span>
                       </div>
-                      <p className="text-[10px] md:text-xs text-gray-400 uppercase tracking-[0.2em] font-bold leading-relaxed">
-                        Aguarde a verificação. Selecione ou assista ao anúncio para ajudar a manter os conteúdos secretos ativos.
-                      </p>
                     </div>
                   ) : (
                     <button 
                       onClick={onComplete}
-                      className="group relative w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-2xl font-black text-sm md:text-base uppercase tracking-[0.2em] transition-all shadow-[0_0_40px_rgba(168,85,247,0.4)] hover:scale-105 active:scale-95 flex items-center justify-center gap-3 mx-auto"
+                      className="group relative px-6 py-3 bg-black/80 hover:bg-black/90 backdrop-blur-sm text-white rounded-l border border-r-0 border-white/10 font-bold text-sm tracking-wider uppercase transition-colors pointer-events-auto flex items-center gap-2"
                     >
-                      <Lock className="w-5 h-5 group-hover:hidden" />
-                      <CheckCircle2 className="w-5 h-5 hidden group-hover:block transition-transform" />
-                      <span>Liberar Acesso Agora</span>
+                      <span>Pular anúncio</span>
+                      <SkipForward className="w-5 h-5 fill-current" />
                     </button>
                   )}
-               </div>
              </div>
              
              {/* Ad Tag Badge */}
