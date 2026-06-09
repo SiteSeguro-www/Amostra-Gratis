@@ -65,9 +65,12 @@ const AdsterraMobile = () => {
 };
 
 export default function AdPlayerModal({ isOpen, onClose, onComplete }: AdPlayerModalProps) {
-  const [timer, setTimer] = useState(5);
+  const [timer, setTimer] = useState(10);
   const [canUnlock, setCanUnlock] = useState(false);
   const [isDesktop, setIsDesktop] = useState(typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
+  
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [clickUrl, setClickUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= 768);
@@ -76,8 +79,41 @@ export default function AdPlayerModal({ isOpen, onClose, onComplete }: AdPlayerM
   }, []);
 
   useEffect(() => {
+    if (isOpen) {
+      // Fetch ExoClick Video Ad
+      const fetchVast = async () => {
+        try {
+          const response = await fetch('https://s.magsrv.com/v1/vast.php?idz=5946478');
+          const xml = await response.text();
+          
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(xml, "application/xml");
+          
+          const mediaFile = doc.querySelector('MediaFile')?.textContent;
+          const clickThrough = doc.querySelector('ClickThrough')?.textContent;
+          const impressions = Array.from(doc.querySelectorAll('Impression')).map(imp => imp.textContent);
+
+          if (mediaFile) {
+            setVideoUrl(mediaFile.trim());
+            impressions.forEach(url => {
+              if (url) {
+                const img = new Image();
+                img.src = url.trim();
+              }
+            });
+          }
+          if (clickThrough) setClickUrl(clickThrough.trim());
+        } catch (err) {
+          console.error("Error loading ExoClick Video Ad:", err);
+        }
+      };
+      fetchVast();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     if (!isOpen) {
-      setTimer(5);
+      setTimer(10);
       setCanUnlock(false);
       return;
     }
@@ -127,47 +163,60 @@ export default function AdPlayerModal({ isOpen, onClose, onComplete }: AdPlayerM
             )}
           </div>
 
-          {/* Ad Content */}
-          <div className="w-full bg-black flex-1 flex flex-col items-center justify-center relative min-h-[400px] py-12 px-4 shadow-inner">
-             {/* Desktop Banner 728x90 */}
-             <div className="hidden md:flex flex-col items-center justify-center w-full max-w-[728px] min-h-[90px] bg-white/5 rounded-xl border border-white/10 overflow-hidden mb-8 relative">
-                <div className="absolute inset-0 flex items-center justify-center -z-10 bg-[#0a0a0f]">
-                  <span className="text-[10px] text-white/10 font-black tracking-widest uppercase">Publicidade</span>
-                </div>
-                {isDesktop && <AdsterraDesktop />}
-             </div>
+           {/* Ad Content */}
+          <div className="w-full bg-[#050505] flex-1 flex flex-col items-center relative overflow-hidden">
+            {/* ExoClick Video Background/Player */}
+            {videoUrl && (
+              <div 
+                className="absolute inset-0 z-0 cursor-pointer"
+                onClick={() => clickUrl && window.open(clickUrl, '_blank')}
+              >
+                <video 
+                  src={videoUrl} 
+                  autoPlay 
+                  muted 
+                  loop 
+                  className="w-full h-full object-cover opacity-60"
+                  playsInline
+                />
+              </div>
+            )}
+            
+             <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent z-10 pointer-events-none" />
 
-             {/* Mobile Banner 300x250 */}
-             <div className="flex md:hidden flex-col items-center justify-center w-full max-w-[300px] min-h-[250px] bg-white/5 rounded-xl border border-white/10 overflow-hidden mb-8 relative">
-               <div className="absolute inset-0 flex items-center justify-center -z-10 bg-[#0a0a0f]">
-                  <span className="text-[10px] text-white/10 font-black tracking-widest uppercase">Publicidade</span>
+             <div className="z-20 w-full p-8 md:p-12 flex flex-col items-center justify-center min-h-[400px]">
+               <div className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-[0_0_50px_rgba(168,85,247,0.1)] mb-6">
+                  <Shield className="w-6 h-6 text-purple-500/80" />
                </div>
-               {!isDesktop && <AdsterraMobile />}
-             </div>
-
-             <div className="w-20 h-20 rounded-full bg-purple-500/10 flex items-center justify-center border border-purple-500/20 shadow-[0_0_50px_rgba(168,85,247,0.1)] mb-6">
-                <Shield className="w-8 h-8 text-purple-500/60" />
+               
+               <div className="space-y-4 px-6 max-w-md mx-auto text-center w-full">
+                  {!canUnlock ? (
+                    <div className="bg-black/60 backdrop-blur-md p-6 rounded-3xl border border-white/10 shadow-2xl">
+                      <div className="text-2xl font-black text-white tracking-widest uppercase animate-pulse mb-3">
+                        Desbloqueando em {timer}s
+                      </div>
+                      <p className="text-[10px] md:text-xs text-gray-400 uppercase tracking-[0.2em] font-bold leading-relaxed">
+                        Aguarde a verificação. Selecione ou assista ao anúncio para ajudar a manter os conteúdos secretos ativos.
+                      </p>
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={onComplete}
+                      className="group relative w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-2xl font-black text-sm md:text-base uppercase tracking-[0.2em] transition-all shadow-[0_0_40px_rgba(168,85,247,0.4)] hover:scale-105 active:scale-95 flex items-center justify-center gap-3 mx-auto"
+                    >
+                      <Lock className="w-5 h-5 group-hover:hidden" />
+                      <CheckCircle2 className="w-5 h-5 hidden group-hover:block transition-transform" />
+                      <span>Liberar Acesso Agora</span>
+                    </button>
+                  )}
+               </div>
              </div>
              
-             <div className="space-y-4 px-6 max-w-md mx-auto text-center">
-                {!canUnlock ? (
-                  <>
-                    <div className="text-2xl font-black text-white tracking-widest uppercase animate-pulse">
-                      Desbloqueando em {timer}s
-                    </div>
-                    <p className="text-[10px] md:text-xs text-gray-500 uppercase tracking-[0.2em] font-medium leading-relaxed">
-                      Aguarde a verificação para liberar o conteúdo secreto. Seu apoio ajuda a manter nossos conteúdos exclusivos.
-                    </p>
-                  </>
-                ) : (
-                  <button 
-                    onClick={onComplete}
-                    className="group relative px-10 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-2xl font-black text-sm md:text-base uppercase tracking-[0.2em] transition-all shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:scale-105 active:scale-95 flex items-center gap-3 mx-auto"
-                  >
-                    <span>ACESSAR CONTEÚDO</span>
-                    <CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  </button>
-                )}
+             {/* Ad Tag Badge */}
+             <div className="absolute top-4 right-4 z-30 pointer-events-none">
+                <div className="bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full text-[10px] font-black text-white/50 uppercase tracking-widest">
+                   Publicidade
+                </div>
              </div>
           </div>
 
