@@ -1,11 +1,46 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Smartphone, Monitor, ShieldCheck, Download, CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+// Interface customizada para o evento beforeinstallprompt
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
 export default function DownloadApp() {
-  const handleDownload = () => {
-    // In a real scenario, this would link to an actual APK or PWA install trigger
-    alert('Iniciando download seguro do instalador PackZinhu...');
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      // Impede o Chrome de exibir o mini-infobar padrão na tela inicial
+      e.preventDefault();
+      // Salva o evento para ser acionado posteriormente pelo botão
+      setInstallPrompt(e as BeforeInstallPromptEvent);
+    };
+
+    window.addEventListener('beforeinstallprompt', handler);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+    };
+  }, []);
+
+  const handleDownload = async () => {
+    if (installPrompt) {
+      // Mostra o prompt de instalação nativo
+      installPrompt.prompt();
+      // Aguarda a resposta do usuário
+      const { outcome } = await installPrompt.userChoice;
+      if (outcome === 'accepted') {
+        // Se aceito, não precisamos mais do prompt armazenado neste estado
+        setInstallPrompt(null);
+      }
+    }
   };
 
   return (

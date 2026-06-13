@@ -26,7 +26,10 @@ import {
   Mail,
   Send,
   Play,
-  Bell
+  Bell,
+  User,
+  CreditCard,
+  X
 } from 'lucide-react';
 import BannersAdmin from '../components/BannersAdmin';
 import AdsAdmin from '../components/AdsAdmin';
@@ -78,6 +81,35 @@ const Admin = () => {
   const [newEmail, setNewEmail] = useState({ to: '', subject: '', body: '' });
   const [carouselDurationConfig, setCarouselDurationConfig] = useState(6);
   const [isSavingCarouselDuration, setIsSavingCarouselDuration] = useState(false);
+  const [selectedUserDetail, setSelectedUserDetail] = useState<any | null>(null);
+  const [isUserDetailLoading, setIsUserDetailLoading] = useState(false);
+
+  const openUserDetails = async (userId: string, userObj: any) => {
+    setIsUserDetailLoading(true);
+    setSelectedUserDetail({ user: userObj, bankDetails: null, boughtCount: 0, soldCount: 0, totalBought: 0, totalSold: 0 });
+    try {
+        const bankSnap = await getDoc(doc(db, 'bank_accounts', userId));
+        const bankDetails = bankSnap.exists() ? bankSnap.data() : null;
+
+        const boughtSales = sales.filter(s => s.buyer_email === userObj.email);
+        const soldSales = sales.filter(s => s.seller_id === userId);
+
+        const totalBought = boughtSales.reduce((acc, sale) => acc + (Number(sale.amount) || 0), 0);
+        const totalSold = soldSales.reduce((acc, sale) => acc + (Number(sale.amount) || 0), 0);
+
+        setSelectedUserDetail({
+            user: userObj,
+            bankDetails,
+            boughtCount: boughtSales.length,
+            soldCount: soldSales.length,
+            totalBought,
+            totalSold
+        });
+    } catch(e) {
+      console.error(e);
+    }
+    setIsUserDetailLoading(false);
+  };
 
   const handleSaveCarouselDuration = async () => {
     try {
@@ -1150,12 +1182,19 @@ const Admin = () => {
         ) : (
           <div className="bg-[#1C1E32] rounded-2xl border border-white/5 overflow-hidden shadow-xl">
             <div className="p-6 border-b border-white/5 flex justify-between items-center flex-col sm:flex-row gap-4">
-              <h2 className="text-xl font-bold text-white">Gestão de Usuários</h2>
+              <div className="flex flex-col gap-2">
+                <h2 className="text-xl font-bold text-white">Gestão de Usuários</h2>
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <Users className="w-4 h-4" />
+                  Total de Usuários: <span className="font-bold text-white">{users.length}</span>
+                </div>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-[#131524] text-gray-400 text-xs uppercase">
                   <tr>
+                    <th className="p-4">Cadastrado em</th>
                     <th className="p-4">Nome</th>
                     <th className="p-4">Email</th>
                     <th className="p-4">Saldo</th>
@@ -1165,11 +1204,16 @@ const Admin = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {users.map((user) => (
+                  {users.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()).map((user) => (
                     <tr key={user.id} className="hover:bg-white/5">
+                      <td className="p-4 text-gray-300 text-sm">
+                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute:'2-digit' }) : '-'}
+                      </td>
                       <td className="p-4 text-white font-medium">
                         <div className="flex items-center gap-2">
-                          {user.displayName}
+                          <button onClick={() => openUserDetails(user.id, user)} className="hover:underline hover:text-purple-400 text-left transition-colors font-bold">
+                             {user.displayName}
+                          </button>
                           {(user.isVerified || user.role === 'admin' || user.email === 'dweminem@gmail.com' || user.email === 'contato.packzinhu@gmail.com') && (
                             <img src="/selo.png" alt="Verificado" className="w-5 h-5" referrerPolicy="no-referrer" />
                           )}
@@ -1223,6 +1267,85 @@ const Admin = () => {
           </div>
         )}
       </div>
+
+      {/* Modal User Details */}
+      {selectedUserDetail && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-[#1C1E32] rounded-3xl border border-white/10 w-full max-w-3xl p-6 relative shadow-2xl flex flex-col gap-6">
+            <button 
+              onClick={() => setSelectedUserDetail(null)}
+              className="absolute top-6 right-6 p-2 text-gray-400 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-2xl font-black text-white uppercase tracking-tight">Detalhes do Usuário</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               {/* Left Column - User Info */}
+               <div className="space-y-6">
+                  <div className="bg-[#131524] p-5 rounded-2xl border border-white/5 space-y-4">
+                     <h3 className="text-lg font-bold text-white flex items-center gap-2"><User className="w-5 h-5 text-purple-500" /> Perfil e Básico</h3>
+                     <div className="flex items-center gap-3">
+                       <img src={selectedUserDetail.user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedUserDetail.user.uid || 'user'}`} className="w-16 h-16 rounded-full bg-white/10 object-cover" />
+                       <div>
+                          <div className="font-bold text-white text-lg">{selectedUserDetail.user.displayName}</div>
+                          <div className="text-sm text-gray-400">{selectedUserDetail.user.email}</div>
+                       </div>
+                     </div>
+                     <div className="text-sm">
+                       <span className="text-gray-500">Saldo:</span> <span className="font-bold text-green-400">{selectedUserDetail.user.hotCoins || 0} HC</span>
+                     </div>
+                  </div>
+
+                  <div className="bg-[#131524] p-5 rounded-2xl border border-white/5 space-y-3">
+                     <h3 className="text-lg font-bold text-white flex items-center gap-2"><CreditCard className="w-5 h-5 text-purple-500" /> Dados Pessoais / Conta</h3>
+                     {selectedUserDetail.bankDetails ? (
+                       <div className="space-y-2 text-sm">
+                         <p><span className="text-gray-500 font-bold">Nome PIX:</span> <span className="text-white">{selectedUserDetail.bankDetails.accountName || '-'}</span></p>
+                         <p><span className="text-gray-500 font-bold">CPF:</span> <span className="text-white">{selectedUserDetail.bankDetails.cpf || '-'}</span></p>
+                         <p><span className="text-gray-500 font-bold">RG/CNH:</span> <span className="text-white">{selectedUserDetail.bankDetails.rgCnh || '-'}</span></p>
+                         <p><span className="text-gray-500 font-bold">Chave PIX:</span> <span className="text-white">{selectedUserDetail.bankDetails.pixKey || '-'}</span></p>
+                         <div className="border-t border-white/5 my-2 pt-2">
+                            <p><span className="text-gray-500 font-bold">Banco:</span> <span className="text-white">{selectedUserDetail.bankDetails.bankName || '-'}</span></p>
+                            <p><span className="text-gray-500 font-bold">Agência/Conta:</span> <span className="text-white">{selectedUserDetail.bankDetails.agencyAccount || '-'}</span></p>
+                         </div>
+                       </div>
+                     ) : (
+                       <div className="text-sm text-gray-400 italic">Usuário ainda não preencheu os dados.</div>
+                     )}
+                  </div>
+               </div>
+
+               {/* Right Column - Stats */}
+               <div className="space-y-6">
+                 <div className="grid grid-cols-2 gap-4">
+                     <div className="bg-[#131524] p-5 rounded-2xl border border-white/5 flex flex-col items-center text-center justify-center gap-2">
+                        <ShoppingCart className="w-6 h-6 text-blue-400" />
+                        <div className="text-2xl font-black text-white">{selectedUserDetail.boughtCount}</div>
+                        <div className="text-xs text-gray-400 font-bold uppercase">Compras</div>
+                     </div>
+                     <div className="bg-[#131524] p-5 rounded-2xl border border-white/5 flex flex-col items-center text-center justify-center gap-2">
+                        <TrendingUp className="w-6 h-6 text-green-400" />
+                        <div className="text-2xl font-black text-white">{selectedUserDetail.soldCount}</div>
+                        <div className="text-xs text-gray-400 font-bold uppercase">Vendas</div>
+                     </div>
+                     <div className="bg-[#131524] p-5 rounded-2xl border border-white/5 flex flex-col items-center text-center justify-center gap-2">
+                        <DollarSign className="w-6 h-6 text-blue-400" />
+                        <div className="text-xl font-black text-white">R$ {selectedUserDetail.totalBought.toFixed(2)}</div>
+                        <div className="text-xs text-gray-400 font-bold uppercase">Gasto (Compras)</div>
+                     </div>
+                     <div className="bg-[#131524] p-5 rounded-2xl border border-white/5 flex flex-col items-center text-center justify-center gap-2">
+                        <DollarSign className="w-6 h-6 text-green-400" />
+                        <div className="text-xl font-black text-white">R$ {selectedUserDetail.totalSold.toFixed(2)}</div>
+                        <div className="text-xs text-gray-400 font-bold uppercase">Gasto (Vendas)</div>
+                     </div>
+                 </div>
+               </div>
+            </div>
+            
+          </div>
+        </div>
+      )}
     </div>
   );
 };

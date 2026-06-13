@@ -25,25 +25,35 @@ export default function CreateService() {
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
-    async function fetchService() {
-      if (id && user) {
-        setIsEditing(true);
-        const docRef = doc(db, 'services', id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data().sellerId === user.uid) {
-          const data = docSnap.data();
-          setTitle(data.title || '');
-          setDescription(data.description || '');
-          setPrice(data.price?.toString() || '');
-          setCategory(data.category || 'pack-sensual');
-          setCoverPreview(data.coverUrl || '');
-        } else {
-          // Service not found or not the owner
-          navigate('/dashboard?tab=services');
+    async function checkProfileAndFetchService() {
+      if (user) {
+        const bankRef = doc(db, 'bank_accounts', user.uid);
+        const bankSnap = await getDoc(bankRef);
+        const bankData = bankSnap.data();
+        if (!bankSnap.exists() || !bankData?.accountName?.trim() || !bankData?.cpf?.trim() || !bankData?.rgCnh?.trim() || !bankData?.pixKey?.trim()) {
+           alert('⚠️ Para criar um serviço ou vender, preencha seus Dados Pessoais (Nome, CPF, RG/CNH e Chave PIX) nas Configurações da conta.');
+           navigate('/dashboard');
+           return;
+        }
+
+        if (id) {
+          setIsEditing(true);
+          const docRef = doc(db, 'services', id);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists() && docSnap.data().sellerId === user.uid) {
+            const data = docSnap.data();
+            setTitle(data.title || '');
+            setDescription(data.description || '');
+            setPrice(data.price?.toString() || '');
+            setCategory(data.category || 'pack-sensual');
+            setCoverPreview(data.coverUrl || '');
+          } else {
+            navigate('/dashboard?tab=services');
+          }
         }
       }
     }
-    fetchService();
+    checkProfileAndFetchService();
   }, [id, user, navigate]);
 
   const handleFile = async (f: File) => {

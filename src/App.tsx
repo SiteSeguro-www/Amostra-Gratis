@@ -140,11 +140,6 @@ function App() {
           ]
         }} 
       />
-      <Helmet>
-        <link rel="preconnect" href="https://s.magsrv.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://s.magsrv.com" />
-        <link rel="prefetch" href="https://s.magsrv.com/v1/vast.php?idzone=5920268" as="fetch" crossOrigin="anonymous" />
-      </Helmet>
       <Router key={Math.random()}>
         <ScrollToTop />
         <Suspense fallback={<LoadingFallback />}>

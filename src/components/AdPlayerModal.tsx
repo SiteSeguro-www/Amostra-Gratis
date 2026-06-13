@@ -68,48 +68,12 @@ export default function AdPlayerModal({ isOpen, onClose, onComplete }: AdPlayerM
   const [timer, setTimer] = useState(10);
   const [canUnlock, setCanUnlock] = useState(false);
   const [isDesktop, setIsDesktop] = useState(typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
-  
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [clickUrl, setClickUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  useEffect(() => {
-    if (isOpen) {
-      // Fetch ExoClick Video Ad
-      const fetchVast = async () => {
-        try {
-          const response = await fetch('https://s.magsrv.com/v1/vast.php?idz=5946478');
-          const xml = await response.text();
-          
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(xml, "application/xml");
-          
-          const mediaFile = doc.querySelector('MediaFile')?.textContent;
-          const clickThrough = doc.querySelector('ClickThrough')?.textContent;
-          const impressions = Array.from(doc.querySelectorAll('Impression')).map(imp => imp.textContent);
-
-          if (mediaFile) {
-            setVideoUrl(mediaFile.trim());
-            impressions.forEach(url => {
-              if (url) {
-                const img = new Image();
-                img.src = url.trim();
-              }
-            });
-          }
-          if (clickThrough) setClickUrl(clickThrough.trim());
-        } catch (err) {
-          console.error("Error loading ExoClick Video Ad:", err);
-        }
-      };
-      fetchVast();
-    }
-  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -164,48 +128,47 @@ export default function AdPlayerModal({ isOpen, onClose, onComplete }: AdPlayerM
           </div>
 
            {/* Ad Content */}
-          <div className="w-full bg-[#050505] flex-1 flex flex-col items-center relative overflow-hidden min-h-[400px] md:min-h-[500px]">
-            {/* ExoClick Video Background/Player */}
-            {videoUrl && (
-              <div 
-                className="absolute inset-0 z-0 cursor-pointer"
-                onClick={() => clickUrl && window.open(clickUrl, '_blank')}
-              >
-                <video 
-                  src={videoUrl} 
-                  autoPlay 
-                  loop 
-                  className="w-full h-full object-contain bg-black"
-                  playsInline
-                />
-              </div>
-            )}
-            
-             <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent z-10 pointer-events-none" />
+          <div className="w-full bg-black flex-1 flex flex-col items-center justify-center relative min-h-[400px] py-12 px-4 shadow-inner">
+             {/* Desktop Banner 728x90 */}
+             <div className="hidden md:flex flex-col items-center justify-center w-full max-w-[728px] min-h-[90px] bg-white/5 rounded-xl border border-white/10 overflow-hidden mb-8 relative">
+                <div className="absolute inset-0 flex items-center justify-center -z-10 bg-[#0a0a0f]">
+                  <span className="text-[10px] text-white/10 font-black tracking-widest uppercase">Publicidade</span>
+                </div>
+                {isDesktop && <AdsterraDesktop />}
+             </div>
 
-             <div className="absolute bottom-6 right-0 z-30 pointer-events-none">
+             {/* Mobile Banner 300x250 */}
+             <div className="flex md:hidden flex-col items-center justify-center w-full max-w-[300px] min-h-[250px] bg-white/5 rounded-xl border border-white/10 overflow-hidden mb-8 relative">
+               <div className="absolute inset-0 flex items-center justify-center -z-10 bg-[#0a0a0f]">
+                  <span className="text-[10px] text-white/10 font-black tracking-widest uppercase">Publicidade</span>
+               </div>
+               {!isDesktop && <AdsterraMobile />}
+             </div>
+
+             <div className="absolute top-4 right-4 z-30 pointer-events-none">
+                <div className="bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full text-[10px] font-black text-white/50 uppercase tracking-widest">
+                   Publicidade
+                </div>
+             </div>
+
+             <div className="w-full p-4 md:p-8 flex flex-col justify-end pointer-events-none pb-12 md:pb-16 mt-auto z-30">
+               <div className="flex justify-center w-full">
                   {!canUnlock ? (
-                    <div className="bg-black/80 backdrop-blur-sm px-4 py-3 rounded-l border border-r-0 border-white/10 pointer-events-auto">
+                    <div className="bg-black/80 backdrop-blur-sm px-6 py-4 rounded-xl border border-white/10 pointer-events-auto">
                       <div className="text-white text-sm font-medium">
-                        O vídeo será liberado em <span className="font-bold tracking-widest">{timer}s</span>
+                        O conteúdo será liberado em <span className="font-bold tracking-widest">{timer}s</span>
                       </div>
                     </div>
                   ) : (
                     <button 
                       onClick={onComplete}
-                      className="group relative px-6 py-3 bg-black/80 hover:bg-black/90 backdrop-blur-sm text-white rounded-l border border-r-0 border-white/10 font-bold text-sm tracking-wider uppercase transition-colors pointer-events-auto flex items-center gap-2"
+                      className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-xl font-bold text-sm tracking-widest uppercase transition-all shadow-[0_0_40px_rgba(168,85,247,0.4)] pointer-events-auto flex items-center gap-3"
                     >
-                      <span>Pular anúncio</span>
-                      <SkipForward className="w-5 h-5 fill-current" />
+                      <span>Acessar Conteúdo</span>
+                      <CheckCircle2 className="w-5 h-5" />
                     </button>
                   )}
-             </div>
-             
-             {/* Ad Tag Badge */}
-             <div className="absolute top-4 right-4 z-30 pointer-events-none">
-                <div className="bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full text-[10px] font-black text-white/50 uppercase tracking-widest">
-                   Publicidade
-                </div>
+               </div>
              </div>
           </div>
 

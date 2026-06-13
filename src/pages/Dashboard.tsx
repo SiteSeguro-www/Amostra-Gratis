@@ -51,6 +51,49 @@ export default function Dashboard() {
   const [deletionCode, setDeletionCode] = useState('');
   const [isDeletingLoading, setIsDeletingLoading] = useState(false);
 
+  const isProfileComplete = () => {
+    return !!(accountName.trim() && cpf.trim() && rgCnh.trim() && pixKey.trim());
+  };
+
+  const handleCreateService = () => {
+    if (!isProfileComplete()) {
+      alert('⚠️ Para criar um serviço ou vender, preencha seus Dados Pessoais (Nome, CPF, RG/CNH e Chave PIX) nas Configurações da conta.');
+      setActiveTab('settings');
+      return;
+    }
+    navigate('/create-service');
+  };
+
+  const handleWithdraw = async () => {
+    if (!isProfileComplete()) {
+      alert('⚠️ Para solicitar resgate, preencha seus Dados Pessoais (Nome, CPF, RG/CNH e Chave PIX) nas Configurações da conta.');
+      setActiveTab('settings');
+      return;
+    }
+    if (userBalance > 0) {
+      try {
+        const token = await auth.currentUser?.getIdToken();
+        const response = await fetch(getApiUrl('/api/withdraw'), {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert('Solicitação de saque enviada com sucesso!');
+        } else {
+          alert('Erro ao solicitar saque: ' + data.error);
+        }
+      } catch (error) {
+        alert('Erro ao solicitar saque.');
+      }
+    } else {
+      alert('Você não possui saldo disponível.');
+    }
+  };
+
   useEffect(() => {
     if (!user) return;
 
@@ -244,13 +287,8 @@ export default function Dashboard() {
     e.preventDefault();
     if (!user) return;
     
-    if (!accountName.trim() || !cpf.trim() || !rgCnh.trim()) {
-      alert('Por favor, preencha o Nome do Titular, o CPF e o RG ou CNH.');
-      return;
-    }
-
-    if (!pixKey && (!bankName || !agencyAccount)) {
-      alert('Por favor, preencha a Chave PIX ou os dados da Conta Bancária.');
+    if (!accountName.trim() || !cpf.trim() || !rgCnh.trim() || !pixKey.trim()) {
+      alert('Por favor, preencha o Nome do Titular, o CPF, o RG ou CNH e a Chave PIX.');
       return;
     }
 
@@ -825,30 +863,7 @@ export default function Dashboard() {
                     </h2>
                   </div>
                   <button 
-                    onClick={async () => {
-                      if (userBalance > 0) {
-                        try {
-                          const token = await auth.currentUser?.getIdToken();
-                          const response = await fetch(getApiUrl('/api/withdraw'), {
-                            method: 'POST',
-                            headers: { 
-                              'Content-Type': 'application/json',
-                              'Authorization': `Bearer ${token}`
-                            }
-                          });
-                          const data = await response.json();
-                          if (data.success) {
-                            alert('Solicitação de saque enviada com sucesso!');
-                          } else {
-                            alert('Erro ao solicitar saque: ' + data.error);
-                          }
-                        } catch (error) {
-                          alert('Erro ao solicitar saque.');
-                        }
-                      } else {
-                        alert('Você não possui saldo disponível.');
-                      }
-                    }}
+                    onClick={handleWithdraw}
                     className="mt-8 w-full py-4 bg-white text-black hover:bg-gray-200 font-black rounded-2xl transition-all shadow-xl active:scale-[0.98]"
                   >
                     Resgatar Saldo
@@ -890,7 +905,7 @@ export default function Dashboard() {
                     {services.length.toString().padStart(2, '0')}
                   </h2>
                   <button 
-                    onClick={() => navigate('/create-service')}
+                    onClick={handleCreateService}
                     className="mt-8 w-full py-4 bg-blue-600 text-white hover:bg-blue-500 font-black rounded-2xl transition-all shadow-xl flex items-center justify-center gap-2"
                   >
                     <Plus className="w-5 h-5" /> Novo Serviço
@@ -1028,7 +1043,7 @@ export default function Dashboard() {
                   <p className="text-gray-500 text-sm">Gerencie seu catálogo de ofertas na PackZinhu</p>
                 </div>
                 <button 
-                  onClick={() => navigate('/create-service')}
+                  onClick={handleCreateService}
                   className="p-4 bg-purple-600 hover:bg-purple-500 rounded-3xl text-white transition-all shadow-2xl shadow-purple-600/20 active:scale-95"
                 >
                   <Plus className="w-6 h-6" />
@@ -1364,6 +1379,7 @@ export default function Dashboard() {
                         onChange={(e) => setPixKey(e.target.value)}
                         placeholder="E-mail, CPF, Tel ou Aleatória"
                         className="w-full bg-[#0a0a0a] border border-white/5 rounded-2xl px-6 py-5 text-white outline-none focus:border-purple-500 transition-all font-bold tracking-tight shadow-lg"
+                        required
                       />
                     </div>
 

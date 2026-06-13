@@ -548,6 +548,13 @@ export default function Layout() {
                 PackZinhu
               </span>
             </Link>
+            <button
+              onClick={() => setShowInstallModal(true)}
+              className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white text-xs font-black rounded-full transition-all ml-1 shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+            >
+              <Download className="w-3.5 h-3.5" />
+              APP
+            </button>
           </div>
 
           {/* Nav Icons (Desktop) */}
@@ -1056,9 +1063,9 @@ export default function Layout() {
 
             <div className="flex flex-col items-center text-center mb-6">
               <img
-                src="/favicon.png"
+                src="/android-chrome-512x512.png"
                 alt="Logo"
-                className="w-16 h-16 rounded-2xl object-cover mb-4 shadow-lg shadow-purple-500/20"
+                className="w-32 h-32 rounded-3xl object-cover mb-4 shadow-[0_0_30px_rgba(168,85,247,0.4)]"
               />
               <p className="text-gray-300 text-sm">
                 Instale o PackZinhu no seu dispositivo para ter acesso rápido,

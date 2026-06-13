@@ -7,8 +7,8 @@ import { Save, Loader2, Play, Plus, Trash2, Edit2, CheckCircle, XCircle, Databas
 export interface CustomAd {
   id: string;
   name: string;
-  network: 'adsterra' | 'exoclick' | 'other';
-  format: 'banner' | 'native' | 'popunder' | 'in-stream' | 'slider';
+  network: 'adsterra' | 'other';
+  format: 'banner' | 'native' | 'popunder' | 'slider';
   status: 'active' | 'inactive';
   code: string; 
   placement: string; 
@@ -17,26 +17,6 @@ export interface CustomAd {
 }
 
 const DEFAULT_ADS: Omit<CustomAd, 'id'>[] = [
-  {
-    name: 'ExoClick Global (Native/Popunder)',
-    network: 'exoclick',
-    format: 'popunder',
-    status: 'active',
-    placement: 'global',
-    targetDevice: 'all',
-    pages: ['all'],
-    code: `<script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script>\n<ins class="eas6ad6d" data-zoneid="5920268" style="z-index: 20000; position: relative;"></ins>\n<script>(window.AdProvider = window.AdProvider || []).push({"serve": {}});</script>`
-  },
-  {
-    name: 'ExoClick Video Slider',
-    network: 'exoclick',
-    format: 'slider',
-    status: 'active',
-    placement: 'global',
-    targetDevice: 'all',
-    pages: ['all'],
-    code: `<ins class="eas6a97888e31" data-zoneid="5919654"></ins>\n<script>(window.AdProvider = window.AdProvider || []).push({"serve": {}});</script>`
-  },
   {
     name: 'Adsterra Social Bar',
     network: 'adsterra',
@@ -106,16 +86,6 @@ const DEFAULT_ADS: Omit<CustomAd, 'id'>[] = [
     targetDevice: 'desktop',
     pages: ['all'],
     code: `<script type="text/javascript">\nwindow.atOptions = {\n\t'key' : '522b21a4c1dd8d4dc41ce8d9ad4e4976',\n\t'format' : 'iframe',\n\t'height' : 90,\n\t'width' : 728,\n\t'params' : {}\n};\n</script>\n<script type="text/javascript" src="//www.highperformanceformat.com/522b21a4c1dd8d4dc41ce8d9ad4e4976/invoke.js"></script>`
-  },
-  {
-    name: 'ExoClick VAST Video Player (Geral)',
-    network: 'exoclick',
-    format: 'in-stream',
-    status: 'active',
-    placement: 'video-preroll',
-    targetDevice: 'all',
-    pages: ['all'],
-    code: `https://s.magsrv.com/v1/vast.php?idzone=5920268`
   }
 ];
 
@@ -253,7 +223,7 @@ export default function AdsAdmin() {
             <Play className="w-6 h-6 text-purple-500" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">Gerenciador de Anúncios (Adsterra & ExoClick)</h2>
+            <h2 className="text-xl font-bold text-white">Gerenciador de Anúncios (Adsterra)</h2>
             <p className="text-sm text-gray-400">Controle total dos seus anúncios no site.</p>
           </div>
         </div>
@@ -357,7 +327,6 @@ export default function AdsAdmin() {
                     className="w-full bg-[#131524] border border-white/10 rounded-xl px-4 py-3 text-white focus:border-purple-500 outline-none"
                   >
                     <option value="adsterra">Adsterra</option>
-                    <option value="exoclick">ExoClick</option>
                     <option value="other">Outra / Customizado</option>
                   </select>
                 </div>
@@ -372,7 +341,6 @@ export default function AdsAdmin() {
                     <option value="banner">Banner Padrão (Iframe/Script)</option>
                     <option value="native">Banner Nativo</option>
                     <option value="popunder">Popunder / Clique</option>
-                    <option value="in-stream">Video In-Stream</option>
                     <option value="slider">Slider / Carousel</option>
                   </select>
                 </div>
@@ -431,7 +399,7 @@ export default function AdsAdmin() {
                   onChange={(e) => setEditingAd({ ...editingAd, code: e.target.value })}
                   rows={8}
                   className="w-full font-mono text-sm bg-[#131524] border border-white/10 rounded-xl px-4 py-3 text-white focus:border-purple-500 outline-none" 
-                  placeholder={"Cole aqui o código fornecido pela Adsterra ou ExoClick...\nExemplo:\n<script src='//pl123.com/invoke.js'></script>"}
+                  placeholder={"Cole aqui o código fornecido pela Adsterra...\nExemplo:\n<script src='//pl123.com/invoke.js'></script>"}
                 />
                 <p className="text-xs text-gray-500 mt-2">Dica: Você pode colocar `&lt;script&gt;`, `&lt;iframe&gt;` ou qualquer código HTML gerado pelas plataformas.</p>
               </div>

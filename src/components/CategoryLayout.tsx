@@ -19,7 +19,7 @@ export default function CategoryLayout({ children, activeCategory }: { children:
   
   useEffect(() => {
     // Fetch Ad Config
-    const unsubConfig = onSnapshot(doc(db, 'settings', 'exoclick'), (snap) => {
+    const unsubConfig = onSnapshot(doc(db, 'settings', 'video_ad_config'), (snap) => {
       if (snap.exists()) {
         setAdConfig({
           videoAdEnabled: snap.data().videoAdEnabled ?? true,
@@ -74,7 +74,7 @@ export default function CategoryLayout({ children, activeCategory }: { children:
         insertIndex = items.length;
       }
       
-      items.splice(insertIndex, 0, { id: 'exoclic-video-ad', isAd: true });
+      items.splice(insertIndex, 0, { id: 'native-video-ad', isAd: true });
     }
     return items;
   }, [banners, featuredServices, adConfig]);
