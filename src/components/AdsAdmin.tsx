@@ -8,7 +8,7 @@ export interface CustomAd {
   id: string;
   name: string;
   network: 'adsterra' | 'other';
-  format: 'banner' | 'native' | 'popunder' | 'slider';
+  format: 'banner' | 'native' | 'popunder' | 'slider' | 'in-stream';
   status: 'active' | 'inactive';
   code: string; 
   placement: string; 

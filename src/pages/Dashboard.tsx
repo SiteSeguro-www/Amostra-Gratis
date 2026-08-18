@@ -58,7 +58,7 @@ export default function Dashboard() {
   const handleCreateService = () => {
     if (!isProfileComplete()) {
       alert('⚠️ Para criar um serviço ou vender, preencha seus Dados Pessoais (Nome, CPF, RG/CNH e Chave PIX) nas Configurações da conta.');
-      setActiveTab('settings');
+      setSearchParams({ tab: 'settings' });
       return;
     }
     navigate('/create-service');
@@ -67,7 +67,7 @@ export default function Dashboard() {
   const handleWithdraw = async () => {
     if (!isProfileComplete()) {
       alert('⚠️ Para solicitar resgate, preencha seus Dados Pessoais (Nome, CPF, RG/CNH e Chave PIX) nas Configurações da conta.');
-      setActiveTab('settings');
+      setSearchParams({ tab: 'settings' });
       return;
     }
     if (userBalance > 0) {

@@ -17,7 +17,7 @@ const s3Client = new S3Client({
 });
 
 const config = JSON.parse(fs.readFileSync('firebase-applet-config.json', 'utf8'));
-const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}');
 initializeApp({ projectId: config.projectId, credential: cert(sa) });
 const db = getFirestore(config.firestoreDatabaseId);
 
@@ -30,11 +30,7 @@ async function restoreBackup(table) {
   for (const obj of response.Contents) {
     const getCommand = new GetObjectCommand({ Bucket: 'uploads', Key: obj.Key });
     const getResponse = await s3Client.send(getCommand);
-    const body = await new Promise((resolve) => {
-      const chunks = [];
-      getResponse.Body.on("data", (chunk) => chunks.push(chunk));
-      getResponse.Body.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
-    });
+    const body = await getResponse.Body?.transformToString() || '{}';
     const data = JSON.parse(body);
     const docId = data.id || obj.Key.split('/').pop().replace('.json', '');
     

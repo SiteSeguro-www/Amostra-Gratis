@@ -140,7 +140,7 @@ function App() {
           ]
         }} 
       />
-      <Router key={Math.random()}>
+      <Router>
         <ScrollToTop />
         <Suspense fallback={<LoadingFallback />}>
           <Routes>

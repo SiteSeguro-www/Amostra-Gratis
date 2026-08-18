@@ -37,7 +37,7 @@ const AdRenderer = ({ ad, className }: { ad: CustomAd; className: string }) => {
     const container = containerRef.current;
 
     // Do not attempt to render raw HTML for VAST tags or URLs directly
-    if (ad.format === 'in-stream' && ad.code.startsWith('http')) {
+    if (ad.format === 'in-stream' && ad.code?.startsWith('http')) {
       return;
     }
 
@@ -45,7 +45,7 @@ const AdRenderer = ({ ad, className }: { ad: CustomAd; className: string }) => {
     
     // Inject via recreating script elements to ensure they execute
     const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = ad.code;
+    tempDiv.innerHTML = ad.code || '';
     
     Array.from(tempDiv.childNodes).forEach(node => {
       if (node.nodeName === 'SCRIPT') {
@@ -65,7 +65,7 @@ const AdRenderer = ({ ad, className }: { ad: CustomAd; className: string }) => {
   }, [ad.code, ad.format]);
 
   // If it's pure VAST URL, component shouldn't render visual blocks here 
-  if (ad.format === 'in-stream' && ad.code.startsWith('http')) {
+  if (ad.format === 'in-stream' && ad.code?.startsWith('http')) {
     return null;
   }
 

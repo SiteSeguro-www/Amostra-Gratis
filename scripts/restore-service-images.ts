@@ -4,7 +4,7 @@ import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import fs from 'fs';
 import path from 'path';
 
-let firebaseConfig = {};
+let firebaseConfig: any = {};
 try {
   const configPath = path.join(process.cwd(), 'firebase-applet-config.json');
   if (fs.existsSync(configPath)) {
@@ -16,7 +16,7 @@ try {
 
 if (getApps().length === 0) {
   const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
-  const config = { projectId: firebaseConfig.projectId };
+  const config: any = { projectId: firebaseConfig.projectId };
   if (serviceAccount) {
     config.credential = cert(JSON.parse(serviceAccount));
   }
