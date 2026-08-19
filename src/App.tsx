@@ -182,14 +182,15 @@ function App() {
               {/* SEO Landing Pages */}
               <Route path="como-vender-fotos-de-pe" element={<SEOArticleVenderFotos />} />
               <Route path="melhores-sites-para-vender-fotos" element={<SEOArticleBestSites />} />
-              <Route path="Qual-site-paga-por-fotos-de-pés" element={<SEOArticleFeetPhotos />} />
-              <Route path="Vender-fotos-dos-pés-dá-dinheiro" element={<SEOArticleFeetMoney />} />
-              <Route path="os-sites-mais-conhecidos-para-vender-fotos-de-pés" element={<SEOArticleFamousSites />} />
-              <Route path="os-melhores-sites-para-vender-fotos-dos-pés-packzinhu-FeetFinder-Instafeet-Feetify-FeetPics-onlyfans-privacy" element={<SEOArticleBestSitesList />} />
-              <Route path="packzinhu-é-confiável" element={<SEOArticlePackzinhuReliable />} />
+              <Route path="Qual-site-paga-por-fotos-de-pes" element={<SEOArticleFeetPhotos />} />
+              <Route path="Vender-fotos-dos-pes-da-dinheiro" element={<SEOArticleFeetMoney />} />
+              <Route path="os-sites-mais-conhecidos-para-vender-fotos-de-pes" element={<SEOArticleFamousSites />} />
+              <Route path="os-melhores-sites-para-vender-fotos-dos-pes-packzinhu-FeetFinder-Instafeet-Feetify-FeetPics-onlyfans-privacy" element={<SEOArticleBestSitesList />} />
+              <Route path="packzinhu-e-confiavel" element={<SEOArticlePackzinhuReliable />} />
               <Route path="Sites-parecidos-com-Privacy" element={<SEOArticleSimilarPrivacy />} />
               <Route path="Sites-parecidos-com-OnlyFans" element={<SEOArticleSimilarOnlyFans />} />
               <Route path="blog" element={<Blog />} />
+              <Route path="Blog" element={<Blog />} />
               <Route path="onlyfans-vs-privacy-vs-packzinhu" element={<SEOArticleComparison />} />
               <Route path="como-ganhar-dinheiro-com-fotos-online" element={<SEOArticleEarnMoneyPhotos />} />
               <Route path="Os-melhores-apps-para-vender-foto-do-pe-e-lucrar-muito" element={<SEOArticleBestAppsFeet />} />

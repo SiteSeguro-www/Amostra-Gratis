@@ -1,9 +1,16 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 
 export default function Privacy() {
   return (
-    <div className="w-full py-12 px-4">
-      <div className="max-w-4xl mx-auto bg-[#1C1E32] p-8 md:p-12 rounded-3xl border border-white/5">
+    <>
+      <Helmet>
+        <title>Política de Privacidade | PackZinhu</title>
+        <meta name="description" content="Leia nossa Política de Privacidade. Saiba como o PackZinhu protege seus dados, sua identidade e garante uma experiência segura." />
+        <link rel="canonical" href="https://packzinhu.online/privacy" />
+      </Helmet>
+      <div className="w-full py-12 px-4">
+        <div className="max-w-4xl mx-auto bg-[#1C1E32] p-8 md:p-12 rounded-3xl border border-white/5">
         <h1 className="text-4xl font-black text-white mb-8">Política de Privacidade</h1>
         <div className="space-y-6 text-gray-300">
           <p>A sua privacidade é importante para nós. Esta Política de Privacidade descreve como coletamos, utilizamos e protegemos suas informações.</p>
@@ -33,5 +40,6 @@ export default function Privacy() {
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -9,7 +9,7 @@ export default function HomeJA() {
       <Helmet>
         <title>OnlyFansの最高の代替プラットフォーム | PackZinhu</title>
         <meta name="description" content="OnlyFansの代替となる最高のプラットフォームをご覧ください。PackZinhuでは、手数料が安く、即時支払いが可能で、クリエイターのプライバシーを完全に保護します。" />
-        <link rel="canonical" href="https://packzinhu.online/ja/" />
+        <link rel="canonical" href="https://packzinhu.online/ja" />
         <meta property="og:title" content="OnlyFansの最高の代替プラットフォーム | PackZinhu" />
         <meta property="og:description" content="OnlyFansの代替となる最高のプラットフォームをご覧ください。PackZinhuでは、手数料が安く、即時支払いが可能で、クリエイターのプライバシーを完全に保護します。" />
         <meta property="og:image" content="https://packzinhu.online/alternativa4.png" />

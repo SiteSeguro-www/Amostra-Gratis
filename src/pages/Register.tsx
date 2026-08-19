@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { auth, db, googleProvider } from '../firebase';
 import { createUserWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth';
 import { doc, setDoc, getDoc, increment } from 'firebase/firestore';
@@ -122,7 +123,11 @@ export default function Register() {
   };
 
   return (
-    <div className="py-20 max-w-md mx-auto px-4">
+    <>
+      <Helmet>
+        <link rel="canonical" href="https://packzinhu.online/register" />
+      </Helmet>
+      <div className="py-20 max-w-md mx-auto px-4">
       <div className="bg-[#1C1E32] border border-white/5 rounded-3xl p-8 shadow-2xl">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-black mb-2 text-white">
@@ -233,5 +238,6 @@ export default function Register() {
         </p>
       </div>
     </div>
+    </>
   );
 }

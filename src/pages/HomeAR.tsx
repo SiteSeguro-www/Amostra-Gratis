@@ -9,7 +9,7 @@ export default function HomeAR() {
       <Helmet>
         <title>أفضل بديل لأونلي فانز | بيع محتواك عبر الإنترنت | PackZinhu</title>
         <meta name="description" content="اكتشف أفضل بديل لأونلي فانز. يقدم PackZinhu رسومًا أقل، ومدفوعات فورية، وخصوصية كاملة لمنشئي المحتوى." />
-        <link rel="canonical" href="https://packzinhu.online/ar/" />
+        <link rel="canonical" href="https://packzinhu.online/ar" />
         <meta property="og:title" content="أفضل بديل لأونلي فانز | بيع محتواك عبر الإنترنت | PackZinhu" />
         <meta property="og:description" content="اكتشف أفضل بديل لأونلي فانز. يقدم PackZinhu رسومًا أقل، ومدفوعات فورية، وخصوصية كاملة لمنشئي المحتوى." />
         <meta property="og:image" content="https://packzinhu.online/alternativa4.png" />

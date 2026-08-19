@@ -1,9 +1,16 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 
 export default function Terms() {
   return (
-    <div className="w-full py-12 px-4">
-      <div className="max-w-4xl mx-auto bg-[#1C1E32] p-8 md:p-12 rounded-3xl border border-white/5">
+    <>
+      <Helmet>
+        <title>Termos de Uso | PackZinhu</title>
+        <meta name="description" content="Leia os Termos de Uso do PackZinhu. Entenda as regras, direitos e deveres para utilizar nossa plataforma com segurança." />
+        <link rel="canonical" href="https://packzinhu.online/terms" />
+      </Helmet>
+      <div className="w-full py-12 px-4">
+        <div className="max-w-4xl mx-auto bg-[#1C1E32] p-8 md:p-12 rounded-3xl border border-white/5">
         <h1 className="text-4xl font-black text-white mb-8">Termos de Uso</h1>
         <div className="space-y-6 text-gray-300">
           <p>Ao acessar e utilizar o Packzinhu, você concorda com os presentes Termos de Uso. Caso não concorde com qualquer condição, recomendamos que não utilize a plataforma.</p>
@@ -33,5 +40,6 @@ export default function Terms() {
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -847,7 +847,7 @@ export default function Layout() {
         {/* PC Side Banners are dynamically added to body or global */}
 
 
-        <main className="flex-1 pb-24 md:pb-0 w-full overflow-x-hidden">
+        <main className="flex-1 pb-24 md:pb-0 w-full">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Mail, Send, CheckCircle } from 'lucide-react';
 import { db } from '../firebase';
 import { saveToMonio } from '../lib/monio';
@@ -35,7 +36,11 @@ export default function Contact() {
   };
 
   return (
-    <div className="w-full py-12 px-4">
+    <>
+      <Helmet>
+        <link rel="canonical" href="https://packzinhu.online/contact" />
+      </Helmet>
+      <div className="w-full py-12 px-4">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
         <div className="bg-[#1C1E32] p-8 md:p-12 rounded-3xl border border-white/5">
           <h1 className="text-4xl font-black text-white mb-8">Contato</h1>
@@ -128,5 +133,6 @@ export default function Contact() {
         </div>
       </div>
     </div>
+    </>
   );
 }

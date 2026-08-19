@@ -53,20 +53,32 @@ export default function ServiceDetails() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-20">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500"></div>
-      </div>
+      <>
+        <Helmet>
+          <title>Carregando Serviço... | PackZinhu</title>
+          <link rel="canonical" href={`https://packzinhu.online/services/${id}`} />
+        </Helmet>
+        <div className="flex justify-center py-20">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500"></div>
+        </div>
+      </>
     );
   }
 
   if (!service) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <h2 className="text-2xl font-bold mb-4">Serviço não encontrado</h2>
+      <>
+        <Helmet>
+          <title>Serviço não encontrado | PackZinhu</title>
+          <meta name="robots" content="noindex" />
+        </Helmet>
+        <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+          <h2 className="text-2xl font-bold mb-4">Serviço não encontrado</h2>
         <Link to="/services" className="text-purple-400 hover:text-purple-300 font-bold">
           Voltar para Serviços
         </Link>
       </div>
+      </>
     );
   }
 

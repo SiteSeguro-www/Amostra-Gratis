@@ -897,9 +897,25 @@ export default function Profile() {
   };
 
   if (loading)
-    return <div className="py-20 text-center">Carregando perfil...</div>;
+    return (
+      <>
+        <Helmet>
+          <title>Carregando Perfil... | PackZinhu</title>
+          <link rel="canonical" href={`https://packzinhu.online/profile/${id}`} />
+        </Helmet>
+        <div className="py-20 text-center">Carregando perfil...</div>
+      </>
+    );
   if (!profile)
-    return <div className="py-20 text-center">Perfil não encontrado.</div>;
+    return (
+      <>
+        <Helmet>
+          <title>Perfil não encontrado | PackZinhu</title>
+          <meta name="robots" content="noindex" />
+        </Helmet>
+        <div className="py-20 text-center">Perfil não encontrado.</div>
+      </>
+    );
 
   const isOwner = user?.uid === id;
 

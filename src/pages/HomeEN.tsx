@@ -9,7 +9,7 @@ export default function HomeEN() {
       <Helmet>
         <title>Best OnlyFans Alternative | Sell Your Content Online | PackZinhu</title>
         <meta name="description" content="Discover the best OnlyFans alternative. PackZinhu offers lower fees, instant payouts, and full privacy for content creators." />
-        <link rel="canonical" href="https://packzinhu.online/en/" />
+        <link rel="canonical" href="https://packzinhu.online/en" />
         <meta property="og:title" content="Best OnlyFans Alternative | Sell Your Content Online | PackZinhu" />
         <meta property="og:description" content="Discover the best OnlyFans alternative. PackZinhu offers lower fees, instant payouts, and full privacy for content creators." />
         <meta property="og:image" content="https://packzinhu.online/alternativa4.png" />

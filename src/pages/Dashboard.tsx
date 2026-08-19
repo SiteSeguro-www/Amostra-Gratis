@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { collection, query, where, onSnapshot, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, deleteField, addDoc, writeBatch } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { deleteUser } from 'firebase/auth';
@@ -736,7 +737,11 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-gray-100 font-sans selection:bg-purple-500/30">
+    <>
+      <Helmet>
+        <link rel="canonical" href="https://packzinhu.online/dashboard" />
+      </Helmet>
+      <div className="min-h-screen bg-[#050505] text-gray-100 font-sans selection:bg-purple-500/30">
       <div className="py-8 px-4 max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
         {/* Sidebar - Refined Sidebar */}
         <div className="w-full lg:w-72 flex flex-col gap-6">
@@ -1532,5 +1537,6 @@ export default function Dashboard() {
         </div>
       )}
     </div>
+    </>
   );
 }

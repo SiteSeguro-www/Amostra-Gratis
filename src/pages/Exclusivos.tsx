@@ -113,7 +113,7 @@ export default function Exclusivos() {
       <Helmet>
         <title>🔒 Conteúdos Secretos | PackZinhu Exclusivos</title>
         <meta name="description" content="Acesse conteúdos exclusivos e secretos. Só para quem tem coragem. Vídeos e fotos privadas sem filtro." />
-        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://packzinhu.online/exclusivos" />
       </Helmet>
 
       {/* Dynamic Background */}
