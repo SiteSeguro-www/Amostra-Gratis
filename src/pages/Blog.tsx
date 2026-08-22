@@ -34,7 +34,7 @@ const articles = [
   {
     title: 'Qual site paga por fotos de pés?',
     description: 'Guia revelando os melhores sites para vender fotos de pés. Aprenda como funciona, quanto dá para ganhar e as melhores plataformas como PackZinhu e FeetFinder.',
-    url: '/Qual-site-paga-por-fotos-de-pés',
+    url: '/Qual-site-paga-por-fotos-de-pes',
     date: '04 Mai 2026',
     category: 'Monetização',
     image: 'https://images.unsplash.com/photo-1554224154-26032ffc0d07?w=800&q=80',
@@ -42,15 +42,15 @@ const articles = [
   {
     title: 'Vender fotos dos pés dá dinheiro?',
     description: 'Guia completo revelando o potencial financeiro da venda de fotos de pés. Aprenda as estratégias de quem ganha alto nesse mercado e as melhores plataformas.',
-    url: '/Vender-fotos-dos-pés-dá-dinheiro',
+    url: '/Vender-fotos-dos-pes-da-dinheiro',
     date: '04 Mai 2026',
     category: 'Ganhos',
-    image: 'https://images.unsplash.com/photo-1579621970588-a3f5ce599fac?w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&q=80',
   },
   {
     title: 'Os sites mais conhecidos para vender fotos de pés',
     description: 'Conheça as principais plataformas do mercado de fotos de pés. Compare PackZinhu, FeetFinder, Instafeet e tome a melhor decisão para lucrar online.',
-    url: '/os-sites-mais-conhecidos-para-vender-fotos-de-pés',
+    url: '/os-sites-mais-conhecidos-para-vender-fotos-de-pes',
     date: '04 Mai 2026',
     category: 'Plataformas',
     image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80',
@@ -58,7 +58,7 @@ const articles = [
   {
     title: 'Os melhores sites para vender fotos dos pés: O Ranking Completo',
     description: 'Análise profunda das melhores plataformas (PackZinhu, FeetFinder, OnlyFans, etc.) para vender conteúdo, além de dicas de segurança e sucesso no nicho.',
-    url: '/os-melhores-sites-para-vender-fotos-dos-pés-packzinhu-FeetFinder-Instafeet-Feetify-FeetPics-onlyfans-privacy',
+    url: '/os-melhores-sites-para-vender-fotos-dos-pes-packzinhu-FeetFinder-Instafeet-Feetify-FeetPics-onlyfans-privacy',
     date: '04 Mai 2026',
     category: 'Ranking',
     image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80',
@@ -66,7 +66,7 @@ const articles = [
   {
     title: 'PackZinhu é Confiável? Análise Completa',
     description: 'Tudo o que você precisa saber sobre a segurança do PackZinhu. Proteção contra chargeback, Pix instantâneo e garantia de anonimato para criadores de conteúdo.',
-    url: '/packzinhu-é-confiável',
+    url: '/packzinhu-e-confiavel',
     date: '04 Mai 2026',
     category: 'Segurança',
     image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&q=80',
@@ -101,7 +101,31 @@ const articles = [
     url: '/Os-melhores-apps-para-vender-foto-do-pe-e-lucrar-muito',
     date: '05 Mai 2026',
     category: 'Aplicativos',
-    image: 'https://images.unsplash.com/photo-1512428559083-a4979b2b51ff?w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800&q=80',
+  },
+  {
+    title: 'Sites para vender fotos do corpo: O Guia Completo',
+    description: 'Como vender fotos do corpo e lucrar online. Explore as melhores plataformas, os maiores segredos, OnlyFans, Privacy, Packzinhu e mais. Ganhe dinheiro com segurança.',
+    url: '/sites-para-vender-fotos-do-corpo',
+    date: '22 Ago 2026',
+    category: 'Guias Iniciais',
+    image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80',
+  },
+  {
+    title: 'App para vender fotos do corpo: Melhores Aplicativos',
+    description: 'Descubra os melhores aplicativos para vender fotos do corpo, garantir sua segurança, receber pagamentos rápidos e faturar alto direto do seu celular.',
+    url: '/app-para-vender-fotos-do-corpo',
+    date: '22 Ago 2026',
+    category: 'Aplicativos',
+    image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&q=80',
+  },
+  {
+    title: 'Plataforma para Ganhar Dinheiro com Packs: Guia Completo',
+    description: 'Descubra a melhor plataforma para ganhar dinheiro vendendo packs. Compare as taxas, segurança e como começar a lucrar vendendo seu conteúdo.',
+    url: '/plataforma-para-ganhar-dinheiro-com-packs',
+    date: '22 Ago 2026',
+    category: 'Monetização',
+    image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80',
   }
 ];
 

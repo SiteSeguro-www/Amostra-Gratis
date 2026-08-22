@@ -260,22 +260,9 @@ async function startServer() {
 
   // Generic request logger to help debug
   app.use((req, res, next) => {
-    // Favicon SEO Redirects/Routes
-    const faviconPaths = [
-      '/favicon-16x16.png',
-      '/favicon-32x32.png',
-      '/favicon-48x48.png',
-      '/apple-touch-icon.png',
-      '/apple-touch-icon-precomposed.png',
-      '/android-chrome-192x192.png',
-      '/android-chrome-512x512.png'
-    ];
-    
-    if (faviconPaths.includes(req.url)) {
-      return res.sendFile(path.join(__dirname, 'public', 'favicon.png'));
+    if (!req.url.startsWith('/assets') && !req.url.endsWith('.png') && !req.url.endsWith('.jpg') && !req.url.endsWith('.jpeg') && !req.url.endsWith('.svg') && !req.url.endsWith('.ico')) {
+      console.log(`[HTTP] ${req.method} ${req.url}`);
     }
-
-    console.log(`[HTTP] ${req.method} ${req.url}`);
     next();
   });
 

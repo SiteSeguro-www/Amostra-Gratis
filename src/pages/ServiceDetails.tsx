@@ -14,6 +14,7 @@ export default function ServiceDetails() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [service, setService] = useState<any>(null);
+  const [seller, setSeller] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
@@ -25,7 +26,14 @@ export default function ServiceDetails() {
         const docRef = doc(db, 'services', id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setService({ id: docSnap.id, ...docSnap.data() });
+          const sData: any = { id: docSnap.id, ...docSnap.data() };
+          setService(sData);
+          if (sData.sellerId) {
+            const sellerSnap = await getDoc(doc(db, 'users', sData.sellerId));
+            if (sellerSnap.exists()) {
+              setSeller(sellerSnap.data());
+            }
+          }
         }
       } catch (error) {
         console.error("Error fetching service:", error);
@@ -187,7 +195,7 @@ export default function ServiceDetails() {
             <div className="flex flex-wrap items-center gap-4">
               <Link to={`/profile/${service.sellerId}`}>
                 <img 
-                  src={service.sellerPhoto || `https://api.dicebear.com/7.x/avataaars/svg?seed=${service.sellerId}`} 
+                  src={seller?.photoURL || service.sellerPhoto || `https://api.dicebear.com/7.x/avataaars/svg?seed=${service.sellerId}`} 
                   alt="Seller" 
                   className="w-16 h-16 rounded-2xl object-cover border border-white/10" 
                 />

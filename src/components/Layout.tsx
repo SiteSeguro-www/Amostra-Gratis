@@ -130,6 +130,7 @@ export default function Layout() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [senderProfiles, setSenderProfiles] = useState<Record<string, { photoURL?: string; displayName?: string }>>({});
   const [readGlobalIds, setReadGlobalIds] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem('read_global_notifications');
@@ -312,6 +313,100 @@ export default function Layout() {
       localStorage.setItem('read_global_notifications', JSON.stringify(readGlobalIds));
     }
   }, [readGlobalIds, user]);
+
+  useEffect(() => {
+    if (!notifications || notifications.length === 0) return;
+
+    const fetchSenders = async () => {
+      const neededIds = new Set<string>();
+      let needsAdmin = false;
+
+      notifications.forEach((n: any) => {
+        if (n.type === 'verification' || n.sender_id === 'system' || n.sender_id === 'admin') {
+          needsAdmin = true;
+        } else if (n.sender_id && !senderProfiles[n.sender_id]) {
+          neededIds.add(n.sender_id);
+        }
+      });
+
+      const updates: Record<string, { photoURL?: string; displayName?: string }> = {};
+
+      if (needsAdmin && (!senderProfiles['system'] || !senderProfiles['admin'])) {
+        try {
+          const qAdmin = query(
+            collection(db, 'users'),
+            where('email', 'in', ['dweminem@gmail.com', 'contato.packzinhu@gmail.com']),
+            limit(1)
+          );
+          const adminSnap = await getDocs(qAdmin);
+          if (!adminSnap.empty) {
+            const adminData = adminSnap.docs[0].data();
+            const adminInfo = {
+              photoURL: adminData.photoURL || '',
+              displayName: adminData.displayName || 'PackZinhu Oficial',
+            };
+            updates['system'] = adminInfo;
+            updates['admin'] = adminInfo;
+            if (adminSnap.docs[0].id) {
+              updates[adminSnap.docs[0].id] = adminInfo;
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching admin profile for notifications:", err);
+        }
+      }
+
+      for (const sId of Array.from(neededIds)) {
+        try {
+          const uSnap = await getDoc(doc(db, 'users', sId));
+          if (uSnap.exists()) {
+            const uData = uSnap.data();
+            updates[sId] = {
+              photoURL: uData.photoURL || '',
+              displayName: uData.displayName || '',
+            };
+          }
+        } catch (err) {
+          console.error(`Error fetching sender profile ${sId}:`, err);
+        }
+      }
+
+      if (Object.keys(updates).length > 0) {
+        setSenderProfiles(prev => ({ ...prev, ...updates }));
+      }
+    };
+
+    fetchSenders();
+  }, [notifications]);
+
+  const getNotificationPhoto = (n: any) => {
+    if (n.sender_id && senderProfiles[n.sender_id]?.photoURL) {
+      return senderProfiles[n.sender_id].photoURL;
+    }
+    if (n.sender_photo && typeof n.sender_photo === 'string' && n.sender_photo.trim() !== '') {
+      return n.sender_photo;
+    }
+    if (n.type === 'verification' || n.sender_id === 'system' || n.sender_id === 'admin') {
+      if (senderProfiles['system']?.photoURL) return senderProfiles['system'].photoURL;
+      if (senderProfiles['admin']?.photoURL) return senderProfiles['admin'].photoURL;
+      if (userProfile?.role === 'admin' && (userProfile?.photoURL || user?.photoURL)) {
+        return userProfile?.photoURL || user?.photoURL;
+      }
+      return `https://api.dicebear.com/7.x/avataaars/svg?seed=admin`;
+    }
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${n.sender_id || 'user'}`;
+  };
+
+  const getNotificationName = (n: any) => {
+    if (n.sender_id && senderProfiles[n.sender_id]?.displayName) {
+      return senderProfiles[n.sender_id].displayName;
+    }
+    if (n.sender_name) return n.sender_name;
+    if (n.type === 'verification' || n.sender_id === 'system' || n.sender_id === 'admin') {
+      return senderProfiles['system']?.displayName || 'PackZinhu Oficial';
+    }
+    return 'Usuário';
+  };
 
   const unreadCount = notifications.filter((n) => {
     if (n.recipient_id === 'global') {
@@ -720,16 +815,15 @@ export default function Layout() {
                                   onClick={() => handleNotificationClick(n)}
                                 >
                                   <img
-                                    src={
-                                      n.sender_photo ||
-                                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${n.sender_id}`
-                                    }
+                                    src={getNotificationPhoto(n)}
                                     className="w-10 h-10 rounded-full object-cover"
+                                    alt="Sender"
+                                    referrerPolicy="no-referrer"
                                   />
                                   <div className="flex-1 min-w-0">
                                     <p className="text-sm line-clamp-2">
                                       <span className="font-bold">
-                                        {n.sender_name}
+                                        {getNotificationName(n)}
                                       </span>{" "}
                                       {n.message}
                                     </p>

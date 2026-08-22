@@ -49,6 +49,9 @@ const SEOArticleSimilarPrivacy = lazy(() => import('./pages/SEOArticleSimilarPri
 const SEOArticleSimilarOnlyFans = lazy(() => import('./pages/SEOArticleSimilarOnlyFans'));
 const SEOArticleEarnMoneyPhotos = lazy(() => import('./pages/SEOArticleEarnMoneyPhotos'));
 const SEOArticleBestAppsFeet = lazy(() => import('./pages/SEOArticleBestAppsFeet'));
+const SEOArticleVenderFotosCorpo = lazy(() => import('./pages/SEOArticleVenderFotosCorpo'));
+const SEOArticleAppVenderFotosCorpo = lazy(() => import('./pages/SEOArticleAppVenderFotosCorpo'));
+const SEOArticlePlataformaGanharDinheiroPacks = lazy(() => import('./pages/SEOArticlePlataformaGanharDinheiroPacks'));
 const Blog = lazy(() => import('./pages/Blog'));
 const HomeEN = lazy(() => import('./pages/HomeEN'));
 const HomeJA = lazy(() => import('./pages/HomeJA'));
@@ -194,6 +197,9 @@ function App() {
               <Route path="onlyfans-vs-privacy-vs-packzinhu" element={<SEOArticleComparison />} />
               <Route path="como-ganhar-dinheiro-com-fotos-online" element={<SEOArticleEarnMoneyPhotos />} />
               <Route path="Os-melhores-apps-para-vender-foto-do-pe-e-lucrar-muito" element={<SEOArticleBestAppsFeet />} />
+              <Route path="sites-para-vender-fotos-do-corpo" element={<SEOArticleVenderFotosCorpo />} />
+              <Route path="app-para-vender-fotos-do-corpo" element={<SEOArticleAppVenderFotosCorpo />} />
+              <Route path="plataforma-para-ganhar-dinheiro-com-packs" element={<SEOArticlePlataformaGanharDinheiroPacks />} />
             </Route>
           </Routes>
         </Suspense>

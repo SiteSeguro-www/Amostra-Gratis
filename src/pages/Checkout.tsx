@@ -21,7 +21,7 @@ const ReviewComponent = ({ reviews }: { reviews: any[] }) => {
               ))}
             </div>
             <p className="text-sm text-gray-300">{review.comment}</p>
-            <p className="text-xs text-gray-500 mt-2 font-medium">{review.buyerName}</p>
+            <p className="text-xs text-gray-500 mt-2 font-medium">Anônimo</p>
           </div>
         ))}
       </div>
@@ -242,8 +242,8 @@ export default function Checkout() {
                   <div className="flex items-center gap-3 text-sm text-gray-400">
                     <div className="flex items-center gap-2">
                       <img 
-                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${service.sellerId}`} 
-                        className="w-5 h-5 rounded-full" 
+                        src={seller?.photoURL || service.sellerPhoto || `https://api.dicebear.com/7.x/avataaars/svg?seed=${service.sellerId}`} 
+                        className="w-5 h-5 rounded-full object-cover" 
                         alt="Seller"
                       />
                       <span className="flex items-center gap-1">

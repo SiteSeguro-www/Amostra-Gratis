@@ -356,7 +356,9 @@ const Admin = () => {
         const notificationsRef = collection(db, 'notifications');
         const notif = {
           recipient_id: userId,
-          sender_id: 'system',
+          sender_id: user?.uid || 'admin',
+          sender_name: profile?.displayName || user?.displayName || 'PackZinhu Oficial',
+          sender_photo: profile?.photoURL || user?.photoURL || '',
           type: 'verification',
           message: 'Parabéns! Seu perfil foi verificado com sucesso.',
           read: false,
