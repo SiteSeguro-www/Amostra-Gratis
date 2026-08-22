@@ -1153,6 +1153,95 @@ async function startServer() {
     }
   });
 
+  
+  app.post('/api/hotcoins/create-preference', async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      const idToken = authHeader.split('Bearer ')[1];
+      let decodedToken;
+      try {
+        decodedToken = await adminAuth.verifyIdToken(idToken);
+      } catch (e) {
+        return res.status(401).json({ error: 'Invalid token' });
+      }
+      
+      const userId = decodedToken.uid;
+      const { packageId, amount, hotCoins } = req.body;
+
+      if (!process.env.MERCADOPAGO_ACCESS_TOKEN || !process.env.MERCADOPAGO_ACCESS_TOKEN.trim()) {
+        return res.status(500).json({ error: 'MERCADOPAGO_ACCESS_TOKEN não configurado no servidor.' });
+      }
+
+      const client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN.trim() });
+      const preference = new Preference(client);
+      
+      const siteUrl = process.env.SITE_URL || `https://${req.get('host')}`;
+      
+      const orderId = db.collection('orders').doc().id;
+
+      const response = await preference.create({
+        body: {
+          items: [
+            {
+              id: `hotcoins_${packageId}`,
+              title: `${hotCoins} HotCoins`,
+              quantity: 1,
+              unit_price: Number(amount),
+              currency_id: 'BRL',
+            }
+          ],
+          payer: {
+            name: decodedToken.name || 'Anônimo',
+            email: decodedToken.email || 'anonimo@example.com',
+          },
+          back_urls: {
+            success: `${siteUrl}/shop?payment=success`,
+            failure: `${siteUrl}/shop?payment=failure`,
+            pending: `${siteUrl}/shop?payment=pending`
+          },
+          auto_return: 'approved',
+          notification_url: `${siteUrl}/api/webhook`,
+          external_reference: JSON.stringify({
+            orderId,
+            type: 'hotcoins',
+            buyerId: userId,
+            hotCoins,
+            amount
+          }),
+          payment_methods: {
+            excluded_payment_types: [],
+            installments: 12,
+          }
+        }
+      });
+
+      const orderData = {
+        id: orderId,
+        type: 'hotcoins',
+        packageId,
+        hotCoins,
+        amount: amount,
+        buyerId: userId,
+        status: 'pending',
+        paymentMethod: 'mercado_pago',
+        preferenceId: response.id,
+        createdAt: new Date().toISOString(),
+      };
+      
+      await db.collection('orders').doc(orderId).set(orderData);
+      saveToMinioDB('orders', orderId, orderData).catch(() => {});
+
+      return res.json({ init_point: response.init_point });
+    } catch (error: any) {
+      console.error('Error creating MP preference for hotcoins:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post('/api/create-mercadopago-preference', async (req, res) => {
     try {
       const { serviceId, serviceTitle, amount, sellerId, buyerId, buyerName, buyerEmail } = req.body;
@@ -1346,10 +1435,47 @@ async function startServer() {
         await orderRef.set(updateOrder, { merge: true });
         saveToMinioDB('orders', orderId, { ...currentData, ...updateOrder }).catch(() => {});
         
+        
         console.log(`[Webhook] Order ${orderId} updated to status: ${newStatus}`);
 
+        // --- Process HotCoins Purchases ---
+        if (newStatus === 'paid' && currentData.status !== 'paid' && currentData.status !== 'delivered' && externalReference.type === 'hotcoins') {
+          try {
+            const buyerId = externalReference.buyerId;
+            const hotCoins = Number(externalReference.hotCoins) || 0;
+            if (buyerId && hotCoins > 0) {
+              const userRef = db.collection('users').doc(buyerId);
+              
+              // Increment hotcoins atomically
+              const { FieldValue } = require('firebase-admin/firestore');
+              await userRef.update({
+                hotCoins: FieldValue.increment(hotCoins)
+              });
+
+              // Log transaction
+              const transRef = db.collection('hotcoin_transactions').doc();
+              const transData = {
+                userId: buyerId,
+                amount: hotCoins,
+                type: 'earn',
+                description: `Compra de Pacote de ${hotCoins} HotCoins`,
+                createdAt: new Date().toISOString()
+              };
+              await transRef.set(transData);
+              saveToMinioDB('hotcoin_transactions', transRef.id, transData).catch(() => {});
+
+              // Mark order as delivered immediately since it's digital currency
+              await orderRef.set({ status: 'delivered', updatedAt: new Date().toISOString() }, { merge: true });
+              console.log(`[Webhook] Credited ${hotCoins} HotCoins to user ${buyerId} for order ${orderId}`);
+            }
+          } catch (err) {
+            console.error('[Webhook] Error processing hotcoins:', err);
+          }
+        }
+
         // --- Send Emails Only If It Just Transitioned to Paid ---
-        if (newStatus === 'paid' && currentData.status !== 'paid' && currentData.status !== 'delivered') {
+
+        if (newStatus === 'paid' && currentData.status !== 'paid' && currentData.status !== 'delivered' && externalReference.type !== 'hotcoins') {
           try {
             const sellerSnap = await db.collection('users').doc(externalReference.sellerId).get();
             const buyerSnap = await db.collection('users').doc(externalReference.buyerId).get();

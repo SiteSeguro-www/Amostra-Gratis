@@ -84,7 +84,7 @@ service cloud.firestore {
       allow create: if isOwner(userId) && isValidUser(incoming());
       allow update: if (isOwner(userId) || isAdmin()) && (
         isAdmin() || 
-        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'coverURL', 'bio', 'username', 'links', 'mercadoPagoId', 'balance', 'totalRating', 'reviewCount', 'rating', 'followersCount', 'followingCount'])
+        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'coverURL', 'bio', 'username', 'links', 'mercadoPagoId', 'balance', 'totalRating', 'reviewCount', 'rating', 'followersCount', 'followingCount', 'hotCoins', 'fontStyle', 'borderStyle', 'backgroundStyle', 'badges'])
       ) || (
         isSignedIn() && incoming().diff(existing()).affectedKeys().hasOnly(['followersCount'])
       );
@@ -224,6 +224,17 @@ service cloud.firestore {
       allow read: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
       allow create: if isSignedIn() && incoming().userId == request.auth.uid;
       allow delete: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
+    }
+
+    // -------------------------------------------------------------------------
+    // USER ITEMS
+    // -------------------------------------------------------------------------
+
+    match /user_items/{id} {
+      allow read: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow update: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin();
     }
 
     // -------------------------------------------------------------------------
