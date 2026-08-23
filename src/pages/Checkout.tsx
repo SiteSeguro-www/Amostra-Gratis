@@ -51,6 +51,32 @@ export default function Checkout() {
 
     async function fetchServiceAndSeller() {
       if (!serviceId) return;
+
+      if (serviceId.startsWith('coins_')) {
+        const pkg = COIN_PACKAGES.find(p => p.id === serviceId);
+        if (pkg) {
+          setService({
+            id: pkg.id,
+            title: pkg.title,
+            price: pkg.price,
+            sellerId: 'packzinhu',
+            sellerName: 'Packzinhu',
+            coverUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop',
+            description: `Recarga de ${pkg.amount} HotCoins para sua carteira.`,
+          });
+          setSeller({
+            uid: 'packzinhu',
+            displayName: 'Packzinhu Oficial',
+            username: 'packzinhu',
+            verified: true,
+            photoURL: '/favicon.png',
+          });
+          setLoading(false);
+          return;
+        }
+      }
+
+      if (!serviceId) return;
       try {
         const docRef = doc(db, 'services', serviceId);
         const docSnap = await getDoc(docRef);
@@ -91,19 +117,39 @@ export default function Checkout() {
     setError(null);
 
     try {
-      const response = await fetch(getApiUrl('/api/create-mercadopago-preference'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          serviceId: service.id,
-          serviceTitle: service.title,
-          amount: Number(service.price),
-          sellerId: service.sellerId,
-          buyerId: user.uid,
-          buyerName: user.displayName || user.email?.split('@')[0] || 'Usuário',
-          buyerEmail: user.email,
-        }),
-      });
+      let response;
+      if (service.id.startsWith('coins_')) {
+        const pkg = COIN_PACKAGES.find(p => p.id === service.id);
+        const idToken = await user.getIdToken();
+        response = await fetch(getApiUrl('/api/create-wallet-preference'), {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`
+          },
+          body: JSON.stringify({
+            packageId: service.id,
+            amount: Number(service.price),
+            hotCoins: pkg ? pkg.amount : 0,
+            buyerEmail: user.email || 'test@example.com',
+            buyerName: user.displayName || user.email?.split('@')[0] || 'Usuário'
+          }),
+        });
+      } else {
+        response = await fetch(getApiUrl('/api/create-mercadopago-preference'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            serviceId: service.id,
+            serviceTitle: service.title,
+            amount: Number(service.price),
+            sellerId: service.sellerId,
+            buyerId: user.uid,
+            buyerName: user.displayName || user.email?.split('@')[0] || 'Usuário',
+            buyerEmail: user.email,
+          }),
+        });
+      }
 
       const text = await response.text();
       let data;
@@ -390,10 +436,10 @@ export default function Checkout() {
 
               <ReviewComponent reviews={reviews} />
 
-              <div className="mt-6 flex items-center justify-center gap-4 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-                <img src="https://logodownload.org/wp-content/uploads/2019/06/mercado-pago-logo.png" alt="Mercado Pago" className="h-4" />
+              <div className="mt-6 flex items-center justify-center gap-4">
+                <img src="https://logodownload.org/wp-content/uploads/2019/06/mercado-pago-logo.png" alt="Mercado Pago" className="h-6 w-auto object-contain" />
                 <div className="w-px h-4 bg-white/20" />
-                <img src="https://logodownload.org/wp-content/uploads/2020/02/pix-logo.png" alt="PIX" className="h-4" />
+                <img src="https://logospng.org/download/pix/logo-pix-1024.png" alt="PIX" className="h-10 w-auto object-contain scale-[1.7] origin-center" />
               </div>
             </div>
 

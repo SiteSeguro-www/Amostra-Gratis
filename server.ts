@@ -1154,7 +1154,7 @@ async function startServer() {
   });
 
   
-  app.post('/api/hotcoins/create-preference', async (req, res) => {
+  app.post('/api/create-wallet-preference', async (req, res) => {
     try {
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -1170,7 +1170,7 @@ async function startServer() {
       }
       
       const userId = decodedToken.uid;
-      const { packageId, amount, hotCoins } = req.body;
+      const { packageId, amount, hotCoins, buyerEmail, buyerName } = req.body;
 
       if (!process.env.MERCADOPAGO_ACCESS_TOKEN || !process.env.MERCADOPAGO_ACCESS_TOKEN.trim()) {
         return res.status(500).json({ error: 'MERCADOPAGO_ACCESS_TOKEN não configurado no servidor.' });
@@ -1195,8 +1195,8 @@ async function startServer() {
             }
           ],
           payer: {
-            name: decodedToken.name || 'Anônimo',
-            email: decodedToken.email || 'anonimo@example.com',
+            name: buyerName || decodedToken.name || 'Anônimo',
+            email: buyerEmail || decodedToken.email || 'test@example.com',
           },
           back_urls: {
             success: `${siteUrl}/shop?payment=success`,

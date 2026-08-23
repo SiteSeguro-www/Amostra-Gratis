@@ -132,54 +132,9 @@ const Shop = () => {
     }
   }, [userProfile]);
 
-  const handleBuyCoins = async (pkg: any) => {
+  const handleBuyCoins = (pkg: any) => {
     if (!user) return navigate('/login');
-    
-    setIsBuying(pkg.id);
-    setModal({
-      show: true,
-      type: 'loading',
-      title: 'Processando...',
-      message: 'Estamos gerando seu link de pagamento no Mercado Pago.'
-    });
-
-    try {
-      const idToken = await user.getIdToken();
-      const response = await fetch(getApiUrl('/api/hotcoins/create-preference'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`
-        },
-        body: JSON.stringify({
-          packageId: pkg.id,
-          amount: pkg.price,
-          hotCoins: pkg.amount
-        })
-      });
-
-      const data = await response.json();
-      if (data.init_point) {
-        window.location.href = data.init_point;
-      } else {
-        setModal({
-          show: true,
-          type: 'error',
-          title: 'Erro na Compra',
-          message: data.error || 'Erro ao processar compra.'
-        });
-      }
-    } catch (error) {
-      console.error('Error buying coins:', error);
-      setModal({
-        show: true,
-        type: 'error',
-        title: 'Erro de Conexão',
-        message: 'Erro ao conectar com Mercado Pago.'
-      });
-    } finally {
-      setIsBuying(null);
-    }
+    navigate('/checkout/' + pkg.id);
   };
 
   const handleBuyItem = async (item: any) => {
@@ -751,9 +706,9 @@ const Shop = () => {
               </div>
 
               <div className="bg-white/5 border border-white/10 p-12 rounded-[2.5rem] text-center max-w-4xl mx-auto backdrop-blur-3xl">
-                <div className="flex justify-center gap-8 mb-8">
-                  <img src="https://logodownload.org/wp-content/uploads/2019/06/mercado-pago-logo.png" alt="Mercado Pago" className="h-8 object-contain filter brightness-200 grayscale opacity-40 hover:opacity-100 transition-opacity" />
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Logo%E2%80%94Pix.svg/2048px-Logo%E2%80%94Pix.svg.png" alt="Pix" className="h-8 object-contain filter brightness-200 grayscale opacity-40 hover:opacity-100 transition-opacity" />
+                <div className="flex justify-center items-center gap-8 mb-8">
+                  <img src="https://logodownload.org/wp-content/uploads/2019/06/mercado-pago-logo.png" alt="Mercado Pago" className="h-8 w-auto object-contain" />
+                  <img src="https://logospng.org/download/pix/logo-pix-1024.png" alt="Pix" className="h-16 w-auto object-contain scale-125 origin-center" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4 uppercase tracking-[0.2em]">Pagamento Seguro e Garantido</h3>
                 <p className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
