@@ -71,11 +71,11 @@ const SHOP_ITEMS = {
   ]
 };
 
-const COIN_PACKAGES = [
-  { id: 'coins_50', amount: 50, price: 5, popular: false, icon: Coins },
-  { id: 'coins_120', amount: 120, price: 10, popular: true, icon: Zap, bonus: '20% BÔNUS' },
-  { id: 'coins_300', amount: 300, price: 20, popular: false, icon: Crown, bonus: '50% BÔNUS' },
-  { id: 'coins_800', amount: 800, price: 50, popular: false, icon: Sparkles, bonus: '100% BÔNUS' },
+export const COIN_PACKAGES = [
+  { id: 'coins_50', title: '50 HotCoins', amount: 50, price: 5, popular: false, icon: Coins },
+  { id: 'coins_120', title: '120 HotCoins', amount: 120, price: 10, popular: true, icon: Zap, bonus: '20% BÔNUS' },
+  { id: 'coins_300', title: '300 HotCoins', amount: 300, price: 20, popular: false, icon: Crown, bonus: '50% BÔNUS' },
+  { id: 'coins_800', title: '800 HotCoins', amount: 800, price: 50, popular: false, icon: Sparkles, bonus: '100% BÔNUS' },
 ];
 
 const Shop = () => {

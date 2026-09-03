@@ -51,6 +51,7 @@ export default function Dashboard() {
   const [showDeletionConfirm, setShowDeletionConfirm] = useState(false);
   const [deletionCode, setDeletionCode] = useState('');
   const [isDeletingLoading, setIsDeletingLoading] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   const isProfileComplete = () => {
     return !!(accountName.trim() && cpf.trim() && rgCnh.trim() && pixKey.trim());
@@ -66,15 +67,17 @@ export default function Dashboard() {
   };
 
   const handleWithdraw = async () => {
+    if (isWithdrawing) return;
     if (!isProfileComplete()) {
       alert('⚠️ Para solicitar resgate, preencha seus Dados Pessoais (Nome, CPF, RG/CNH e Chave PIX) nas Configurações da conta.');
       setSearchParams({ tab: 'settings' });
       return;
     }
     if (userBalance > 0) {
+      setIsWithdrawing(true);
       try {
         const token = await auth.currentUser?.getIdToken();
-        if (!token) throw new Error("Usuário não autenticado.");
+        if (!token) throw new Error("Usuário não autenticado. Faça login novamente.");
         const response = await fetch(getApiUrl('/api/account/rescue-balance'), {
           method: 'POST',
           headers: { 
@@ -82,14 +85,22 @@ export default function Dashboard() {
             'Authorization': `Bearer ${token}`
           }
         });
-        const data = await response.json();
-        if (data.success) {
+        let data: any = {};
+        try {
+          data = await response.json();
+        } catch {
+          data = {};
+        }
+
+        if (response.ok && data.success) {
           alert('Solicitação de saque enviada com sucesso!');
         } else {
-          alert('Erro ao solicitar saque: ' + data.error);
+          alert('Erro ao solicitar saque: ' + (data.error || `Servidor indisponível (${response.status})`));
         }
-      } catch (error) {
-        alert('Erro ao solicitar saque: ' + (error.message || error));
+      } catch (error: any) {
+        alert('Erro ao solicitar saque: ' + (error?.message || error));
+      } finally {
+        setIsWithdrawing(false);
       }
     } else {
       alert('Você não possui saldo disponível.');
@@ -878,9 +889,10 @@ export default function Dashboard() {
                   </div>
                   <button 
                     onClick={handleWithdraw}
-                    className="mt-8 w-full py-4 bg-white text-black hover:bg-gray-200 font-black rounded-2xl transition-all shadow-xl active:scale-[0.98]"
+                    disabled={isWithdrawing}
+                    className="mt-8 w-full py-4 bg-white text-black hover:bg-gray-200 font-black rounded-2xl transition-all shadow-xl active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                   >
-                    Resgatar Saldo
+                    {isWithdrawing ? 'Processando...' : 'Resgatar Saldo'}
                   </button>
                 </div>
 

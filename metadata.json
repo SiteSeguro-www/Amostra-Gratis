@@ -1,5 +1,8 @@
 {
   "name": "PackZinhu",
   "description": "PackZinhu Como Vender Foto Pé Packzin Sexting Packzinho fotos pés Sugar daddy Site.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

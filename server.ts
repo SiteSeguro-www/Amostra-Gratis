@@ -12,12 +12,12 @@ import nodemailer from 'nodemailer';
 import compression from 'compression';
 import webPush from 'web-push';
 import { getStorage } from 'firebase-admin/storage';
-import { handleUpload } from './api/upload.js';
-import { handlePresignedUrl } from './api/presigned-url.js';
+import { handleUpload } from './api-handlers/upload.js';
+import { handlePresignedUrl } from './api-handlers/presigned-url.js';
 import { getMediaByUser } from './src/lib/db.js';
-import { saveToMinioDB } from './api/minio-db.js';
+import { saveToMinioDB } from './api-handlers/minio-db.js';
 
-import { backupData } from './api/backup.js';
+import { backupData } from './api-handlers/backup.js';
 import multer from 'multer';
 import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { s3Client, MINIO_BUCKET, MINIO_ENDPOINT_RAW } from './src/lib/s3.js';
@@ -542,7 +542,7 @@ async function startServer() {
   });
 
   app.all('/api/packzinhu-db', async (req, res) => {
-    const handler = (await import('./api/packzinhu-db')).default;
+    const handler = (await import('./api-handlers/packzinhu-db.js')).default;
     return handler(req, res);
   });
   app.delete(['/api/upload', '/api/packzinhu-db-upload'], async (req, res) => {
@@ -790,7 +790,7 @@ async function startServer() {
       const token = (authHeader as string).split('Bearer ')[1];
       const decodedUser = await adminAuth.verifyIdToken(token);
 
-      const { saveToMinioDB } = await import('./api/minio-db.js');
+      const { saveToMinioDB } = await import('./api-handlers/minio-db.js');
       const { collection, docId, data } = req.body;
       
       // Basic authorship check: if data has userId, ensure it matches
@@ -816,7 +816,7 @@ async function startServer() {
       const token = (authHeader as string).split('Bearer ')[1];
       const decodedUser = await adminAuth.verifyIdToken(token);
 
-      const { deleteFromMinioDB, getSingleDocumentFromMinioDB } = await import('./api/minio-db.js');
+      const { deleteFromMinioDB, getSingleDocumentFromMinioDB } = await import('./api-handlers/minio-db.js');
       const { collection, docId } = req.body;
       if (!collection || !docId) return res.status(400).json({ error: "collection and docId required" });
       
@@ -835,7 +835,7 @@ async function startServer() {
 
   app.get('/api/minio-db/load', async (req, res) => {
     try {
-      const { loadFromMinioDB } = await import('./api/minio-db.js');
+      const { loadFromMinioDB } = await import('./api-handlers/minio-db.js');
       const { collection } = req.query;
       if (!collection) return res.status(400).json({ error: "collection query param required" });
       const result = await loadFromMinioDB(collection as string);
@@ -847,53 +847,13 @@ async function startServer() {
   // --------------------------
 
   // Withdrawal Request
-  app.post('/api/account/rescue-balance', async (req, res) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ error: 'Unauthorized' });
-
+  app.post(['/api/account/rescue-balance', '/api/rescue-balance'], async (req, res) => {
     try {
-      const token = authHeader.split(' ')[1];
-      const decodedToken = await adminAuth.verifyIdToken(token);
-      const userId = decodedToken.uid;
-      
-      const userRef = db.collection('users').doc(userId);
-      const userSnap = await userRef.get();
-      
-      if (!userSnap.exists) return res.status(404).json({ error: 'User not found' });
-      
-      const userData = userSnap.data()!;
-      const balance = userData.balance || 0;
-      
-      if (balance <= 0) return res.status(400).json({ error: 'Saldo insuficiente' });
-
-      const bankSnap = await db.collection('bank_accounts').doc(userId).get();
-      const pixKey = bankSnap.exists ? bankSnap.data()?.pixKey : '';
-
-      if (!pixKey) return res.status(400).json({ error: 'Chave PIX não configurada' });
-
-      // Create withdrawal request
-      const requestData = {
-        userId,
-        userEmail: userData.email || "",
-        userName: userData.displayName || userData.username || "Usuário",
-        amount: balance,
-        status: 'pending',
-        pixKey,
-        createdAt: new Date().toISOString(),
-      };
-
-      const withdrawalRef = await db.collection('withdrawal_requests').add(requestData);
-      saveToMinioDB('withdrawal_requests', withdrawalRef.id, requestData).catch(() => {});
-      
-      // Reset user balance
-      const updateBalance = { balance: 0 };
-      await userRef.update(updateBalance);
-      saveToMinioDB('users', userId, { ...userData, ...updateBalance }).catch(() => {});
-
-      res.json({ success: true });
+      const handler = (await import('./api-handlers/account/rescue-balance.js')).default;
+      return handler(req, res);
     } catch (error: any) {
       console.error('Withdraw error:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error.message || 'Erro ao processar saque' });
     }
   });
 

@@ -624,18 +624,18 @@ export default function Layout() {
       <header
         className={`sticky top-0 z-50 transition-colors ${isAdminRoute ? "bg-[#131524]" : "bg-[#0f0f0f] border-b border-white/5"}`}
       >
-        <div className="max-w-screen-2xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+        <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 h-14 flex items-center justify-between gap-1 sm:gap-4 w-full">
           {/* Logo */}
-          <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-4 flex-shrink-0">
             <Link
               to="/"
-              className="flex items-center gap-1.5 text-xl font-black tracking-tighter text-white group"
+              className="flex items-center gap-1 sm:gap-1.5 text-xl font-black tracking-tighter text-white group"
             >
               <div className="relative">
                 <img
                   src="/favicon.png"
                   alt="Logo"
-                  className="w-8 h-8 rounded-full transition-transform group-hover:scale-110"
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-transform group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-purple-500/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
@@ -645,9 +645,9 @@ export default function Layout() {
             </Link>
             <button
               onClick={() => setShowInstallModal(true)}
-              className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white text-xs font-black rounded-full transition-all ml-1 shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+              className="lg:hidden flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white text-[10px] sm:text-xs font-black rounded-full transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)] flex-shrink-0"
             >
-              <Download className="w-3.5 h-3.5" />
+              <Download className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               APP
             </button>
           </div>
@@ -690,7 +690,7 @@ export default function Layout() {
           </div>
 
           {/* Stats removed / Mobile Install Button Space */}
-          <div className="flex flex-col items-center justify-center flex-1 min-w-0">
+          <div className="hidden sm:flex flex-col items-center justify-center flex-1 min-w-0">
             {/* Mobile Install Button */}
             {deferredPrompt && (
               <button
@@ -703,16 +703,16 @@ export default function Layout() {
           </div>
 
           {/* Actions (Right) */}
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-0.5 sm:gap-2 md:gap-4 flex-shrink-0">
             {/* Language Selector */}
-            <div className="relative" ref={langMenuRef}>
+            <div className="relative flex-shrink-0" ref={langMenuRef}>
               <button
                 onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 transition-all text-xs font-black text-gray-400 hover:text-white uppercase tracking-wider"
+                className="flex items-center gap-1 px-1.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 transition-all text-[10px] sm:text-xs font-black text-gray-400 hover:text-white uppercase tracking-wider"
               >
-                <Globe className="w-4 h-4" />
+                <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">{currentLang.name}</span>
-                <ChevronDown className={`w-3 h-3 transition-transform ${isLangMenuOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-2.5 h-2.5 sm:w-3 sm:h-3 transition-transform ${isLangMenuOpen ? 'rotate-180' : ''}`} />
               </button>
 
               <AnimatePresence>
@@ -756,20 +756,20 @@ export default function Layout() {
               <>
                 <Link
                   to="/chat/list"
-                  className="flex flex-col items-center gap-0.5 hover:bg-white/10 rounded-xl px-2 sm:px-3 py-1 transition-colors relative group"
+                  className="flex flex-col items-center justify-center hover:bg-white/10 rounded-lg sm:rounded-xl p-1 sm:px-3 sm:py-1 transition-colors relative group flex-shrink-0"
                 >
-                  <MessageSquare className="w-6 h-6 text-gray-300 group-hover:text-white transition-colors" />
+                  <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-gray-300 group-hover:text-white transition-colors" />
                 </Link>
 
-                <div className="relative" ref={notificationsRef}>
+                <div className="relative flex-shrink-0" ref={notificationsRef}>
                   <button
                     onClick={() => setNotificationsOpen(!notificationsOpen)}
-                    className="flex flex-col items-center gap-0.5 hover:bg-white/10 rounded-xl px-2 sm:px-3 py-1 transition-colors relative group"
+                    className="flex flex-col items-center justify-center hover:bg-white/10 rounded-lg sm:rounded-xl p-1 sm:px-3 sm:py-1 transition-colors relative group"
                   >
                     <div className="relative">
-                      <Bell className="w-6 h-6 text-gray-300 group-hover:text-white transition-colors" />
+                      <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-gray-300 group-hover:text-white transition-colors" />
                       {unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#0f0f0f]">
+                        <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[7px] sm:text-[8px] font-bold w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full flex items-center justify-center border border-[#0f0f0f]">
                           {unreadCount}
                         </span>
                       )}
@@ -842,16 +842,16 @@ export default function Layout() {
 
                 <Link
                   to="/dashboard"
-                  className="flex flex-col items-center gap-0.5 hover:bg-white/10 rounded-xl px-2 sm:px-3 py-1 transition-colors"
+                  className="flex flex-col items-center justify-center gap-0.5 hover:bg-white/10 rounded-lg sm:rounded-xl px-1 sm:px-3 py-0.5 sm:py-1 transition-colors flex-shrink-0"
                 >
-                  <DollarSign className="w-6 h-6 text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.4)]" />
-                  <span className="text-[10px] font-bold">Saldo</span>
+                  <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.4)]" />
+                  <span className="text-[9px] sm:text-[10px] font-bold">Saldo</span>
                 </Link>
 
-                <div className="relative ml-2" ref={dropdownRef}>
+                <div className="relative ml-0.5 sm:ml-2 flex-shrink-0" ref={dropdownRef}>
                   <button
                     onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="w-8 h-8 rounded-full overflow-hidden border border-white/10 hover:border-white/30 transition-colors"
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full overflow-hidden border border-white/10 hover:border-white/30 transition-colors flex items-center justify-center"
                   >
                     <img
                       src={photoURL}
@@ -914,18 +914,18 @@ export default function Layout() {
                 </div>
               </>
             ) : (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
                 <Link
                   to="/login"
-                  className="flex items-center gap-2 px-3 py-1.5 border border-white/20 rounded-full hover:bg-blue-500/10 hover:border-blue-500/50 transition-colors group"
+                  className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 border border-white/20 rounded-full hover:bg-blue-500/10 hover:border-blue-500/50 transition-colors group"
                 >
-                  <div className="p-1 rounded-full border border-gray-400 group-hover:border-blue-400">
+                  <div className="p-0.5 sm:p-1 rounded-full border border-gray-400 group-hover:border-blue-400">
                     <User
-                      size={14}
-                      className="text-gray-400 group-hover:text-blue-400"
+                      size={12}
+                      className="text-gray-400 group-hover:text-blue-400 sm:w-3.5 sm:h-3.5"
                     />
                   </div>
-                  <span className="text-sm font-bold text-blue-400">
+                  <span className="text-xs sm:text-sm font-bold text-blue-400">
                     Fazer login
                   </span>
                 </Link>

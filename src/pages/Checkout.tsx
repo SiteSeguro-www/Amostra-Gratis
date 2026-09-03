@@ -6,6 +6,7 @@ import { useAuth } from '../components/FirebaseAuthProvider';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, ShieldCheck, CreditCard, QrCode, ArrowLeft, Lock, CheckCircle2, AlertCircle, ChevronRight, ShoppingCart } from 'lucide-react';
 import { getApiUrl } from '../config';
+import { COIN_PACKAGES } from './Shop';
 
 const ReviewComponent = ({ reviews }: { reviews: any[] }) => {
   if (reviews.length === 0) return null;
