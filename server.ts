@@ -847,13 +847,13 @@ async function startServer() {
   // --------------------------
 
   // Withdrawal Request
-  app.post('/api/withdraw', async (req, res) => {
+  app.post('/api/account/rescue-balance', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) return res.status(401).json({ error: 'Unauthorized' });
 
     try {
       const token = authHeader.split(' ')[1];
-      const decodedToken = await getAuth().verifyIdToken(token);
+      const decodedToken = await adminAuth.verifyIdToken(token);
       const userId = decodedToken.uid;
       
       const userRef = db.collection('users').doc(userId);
@@ -874,8 +874,8 @@ async function startServer() {
       // Create withdrawal request
       const requestData = {
         userId,
-        userEmail: userData.email,
-        userName: userData.displayName || userData.username,
+        userEmail: userData.email || "",
+        userName: userData.displayName || userData.username || "Usuário",
         amount: balance,
         status: 'pending',
         pixKey,

@@ -74,7 +74,8 @@ export default function Dashboard() {
     if (userBalance > 0) {
       try {
         const token = await auth.currentUser?.getIdToken();
-        const response = await fetch(getApiUrl('/api/withdraw'), {
+        if (!token) throw new Error("Usuário não autenticado.");
+        const response = await fetch(getApiUrl('/api/account/rescue-balance'), {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -88,7 +89,7 @@ export default function Dashboard() {
           alert('Erro ao solicitar saque: ' + data.error);
         }
       } catch (error) {
-        alert('Erro ao solicitar saque.');
+        alert('Erro ao solicitar saque: ' + (error.message || error));
       }
     } else {
       alert('Você não possui saldo disponível.');
@@ -222,6 +223,7 @@ export default function Dashboard() {
           setAgencyAccount(data.agencyAccount || '');
           setAccountName(data.accountName || '');
           setCpf(data.cpf || '');
+          setRgCnh(data.rgCnh || '');
           setPixKey(data.pixKey || '');
         }
       } catch (error) {
@@ -301,7 +303,7 @@ export default function Dashboard() {
         accountName,
         cpf,
         rgCnh,
-        pixKey,
+        pixKey: pixKey.trim(),
         updatedAt: new Date().toISOString()
       };
       await setDoc(doc(db, 'bank_accounts', user.uid), bankData);
@@ -531,6 +533,7 @@ export default function Dashboard() {
 
     try {
       const token = await auth.currentUser?.getIdToken();
+        if (!token) throw new Error("Usuário não autenticado.");
       const response = await fetch(getApiUrl('/api/orders/confirm-delivery'), {
         method: 'POST',
         headers: { 
@@ -592,6 +595,7 @@ export default function Dashboard() {
       }
 
       alert('Entrega confirmada! O saldo foi liberado para o vendedor.');
+      window.location.reload();
     } catch (error: any) {
       console.error('Error confirming delivery:', error);
       alert('Erro ao confirmar entrega: ' + error.message);
@@ -603,6 +607,7 @@ export default function Dashboard() {
 
     try {
       const token = await auth.currentUser?.getIdToken();
+        if (!token) throw new Error("Usuário não autenticado.");
       const response = await fetch(getApiUrl(`/api/orders/${orderId}/status`), {
         method: 'POST',
         headers: { 
@@ -664,6 +669,7 @@ export default function Dashboard() {
       }
 
       alert(successMsg);
+      window.location.reload();
     } catch (error: any) {
       console.error('Error updating order status:', error);
       alert('Erro ao atualizar pedido: ' + error.message);
@@ -1147,20 +1153,47 @@ export default function Dashboard() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex flex-col items-center md:items-end gap-3 min-w-[150px]">
-                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                          sale.status === 'delivered' || sale.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                          sale.status === 'pending' ? 'bg-amber-500/20 text-amber-400' : 'bg-white/5 text-gray-400'
-                        }`}>
-                          {sale.status === 'delivered' ? 'Entregue' : sale.status === 'completed' ? 'Concluído' : 'Pendente'}
-                        </span>
-                        <Link 
-                          to={`/chat/${sale.buyerId || sale.buyer_id}`}
-                          className="px-6 py-2 bg-white/5 hover:bg-white/10 text-white text-[10px] font-black rounded-xl border border-white/10 transition-all uppercase"
-                        >
-                          Detalhes
-                        </Link>
-                      </div>
+                      <div className="flex flex-col items-center md:items-end gap-3 min-w-[200px]">
+      <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+        sale.status === 'delivered' || sale.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+        sale.status === 'accepted' ? 'bg-blue-500/20 text-blue-400' :
+        sale.status === 'completed_by_seller' ? 'bg-purple-500/20 text-purple-400' :
+        sale.status === 'refused' ? 'bg-red-500/20 text-red-400' :
+        sale.status === 'disputed' ? 'bg-red-600/20 text-red-100' :
+        sale.status === 'paid' ? 'bg-amber-500/20 text-amber-400' : 'bg-white/5 text-gray-400'
+      }`}>
+        {sale.status === 'delivered' ? 'Entregue (Saldo Liberado)' : 
+         sale.status === 'completed' ? 'Concluído' : 
+         sale.status === 'accepted' ? 'Aceito (Em andamento)' :
+         sale.status === 'completed_by_seller' ? 'Aguardando Cliente' :
+         sale.status === 'refused' ? 'Recusado' :
+         sale.status === 'disputed' ? 'Em Disputa' :
+         sale.status === 'paid' ? 'Novo Pedido (Pago)' : 'Pendente'}
+      </span>
+      <div className="flex flex-wrap justify-end gap-2 mt-2">
+        {sale.status === 'paid' && (
+          <>
+            <button onClick={() => handleAcceptOrder(sale)} className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-[10px] font-black rounded-xl uppercase transition-all">
+              Aceitar
+            </button>
+            <button onClick={() => handleRefuseOrder(sale)} className="px-4 py-2 bg-red-600/20 hover:bg-red-500/40 text-red-500 text-[10px] font-black rounded-xl uppercase transition-all">
+              Recusar
+            </button>
+          </>
+        )}
+        {sale.status === 'accepted' && (
+          <button onClick={() => handleMarkAsDelivered(sale)} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black rounded-xl uppercase transition-all">
+            Marcar como Entregue
+          </button>
+        )}
+        <Link 
+          to={`/chat/${sale.buyerId || sale.buyer_id}`}
+          className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-[10px] font-black rounded-xl border border-white/10 transition-all uppercase"
+        >
+          Detalhes / Chat
+        </Link>
+      </div>
+    </div>
                     </div>
                   ))
                 )}
@@ -1197,36 +1230,63 @@ export default function Dashboard() {
                           <div className="flex flex-col">
                             <span className="text-[10px] text-gray-600 uppercase font-black tracking-widest">Status</span>
                             <span className={`text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded-full mt-1 ${
-                              purchase.status === 'delivered' || purchase.status === 'completed' ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'
+                              purchase.status === 'delivered' || purchase.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                              purchase.status === 'completed_by_seller' ? 'bg-purple-500/20 text-purple-400' :
+                              purchase.status === 'accepted' ? 'bg-blue-500/20 text-blue-400' :
+                              purchase.status === 'disputed' ? 'bg-red-600/20 text-red-100' :
+                              purchase.status === 'refused' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'
                             }`}>
-                              {purchase.status === 'delivered' ? 'Disponível' : 'Em processamento'}
+                              {purchase.status === 'delivered' ? 'Disponível' : 
+                              purchase.status === 'completed_by_seller' ? 'Aguardando sua confirmação' : 
+                              purchase.status === 'accepted' ? 'Em andamento' :
+                              purchase.status === 'refused' ? 'Recusado' :
+                              purchase.status === 'disputed' ? 'Em Disputa' :
+                              'Em processamento'}
                             </span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Link 
-                          to={purchase.status === 'pending' ? `/checkout/${purchase.serviceId || purchase.service_id}` : `/chat/${purchase.sellerId || purchase.seller_id}`}
-                          className="px-6 py-4 bg-purple-600 hover:bg-purple-500 text-white text-xs font-black rounded-2xl transition-all shadow-xl shadow-purple-600/20 uppercase"
-                        >
-                          Acessar Conteúdo
-                        </Link>
-                        {purchase.status === 'delivered' && !purchase.rated && (
-                          <button 
-                            onClick={() => {
-                              setSelectedOrderForRating(purchase);
-                              setShowRatingModal(true);
-                            }}
-                            className="p-4 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 rounded-2xl border border-amber-500/20 transition-all"
-                            title="Avaliar este serviço"
-                          >
-                            <Star className="w-5 h-5" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))
-                )}
+                      <div className="flex flex-col items-end gap-2">
+      <div className="flex flex-wrap justify-end gap-2">
+        <Link 
+          to={`/chat/${purchase.sellerId || purchase.seller_id}`}
+          className="px-6 py-4 bg-purple-600 hover:bg-purple-500 text-white text-xs font-black rounded-2xl transition-all shadow-xl shadow-purple-600/20 uppercase"
+        >
+          Acessar Chat
+        </Link>
+        {purchase.status === 'completed_by_seller' && (
+          <button 
+            onClick={() => handleConfirmDelivery(purchase)}
+            className="px-6 py-4 bg-green-600 hover:bg-green-500 text-white text-xs font-black rounded-2xl transition-all shadow-xl shadow-green-600/20 uppercase"
+          >
+            Confirmar Recebimento
+          </button>
+        )}
+        {(purchase.status === 'paid' || purchase.status === 'completed_by_seller' || purchase.status === 'accepted') && (
+           <button 
+            onClick={() => handleDisputeOrder(purchase)}
+            className="px-4 py-4 bg-red-600/20 hover:bg-red-500/30 text-red-400 border border-red-500/20 text-xs font-black rounded-2xl transition-all uppercase"
+          >
+            Abrir Disputa
+          </button>
+        )}
+        {purchase.status === 'delivered' && !purchase.rated && (
+          <button 
+            onClick={() => {
+              setSelectedOrderForRating(purchase);
+              setShowRatingModal(true);
+            }}
+            className="p-4 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 rounded-2xl border border-amber-500/20 transition-all"
+            title="Avaliar este serviço"
+          >
+            <Star className="w-5 h-5" />
+          </button>
+        )}
+      </div>
+    </div>
+  </div>
+  ))
+)}
               </div>
             </div>
           )}
