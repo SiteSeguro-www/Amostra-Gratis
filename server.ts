@@ -1708,6 +1708,16 @@ async function startServer() {
   });
 
   // Vite middleware for development
+  // Global error handler for API routes to always return JSON
+  app.all('/api/*', (req, res, next) => {
+    res.status(404).json({ error: `API route not found: ${req.method} ${req.url}` });
+  });
+
+  app.use('/api', (err: any, req: any, res: any, next: any) => {
+    console.error('Unhandled API Error:', err);
+    res.status(500).json({ error: 'Erro interno no servidor', details: err.message });
+  });
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
