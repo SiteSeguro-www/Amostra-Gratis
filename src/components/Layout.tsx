@@ -619,6 +619,18 @@ export default function Layout() {
             <stop offset="50%" stopColor="#f97316" />
             <stop offset="100%" stopColor="#eab308" />
           </linearGradient>
+          <linearGradient
+            id="premium-globe-gradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
+            <stop offset="0%" stopColor="#a855f7" />
+            <stop offset="33%" stopColor="#ffffff" />
+            <stop offset="66%" stopColor="#3b82f6" />
+            <stop offset="100%" stopColor="#22c55e" />
+          </linearGradient>
         </defs>
       </svg>
       <header
@@ -676,7 +688,12 @@ export default function Layout() {
               title="Feed"
               className="flex items-center gap-2 px-4 py-2 hover:bg-white/5 rounded-full transition-all group"
             >
-              <MessageSquare className={`w-5 h-5 transition-colors ${location.pathname === "/feed" ? "text-pink-400 drop-shadow-[0_0_8px_rgba(244,114,182,0.5)]" : "text-pink-500 group-hover:text-pink-400"}`} />
+              <div className="relative flex items-center justify-center">
+                <Globe 
+                  className={`w-5 h-5 animate-[spin_6s_linear_infinite] transition-all duration-300 ${location.pathname === "/feed" ? "scale-110 drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]" : "drop-shadow-[0_0_5px_rgba(168,85,247,0.4)] group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]"}`} 
+                  style={{ stroke: 'url(#premium-globe-gradient)' }} 
+                />
+              </div>
               <span className={`text-sm font-semibold transition-colors ${location.pathname === "/feed" ? "text-white" : "text-gray-400 group-hover:text-white"}`}>Feed</span>
             </Link>
             <Link
@@ -1101,8 +1118,9 @@ export default function Layout() {
           to="/feed"
           className={`flex flex-col items-center justify-center gap-1 transition-all ${location.pathname === "/feed" ? "text-gray-200" : "text-gray-500/70"}`}
         >
-          <MessageSquare
-            className={`w-6 h-6 transition-all ${location.pathname === "/feed" ? "text-pink-400 drop-shadow-[0_0_8px_rgba(244,114,182,0.5)]" : "text-pink-500"}`}
+          <Globe
+            className={`w-6 h-6 animate-[spin_6s_linear_infinite] transition-all duration-300 ${location.pathname === "/feed" ? "scale-110 drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]" : "drop-shadow-[0_0_5px_rgba(168,85,247,0.4)]"}`}
+            style={{ stroke: 'url(#premium-globe-gradient)' }}
           />
           <span className="text-[10px] font-black uppercase tracking-wider">Feed</span>
         </Link>
