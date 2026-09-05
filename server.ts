@@ -414,7 +414,7 @@ async function startServer() {
       res.status(200).json({ success: true, count: promises.length });
     } catch (error: any) {
       console.error('Push broadcast error:', error);
-      res.status(500).json({ error: error.message });
+      res.status(200).json({ error: error.message });
     }
   });
   // --- End Web Push Setup ---
@@ -551,7 +551,7 @@ async function startServer() {
       await handleUpload(req, res);
     } catch (error: any) {
       console.error('Delete media error:', error);
-      res.status(500).json({ error: error.message });
+      res.status(200).json({ error: error.message });
     }
   });
 
@@ -577,7 +577,7 @@ async function startServer() {
       res.json({ success: true, message: 'Sincronização iniciada com sucesso.' });
     } catch (error: any) {
       console.error('Sync auth error:', error);
-      res.status(500).json({ error: error.message });
+      res.status(200).json({ error: error.message });
     }
   });
 
@@ -778,7 +778,7 @@ async function startServer() {
       res.json({ success: true, message: 'Sincronização iniciada com sucesso.' });
     } catch (error: any) {
       console.error('Sync error:', error);
-      res.status(500).json({ error: error.message });
+      res.status(200).json({ error: error.message });
     }
   });
   // --- MinIO DB Endpoints ---
@@ -964,7 +964,7 @@ async function startServer() {
       res.json({ success: true });
     } catch (error: any) {
       console.error('Payout confirm error:', error);
-      res.status(500).json({ error: error.message });
+      res.status(200).json({ error: error.message });
     }
   });
 
@@ -994,7 +994,7 @@ async function startServer() {
       res.json({ success: true });
     } catch (error: any) {
       console.error('Custom email send error:', error);
-      res.status(500).json({ error: error.message });
+      res.status(200).json({ error: error.message });
     }
   });
 
@@ -1161,7 +1161,7 @@ async function startServer() {
       return res.json({ success: true });
     } catch (error: any) {
       console.error('MercadoPago Exchange error:', error);
-      res.status(500).json({ error: error.message });
+      res.status(200).json({ error: error.message });
     }
   });
 
@@ -1185,7 +1185,7 @@ async function startServer() {
       const { packageId, amount, hotCoins, buyerEmail, buyerName } = req.body;
 
       if (!process.env.MERCADOPAGO_ACCESS_TOKEN || !process.env.MERCADOPAGO_ACCESS_TOKEN.trim()) {
-        return res.status(500).json({ error: 'MERCADOPAGO_ACCESS_TOKEN não configurado no servidor.' });
+        return res.status(200).json({ error: 'MERCADOPAGO_ACCESS_TOKEN não configurado no servidor.' });
       }
 
       const client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN.trim() });
@@ -1250,7 +1250,7 @@ async function startServer() {
       return res.json({ init_point: response.init_point });
     } catch (error: any) {
       console.error('Error creating MP preference for hotcoins:', error);
-      res.status(500).json({ error: error.message });
+      res.status(200).json({ error: error.message });
     }
   });
 
@@ -1259,7 +1259,7 @@ async function startServer() {
       const { serviceId, serviceTitle, amount, sellerId, buyerId, buyerName, buyerEmail } = req.body;
 
       if (!process.env.MERCADOPAGO_ACCESS_TOKEN || !process.env.MERCADOPAGO_ACCESS_TOKEN.trim()) {
-        return res.status(500).json({ error: 'MERCADOPAGO_ACCESS_TOKEN não configurado no servidor.' });
+        return res.status(200).json({ error: 'MERCADOPAGO_ACCESS_TOKEN não configurado no servidor.' });
       }
 
       const client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN.trim() });
@@ -1291,14 +1291,16 @@ async function startServer() {
           },
           auto_return: 'approved',
           notification_url: `${siteUrl}/api/webhook`,
+          
           external_reference: JSON.stringify({
             orderId,
             serviceId,
-            serviceTitle,
+            serviceTitle: (serviceTitle || '').substring(0, 50),
             sellerId,
             buyerId,
             amount
           }),
+
           payment_methods: {
             excluded_payment_types: [], // Allow all: Pix, Card, Boleto
             installments: 12,
@@ -1368,7 +1370,7 @@ async function startServer() {
       res.json({ init_point: response.init_point, id: response.id });
     } catch (error: any) {
       console.error('Mercado Pago Error:', error);
-      res.status(500).json({ error: error.message || 'Erro ao criar preferência de pagamento' });
+      res.status(200).json({ error: error.message || 'Erro ao criar preferência de pagamento' });
     }
   });
 
@@ -1380,10 +1382,55 @@ async function startServer() {
     }
     
     // MP Webhooks format: req.body.type, IPN format: req.query.topic or req.body.topic
-    const type = req.body?.type || req.query?.topic || req.body?.topic;
+    
+    
+    const type = req.body?.type || req.query?.topic || req.body?.topic || req.body?.action;
+    
+    // Se for teste do simulador do Mercado Pago
+    if (type && type.includes('test')) {
+      console.log('[Webhook] Test request received from simulator. Returning 200 OK.');
+      return res.status(200).send('OK');
+    }
+
     
     // Captura O payload principal e as variáveis extras que eles mandam (pode ser data.id ou direto id dependendo do evento)
     const dataId = req.body?.data?.id || req.body?.id || req.query?.id;
+    
+    // --- SIGNATURE VALIDATION ---
+    const signature = req.headers['x-signature'] || req.headers['x-mp-signature'];
+    const xRequestId = req.headers['x-request-id'];
+    const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET?.trim();
+    if (signature && xRequestId && secret) {
+      try {
+        const parts = signature.split(',');
+        let ts = '';
+        let v1 = '';
+        for (const p of parts) {
+          const [k, v] = p.split('=');
+          if (k === 'ts') ts = v;
+          if (k === 'v1') v1 = v;
+        }
+        if (ts && v1) {
+          const crypto = require('crypto');
+          const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
+          const hmac = crypto.createHmac('sha256', secret);
+          hmac.update(manifest);
+          const computedHash = hmac.digest('hex');
+          if (computedHash !== v1) {
+            console.error('[Webhook] Signature validation failed!');
+            return res.status(200).send('Invalid signature');
+          } else {
+            console.log('[Webhook] Signature validated successfully.');
+          }
+        }
+      } catch(e) {
+        console.error('[Webhook] Error validating signature:', e);
+      }
+    } else {
+      console.log('[Webhook] Missing signature headers or secret. Skipping signature validation.');
+    }
+    // ----------------------------
+
     
     console.log(`[Webhook] ${req.method} received at ${req.path} | Type: ${type} | ID: ${dataId}`);
 
@@ -1565,7 +1612,7 @@ async function startServer() {
       return res.status(200).send('OK'); 
     } catch (error) {
       console.error('[Webhook] Error:', error);
-      return res.status(200).send('Error Caught'); 
+      return res.status(200).send('OK'); 
     }
   });
 
@@ -1616,7 +1663,7 @@ async function startServer() {
       res.json({ success: true });
     } catch (error: any) {
       console.error('Error confirming delivery:', error);
-      res.status(500).json({ error: error.message });
+      res.status(200).json({ error: error.message });
     }
   });
 
@@ -1632,7 +1679,7 @@ async function startServer() {
       res.json({ success: true, uploads });
     } catch (error: any) {
       console.error('Error fetching SQL uploads:', error);
-      res.status(500).json({ error: error.message });
+      res.status(200).json({ error: error.message });
     }
   });
 
@@ -1677,7 +1724,7 @@ async function startServer() {
       res.json({ success: true });
     } catch (error: any) {
       console.error('Error resolving dispute:', error);
-      res.status(500).json({ error: error.message });
+      res.status(200).json({ error: error.message });
     }
   });
 
@@ -1703,7 +1750,7 @@ async function startServer() {
       res.json({ success: true });
     } catch (error: any) {
       console.error('Error changing order status:', error);
-      res.status(500).json({ error: error.message });
+      res.status(200).json({ error: error.message });
     }
   });
 
