@@ -21,7 +21,8 @@ import { backupData } from './api-handlers/backup.js';
 import multer from 'multer';
 import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { s3Client, MINIO_BUCKET, MINIO_ENDPOINT_RAW } from './src/lib/s3.js';
-import firebaseConfig from './firebase-applet-config.json' assert { type: 'json' };
+import fs from 'fs';
+const firebaseConfig = JSON.parse(fs.readFileSync(new URL('./firebase-applet-config.json', import.meta.url), 'utf8'));
 
 dotenv.config({ override: true });
 
@@ -1370,7 +1371,7 @@ async function startServer() {
       res.json({ init_point: response.init_point, id: response.id });
     } catch (error: any) {
       console.error('Mercado Pago Error:', error);
-      res.status(200).json({ error: error.message || 'Erro ao criar preferência de pagamento' });
+      res.status(200).json({ error: error.message || 'Erro ao criar preferência de pagamento', details: error.cause || error });
     }
   });
 
