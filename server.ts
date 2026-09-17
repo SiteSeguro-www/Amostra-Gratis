@@ -22,7 +22,13 @@ import multer from 'multer';
 import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { s3Client, MINIO_BUCKET, MINIO_ENDPOINT_RAW } from './src/lib/s3.js';
 import fs from 'fs';
-const firebaseConfig = JSON.parse(fs.readFileSync(new URL('./firebase-applet-config.json', import.meta.url), 'utf8'));
+let firebaseConfig: any = {};
+try {
+  const configPath = path.join(process.cwd(), 'firebase-applet-config.json');
+  if (fs.existsSync(configPath)) {
+    firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  }
+} catch (e) {}
 
 dotenv.config({ override: true });
 
@@ -36,8 +42,11 @@ async function streamToBuffer(stream: any): Promise<Buffer> {
   });
 }
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+
+
+// __dirname and __filename removed for vercel compatibility
+
+
 
 // Initialize Firebase Admin
 function initializeFirebase() {
@@ -85,7 +94,8 @@ function initializeFirebase() {
 initializeFirebase();
 // Use the specific firestoreDatabaseId from config
 const db = getFirestore(firebaseConfig.firestoreDatabaseId);
-const adminAuth = getAuth();
+let adminAuth: any;
+try { adminAuth = getAuth(); } catch (e) { console.warn('Could not initialize adminAuth in global scope:', e); }
 
 // Initialize Mercado Pago
 const client = new MercadoPagoConfig({
