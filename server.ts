@@ -498,7 +498,8 @@ async function startServer() {
       let decodedUser: any = null;
       try {
         const token = (authHeader as string).split('Bearer ')[1];
-        decodedUser = await adminAuth.verifyIdToken(token);
+        const authInstance = adminAuth || getAuth();
+        decodedUser = await authInstance.verifyIdToken(token);
       } catch (error: any) {
         return res.status(401).json({ error: 'Token invalido.' });
       }

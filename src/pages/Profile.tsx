@@ -791,6 +791,7 @@ export default function Profile() {
       // Only set immutable fields if the profile doesn't exist yet
       if (!profile) {
         updateData.uid = user.uid;
+        updateData.email = user.email || '';
         updateData.username = user.email?.split("@")[0] || user.uid;
         updateData.createdAt = new Date().toISOString();
       }
@@ -1723,13 +1724,13 @@ export default function Profile() {
                           setPhotoProgress(0);
                           try {
                             if (file.type.startsWith('image/') && file.type !== 'image/gif') {
-                              file = await compressImage(file, 800, 800, 0.8);
+                              file = await compressImage(file, 800, 800, 0.8).catch(() => file);
                             }
                             const url = await handleFileUpload(file, "profile", (p) => setPhotoProgress(p));
                             if (url) setEditPhoto(url);
-                          } catch (err) {
+                          } catch (err: any) {
                             console.error("Error uploading photo:", err);
-                            alert("Erro ao enviar imagem. Tente novamente.");
+                            alert(`Erro ao enviar imagem: ${err.message || 'Tente novamente'}`);
                           } finally {
                             setUploading(false);
                             setPhotoProgress(0);
@@ -1771,13 +1772,13 @@ export default function Profile() {
                           setCoverProgress(0);
                           try {
                             if (file.type.startsWith('image/') && file.type !== 'image/gif') {
-                              file = await compressImage(file, 1600, 800, 0.8);
+                              file = await compressImage(file, 1600, 800, 0.8).catch(() => file);
                             }
                             const url = await handleFileUpload(file, "banner", (p) => setCoverProgress(p));
                             if (url) setEditCover(url);
-                          } catch (err) {
+                          } catch (err: any) {
                             console.error("Error uploading cover:", err);
-                            alert("Erro ao enviar capa. Tente novamente.");
+                            alert(`Erro ao enviar capa: ${err.message || 'Tente novamente'}`);
                           } finally {
                             setUploading(false);
                             setCoverProgress(0);

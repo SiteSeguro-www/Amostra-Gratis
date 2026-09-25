@@ -12,6 +12,11 @@ export const CachedImage = forwardRef<HTMLImageElement, CachedImageProps>(({ src
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
+    setDisplaySrc(src);
+    setHasError(false);
+  }, [src]);
+
+  useEffect(() => {
     let isMounted = true;
     
     async function loadCached() {

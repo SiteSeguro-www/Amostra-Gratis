@@ -52,7 +52,15 @@ export async function ensureBucketAndPolicy(bucketName: string) {
                   {
                       AllowedHeaders: ["*"],
                       AllowedMethods: ["GET", "PUT", "POST", "DELETE", "HEAD"],
-                      AllowedOrigins: ["*", "https://packzinhu.online", "https://www.packzinhu.online", "https://cdn.packzinhu.online", "http://localhost:3000"],
+                      AllowedOrigins: [
+                        "https://packzinhu.online",
+                        "https://www.packzinhu.online",
+                        "https://cdn.packzinhu.online",
+                        "https://ais-dev-vvtkqs525dn77fwrz5xxaa-109493740571.us-east5.run.app",
+                        "https://ais-pre-vvtkqs525dn77fwrz5xxaa-109493740571.us-east5.run.app",
+                        "http://localhost:3000",
+                        "http://localhost:5173"
+                      ],
                       ExposeHeaders: ["ETag"],
                       MaxAgeSeconds: 3000
                   }

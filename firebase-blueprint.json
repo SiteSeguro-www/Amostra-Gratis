@@ -11,6 +11,8 @@
         "photoURL": { "type": "string" },
         "coverURL": { "type": "string" },
         "bio": { "type": "string" },
+        "website": { "type": "string" },
+        "location": { "type": "string" },
         "role": { "type": "string", "enum": ["user", "creator", "admin"] },
         "isPremium": { "type": "boolean" },
         "borderStyle": { "type": "string" },
