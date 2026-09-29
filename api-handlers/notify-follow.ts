@@ -1,82 +1,5 @@
-import { getFirestore } from "firebase-admin/firestore";
-import { getAuth } from "firebase-admin/auth";
-import { initializeApp, getApps, cert } from "firebase-admin/app";
-import fs from 'fs';
-import path from 'path';
 import nodemailer from 'nodemailer';
-
-let firebaseConfig = {};
-try {
-  const configPath = path.join(process.cwd(), 'firebase-applet-config.json');
-  if (fs.existsSync(configPath)) {
-    firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-  }
-} catch (e) {}
-
-function smartParseServiceAccount(sa: string): any {
-  if (!sa) return null;
-  const originalSa = sa;
-  sa = sa.trim();
-  let parsed: any = null;
-  try {
-    let p = JSON.parse(sa);
-    if (typeof p === 'string') p = JSON.parse(p);
-    if (p && typeof p === 'object') parsed = p;
-  } catch (e) {}
-
-  if (!parsed) {
-    try {
-      const sanitized = sa.replace(/\\n/g, '\n').replace(/^"|"$/g, '');
-      let p = JSON.parse(sanitized);
-      if (typeof p === 'string') p = JSON.parse(p);
-      if (p && typeof p === 'object') parsed = p;
-    } catch (e) {}
-  }
-
-  if (!parsed) {
-     try {
-       const projectIdMatch = originalSa.match(/"project_id"\s*:\s*"([^"]+)"/);
-       const clientEmailMatch = originalSa.match(/"client_email"\s*:\s*"([^"]+)"/);
-       const privateKeyMatch = originalSa.match(/"private_key"\s*:\s*"([^"]+)"/);
-       if (projectIdMatch && clientEmailMatch && privateKeyMatch) {
-         parsed = {
-           project_id: projectIdMatch[1],
-           client_email: clientEmailMatch[1],
-           private_key: privateKeyMatch[1].replace(/\\n/g, '\n')
-         };
-       }
-     } catch (e) {}
-  }
-  
-  if (!parsed) return null;
-
-  const normalized: any = { ...parsed };
-  if (normalized.project_id && !normalized.projectId) normalized.projectId = normalized.project_id;
-  if (normalized.private_key && !normalized.privateKey) normalized.privateKey = normalized.private_key;
-  if (normalized.client_email && !normalized.clientEmail) normalized.clientEmail = normalized.client_email;
-  if (typeof normalized.privateKey === 'string') {
-    normalized.privateKey = normalized.privateKey.replace(/\\n/g, '\n');
-  }
-  return normalized;
-}
-
-function ensureFirebase() {
-  if (getApps().length === 0) {
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
-    if (serviceAccount) {
-      const parsedAccount = smartParseServiceAccount(serviceAccount);
-      if (parsedAccount) {
-        initializeApp({
-          credential: cert(parsedAccount),
-          projectId: parsedAccount.projectId || (firebaseConfig as any).projectId,
-          storageBucket: parsedAccount.storageBucket || (firebaseConfig as any).storageBucket
-        });
-        return;
-      }
-    }
-    throw new Error("Erro na inicialização do Firebase");
-  }
-}
+import { getAdminFirestore, getAdminAuth } from './firebase-admin.js';
 
 async function sendSystemEmail(db: any, { to, subject, title, message, buttonText, buttonUrl, footer, bannerType }: { 
   to: string, 
@@ -196,9 +119,8 @@ export default async function handler(req: any, res: any) {
   if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Não autorizado' });
 
   try {
-    ensureFirebase();
-    const db = getFirestore((firebaseConfig as any).firestoreDatabaseId);
-    const adminAuth = getAuth();
+    const db = getAdminFirestore();
+    const adminAuth = getAdminAuth();
 
     const token = authHeader.split('Bearer ')[1];
     const decodedUser = await adminAuth.verifyIdToken(token);

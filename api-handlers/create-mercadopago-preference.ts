@@ -18,7 +18,7 @@ try {
 
 function smartParseServiceAccount(sa: string): any {
   if (!sa) {
-    throw new Error("A variável de ambiente FIREBASE_SERVICE_ACCOUNT está vazia.");
+    return null;
   }
   const originalSa = sa;
   sa = sa.trim();
@@ -137,18 +137,22 @@ function ensureFirebase() {
     if (serviceAccount) {
       try {
         const parsedAccount = smartParseServiceAccount(serviceAccount);
-        initializeApp({
-          credential: cert(parsedAccount),
-          projectId: parsedAccount.projectId || (firebaseConfig as any).projectId,
-          storageBucket: parsedAccount.storageBucket || (firebaseConfig as any).storageBucket
-        });
+        if (parsedAccount) {
+          initializeApp({
+            credential: cert(parsedAccount),
+            projectId: parsedAccount.projectId || (firebaseConfig as any).projectId,
+            storageBucket: parsedAccount.storageBucket || (firebaseConfig as any).storageBucket
+          });
+          return;
+        }
       } catch (e: any) {
-        console.error('FIREBASE_SERVICE_ACCOUNT parse error:', e);
-        throw new Error("Erro de Inicialização do Firebase Admin: " + e.message);
+        console.warn('FIREBASE_SERVICE_ACCOUNT parse warning:', e);
       }
-    } else {
-      throw new Error("A variável FIREBASE_SERVICE_ACCOUNT não está configurada nas variáveis de ambiente da hospedagem (ex: Vercel). Adicione-a para dar suporte seguro a pagamentos e banco de dados.");
     }
+    initializeApp({
+      projectId: (firebaseConfig as any).projectId,
+      storageBucket: (firebaseConfig as any).storageBucket
+    });
   }
 }
 

@@ -1,8 +1,7 @@
 import formidable from 'formidable';
 import express from 'express';
-import { ensureBucketAndPolicy } from '../src/lib/minio-client.js';
 import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
-import { s3Client } from '../src/lib/s3.js';
+import { s3Client, ensureBucketAndPolicy } from './minio-s3.js';
 import { getAdminAuth, getAdminFirestore } from './firebase-admin.js';
 import fs from 'fs';
 

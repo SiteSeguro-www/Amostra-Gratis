@@ -1,5 +1,5 @@
 import express from 'express';
-import { minioClient } from '../src/lib/minio-client.js';
+import { minioClient } from './minio-s3.js';
 import { getAdminAuth } from './firebase-admin.js';
 
 export const handlePresignedUrl = async (req: express.Request, res: express.Response) => {

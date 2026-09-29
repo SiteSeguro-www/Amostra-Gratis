@@ -1,6 +1,5 @@
 import cors from 'cors';
 import express from 'express';
-import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
@@ -242,33 +241,38 @@ async function sendSystemEmail({ to, subject, title, message, buttonText, button
 
 export const app = express();
 
-async function startServer() {
-  const PORT = 3000;
+const allowedOrigins = [
+  'https://packzinhu.online',
+  'https://www.packzinhu.online',
+  'http://localhost:3000',
+  'https://ais-dev-vvtkqs525dn77fwrz5xxaa-109493740571.us-east5.run.app',
+  'https://ais-pre-vvtkqs525dn77fwrz5xxaa-109493740571.us-east5.run.app'
+];
 
-  const allowedOrigins = [
-    'https://packzinhu.online',
-    'https://www.packzinhu.online',
-    'http://localhost:3000',
-    'https://ais-dev-vvtkqs525dn77fwrz5xxaa-109493740571.us-east5.run.app',
-    'https://ais-pre-vvtkqs525dn77fwrz5xxaa-109493740571.us-east5.run.app'
-  ];
+// Extremely permissive CORS for dev environment to avoid common redirect issues
+app.use(cors({ 
+  origin: true, // Reflects the request origin
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+}));
 
-  // Extremely permissive CORS for dev environment to avoid common redirect issues
-  app.use(cors({ 
-    origin: true, // Reflects the request origin
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
-  }));
+// Handle preflight explicitly and instantly to prevent any redirects from other middlewares
+app.options('*all', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.status(200).end();
+});
 
-  // Handle preflight explicitly and instantly to prevent any redirects from other middlewares
-  app.options('*all', (req, res) => {
-    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.status(200).end();
-  });
+// URL Normalizer for Vercel Serverless (in case /api is stripped by routing)
+app.use((req, res, next) => {
+  if (!req.url.startsWith('/api') && !req.url.startsWith('/assets') && !req.url.startsWith('/@') && !req.url.startsWith('/src')) {
+    req.url = `/api${req.url}`;
+  }
+  next();
+});
 
   // Generic request logger to help debug
   app.use((req, res, next) => {
@@ -1766,44 +1770,48 @@ async function startServer() {
     }
   });
 
-  // Vite middleware for development
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    // Configure cache for static files (1 year)
-    app.use(express.static(distPath, {
-      maxAge: '1y',
-      immutable: true,
-      index: false // Let the *all route handle index.html without caching it too long
-    }));
-    
-    app.get('*all', (req, res) => {
-      // Don't cache index.html long-term so users get updates
-      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
-  }
+  async function startDevServer() {
+    const PORT = 3000;
 
-  try {
-    const { ensureBucketAndPolicy } = await import('./src/lib/minio-client.js');
-    const { MINIO_BUCKET } = await import('./src/lib/s3.js');
-    await ensureBucketAndPolicy(MINIO_BUCKET);
-  } catch (err) {
-    console.warn("Could not ensure MinIO bucket on startup. Will retry on upload.");
-  }
+    // Vite middleware for development
+    if (process.env.NODE_ENV !== 'production') {
+      const { createServer: createViteServer } = await import('vite');
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+      });
+      app.use(vite.middlewares);
+    } else {
+      const distPath = path.join(process.cwd(), 'dist');
+      // Configure cache for static files (1 year)
+      app.use(express.static(distPath, {
+        maxAge: '1y',
+        immutable: true,
+        index: false // Let the *all route handle index.html without caching it too long
+      }));
+      
+      app.get('*all', (req, res) => {
+        // Don't cache index.html long-term so users get updates
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        res.sendFile(path.join(distPath, 'index.html'));
+      });
+    }
 
-  if (!process.env.VERCEL) {
+    try {
+      const { ensureBucketAndPolicy } = await import('./src/lib/minio-client.js');
+      const { MINIO_BUCKET } = await import('./src/lib/s3.js');
+      await ensureBucketAndPolicy(MINIO_BUCKET);
+    } catch (err) {
+      console.warn("Could not ensure MinIO bucket on startup. Will retry on upload.");
+    }
+
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`Server running on http://localhost:${PORT}`);
     });
   }
-}
 
-startServer();
+  if (!process.env.VERCEL) {
+    startDevServer();
+  }
