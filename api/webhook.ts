@@ -1,5 +1,5 @@
 import { FieldValue } from "firebase-admin/firestore";
-import { getAdminFirestore } from './firebase-admin.js';
+import { getAdminFirestore } from './firebase-admin.ts';
 
 export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Origin', '*');

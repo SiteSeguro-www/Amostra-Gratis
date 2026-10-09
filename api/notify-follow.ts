@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { getAdminFirestore, getAdminAuth } from './firebase-admin.js';
+import { getAdminFirestore, getAdminAuth } from './firebase-admin.ts';
 
 async function sendSystemEmail(db: any, { to, subject, title, message, buttonText, buttonUrl, footer, bannerType }: { 
   to: string, 

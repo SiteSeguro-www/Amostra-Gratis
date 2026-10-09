@@ -1,8 +1,8 @@
 import formidable from 'formidable';
 import express from 'express';
 import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
-import { s3Client, ensureBucketAndPolicy } from './minio-s3.js';
-import { getAdminAuth, getAdminFirestore } from './firebase-admin.js';
+import { s3Client, ensureBucketAndPolicy } from './minio-s3.ts';
+import { getAdminAuth, getAdminFirestore } from './firebase-admin.ts';
 import fs from 'fs';
 
 const MINIO_BUCKET = process.env.MINIO_BUCKET || 'packzinhu-db';

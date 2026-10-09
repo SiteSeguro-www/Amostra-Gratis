@@ -1,8 +1,46 @@
 
-import { auth } from '../firebase';
+import { auth, storage } from '../firebase';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { getApiUrl } from '../config';
 
 const MINIO_BUCKET = 'packzinhu-db';
+
+// Upload via Firebase Storage Fallback
+async function uploadViaFirebaseStorage(
+  file: File,
+  storagePath: string = 'uploads',
+  onProgress?: (progress: number) => void
+): Promise<string> {
+  console.log('[Upload] Executando upload via Firebase Storage fallback...');
+  const cleanName = (file.name || 'file').replace(/[^a-zA-Z0-9.\-_]/g, '');
+  const fileKey = `${storagePath}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}_${cleanName}`;
+  const storageRef = ref(storage, fileKey);
+  const uploadTask = uploadBytesResumable(storageRef, file, {
+    contentType: file.type || 'application/octet-stream'
+  });
+
+  return new Promise((resolve, reject) => {
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {
+        if (onProgress && snapshot.totalBytes > 0) {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          onProgress(progress);
+        }
+      },
+      (error) => reject(error),
+      async () => {
+        try {
+          const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+          console.log('[Upload] Firebase Storage upload concluído:', downloadUrl);
+          resolve(downloadUrl);
+        } catch (err) {
+          reject(err);
+        }
+      }
+    );
+  });
+}
 
 // Upload via Backend Proxy (/api/upload)
 async function uploadViaProxy(
@@ -121,6 +159,40 @@ async function uploadViaPresigned(
   });
 }
 
+// Upload via Direct S3 to MinIO (Guaranteed Client Fallback)
+async function uploadViaDirectS3(
+  file: File,
+  storagePath: string = 'uploads',
+  onProgress?: (progress: number) => void
+): Promise<string> {
+  console.log('[Upload] Executando upload direto via MinIO S3...');
+  const { s3Client, MINIO_BUCKET } = await import('../lib/s3');
+  const { PutObjectCommand } = await import('@aws-sdk/client-s3');
+
+  const cleanName = (file.name || 'file').replace(/[^a-zA-Z0-9.\-_]/g, '');
+  const fileKey = `${storagePath}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}_${cleanName}`;
+
+  if (onProgress) onProgress(30);
+
+  const arrayBuffer = await file.arrayBuffer();
+  const uint8Array = new Uint8Array(arrayBuffer);
+
+  if (onProgress) onProgress(60);
+
+  await s3Client.send(new PutObjectCommand({
+    Bucket: MINIO_BUCKET,
+    Key: fileKey,
+    Body: uint8Array,
+    ContentType: file.type || 'application/octet-stream',
+  }));
+
+  if (onProgress) onProgress(100);
+
+  const publicUrl = `https://cdn.packzinhu.online/${MINIO_BUCKET}/${fileKey}`;
+  console.log('[Upload] Upload direto MinIO S3 concluído com sucesso:', publicUrl);
+  return publicUrl;
+}
+
 export async function uploadToStorage(
   file: File, 
   path: string = 'uploads',
@@ -134,31 +206,47 @@ export async function uploadToStorage(
   const isSmallFile = file.size <= 4 * 1024 * 1024; // 4MB threshold
 
   if (isSmallFile) {
-    // For images, profile photos, and small files, try proxy first (100% reliable, no CORS issues)
+    // For images, profile photos, and small files:
+    // 1. Try proxy (MinIO via backend /api/upload)
     try {
       console.log(`[Upload] Enviando arquivo (${Math.round(file.size / 1024)}KB) via proxy da API...`);
       return await uploadViaProxy(file, token, onProgress);
     } catch (proxyError: any) {
       console.warn('[Upload] Falha no proxy, tentando upload direto MinIO...', proxyError.message);
+      // 2. Try Presigned URL directly to MinIO
       try {
         return await uploadViaPresigned(file, token, onProgress);
       } catch (presignedError: any) {
-        console.error('[Upload] Ambas as estratégias de upload falharam:', { proxyError, presignedError });
-        throw new Error(proxyError.message || presignedError.message || 'Falha no upload do arquivo');
+        console.warn('[Upload] Falha no upload MinIO presigned, tentando S3 direto...', presignedError.message);
+        // 3. Fallback to Direct S3
+        try {
+          return await uploadViaDirectS3(file, path, onProgress);
+        } catch (s3Error: any) {
+          console.error('[Upload] Todas as estratégias de upload falharam:', { proxyError, presignedError, s3Error });
+          throw new Error(proxyError.message || presignedError.message || s3Error.message || 'Falha no upload do arquivo');
+        }
       }
     }
   } else {
-    // For larger files (>4MB videos), try presigned URL first to avoid serverless payload limits
+    // For larger files (>4MB videos):
+    // 1. Try presigned URL first to avoid serverless payload limits
     try {
       console.log(`[Upload] Enviando arquivo grande (${Math.round(file.size / (1024 * 1024))}MB) via presigned URL...`);
       return await uploadViaPresigned(file, token, onProgress);
     } catch (presignedError: any) {
-      console.warn('[Upload] Falha no upload direto, tentando via proxy...', presignedError.message);
+      console.warn('[Upload] Falha no presigned URL, tentando via proxy...', presignedError.message);
+      // 2. Try proxy via /api/upload
       try {
         return await uploadViaProxy(file, token, onProgress);
       } catch (proxyError: any) {
-        console.error('[Upload] Ambas as estratégias de upload falharam:', { presignedError, proxyError });
-        throw new Error(presignedError.message || proxyError.message || 'Falha no upload do arquivo');
+        console.warn('[Upload] Falha no proxy, tentando S3 direto...', proxyError.message);
+        // 3. Fallback to Direct S3
+        try {
+          return await uploadViaDirectS3(file, path, onProgress);
+        } catch (s3Error: any) {
+          console.error('[Upload] Todas as estratégias de upload falharam:', { presignedError, proxyError, s3Error });
+          throw new Error(presignedError.message || proxyError.message || s3Error.message || 'Falha no upload do arquivo');
+        }
       }
     }
   }

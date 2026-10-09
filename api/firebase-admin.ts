@@ -4,11 +4,15 @@ import { getAuth } from 'firebase-admin/auth';
 import fs from 'fs';
 import path from 'path';
 
-let firebaseConfig: any = {};
+let firebaseConfig: any = {
+  projectId: "gen-lang-client-0668923042",
+  firestoreDatabaseId: "ai-studio-fb36f72e-d6e7-437c-8175-890b834eee0f",
+  storageBucket: "gen-lang-client-0668923042.firebasestorage.app",
+};
 try {
   const configPath = path.join(process.cwd(), 'firebase-applet-config.json');
   if (fs.existsSync(configPath)) {
-    firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    firebaseConfig = { ...firebaseConfig, ...JSON.parse(fs.readFileSync(configPath, 'utf8')) };
   }
 } catch (e) {}
 

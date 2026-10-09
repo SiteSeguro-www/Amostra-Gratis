@@ -252,15 +252,32 @@ export default function Profile() {
     // Fetch initial follow status - primary Firestore, fallback Supabase
     const fetchFollowStatus = async () => {
       try {
+        const directRef = doc(db, "follows", `${user.uid}_${id}`);
+        const directSnap = await getDoc(directRef);
+        if (directSnap.exists()) {
+          setIsFollowing(true);
+          setFollowId(directSnap.id);
+          return;
+        }
+
         const qF = query(collection(db, "follows"), where("follower_id", "==", user.uid), where("following_id", "==", id));
         const snapshot = await getDocs(qF);
         if (!snapshot.empty) {
           setIsFollowing(true);
           setFollowId(snapshot.docs[0].id);
-        } else {
-          setIsFollowing(false);
-          setFollowId(null);
+          return;
         }
+
+        const qF2 = query(collection(db, "follows"), where("followerId", "==", user.uid), where("followingId", "==", id));
+        const snapshot2 = await getDocs(qF2);
+        if (!snapshot2.empty) {
+          setIsFollowing(true);
+          setFollowId(snapshot2.docs[0].id);
+          return;
+        }
+
+        setIsFollowing(false);
+        setFollowId(null);
       } catch (err) {
         console.warn("Follow fetch issue:", err);
       }
@@ -660,83 +677,98 @@ export default function Profile() {
     if (!user || !id || isFollowLoading) return;
     setIsFollowLoading(true);
     try {
-      // Check current status using Firestore
-      const qF = query(collection(db, "follows"), where("follower_id", "==", user.uid), where("following_id", "==", id));
-      const fsF = await getDocs(qF);
-      const currentlyFollowing = !fsF.empty;
+      const followDocId = `${user.uid}_${id}`;
+      const directRef = doc(db, "follows", followDocId);
+      const directSnap = await getDoc(directRef);
+
+      const qF1 = query(collection(db, "follows"), where("follower_id", "==", user.uid), where("following_id", "==", id));
+      const fsF1 = await getDocs(qF1);
+
+      const qF2 = query(collection(db, "follows"), where("followerId", "==", user.uid), where("followingId", "==", id));
+      const fsF2 = await getDocs(qF2);
+
+      const currentlyFollowing = isFollowing || directSnap.exists() || !fsF1.empty || !fsF2.empty;
 
       const userRef = doc(db, "users", id);
       const currentUserRef = doc(db, "users", user.uid);
 
       if (currentlyFollowing) {
-        // Unfollow: call API
+        // Unfollow: delete doc in Firestore directly
+        setIsFollowing(false);
+        setFollowId(null);
+        setProfile((prev: any) => prev ? { ...prev, followersCount: Math.max(0, (prev.followersCount || 1) - 1) } : prev);
+
+        try {
+          if (directSnap.exists()) {
+            await deleteDoc(directRef).catch(() => {});
+          }
+          for (const d of fsF1.docs) {
+            await deleteDoc(d.ref).catch(() => {});
+          }
+          for (const d of fsF2.docs) {
+            await deleteDoc(d.ref).catch(() => {});
+          }
+          await updateDoc(userRef, { followersCount: increment(-1) }).catch(() => {});
+          await updateDoc(currentUserRef, { followingCount: increment(-1) }).catch(() => {});
+        } catch (fsErr: any) {
+          console.warn("Direct Firestore unfollow warning:", fsErr);
+        }
+
+        // Try API in background (syncs to MinIO)
         try {
           const idToken = await user.getIdToken();
-          const response = await fetch(getApiUrl("/api/toggle-follow"), {
+          fetch(getApiUrl("/api/toggle-follow"), {
             method: "POST",
             headers: { 
               "Content-Type": "application/json",
               "Authorization": `Bearer ${idToken}`
             },
             body: JSON.stringify({ followingId: id, action: 'unfollow' }),
-          });
-
-          if (!response.ok) {
-            const errData = await response.text();
-            throw new Error(`Failed to unfollow: ${response.status} ${errData}`);
-          }
-          const data = await response.json();
-          
-          if (data.newFollowersCount !== undefined) {
-              setProfile((prev: any) => prev ? { ...prev, followersCount: data.newFollowersCount } : prev);
-          }
-        } catch (err: any) {
-            console.error(err);
-            throw new Error(err.message || "Erro ao deixar de seguir");
-        }
+          }).catch(() => {});
+        } catch (_) {}
 
         // Sync to Local Backup
         await syncToLocalBackup('unfollow', { followerId: user.uid, followingId: id });
-
-        setIsFollowing(false);
-        setFollowId(null);
       } else {
-        // Follow in Firestore
-        let docId = '';
+        // Follow: create doc in Firestore directly
+        setIsFollowing(true);
+        setFollowId(followDocId);
+        setProfile((prev: any) => prev ? { ...prev, followersCount: (prev?.followersCount || 0) + 1 } : prev);
+
+        const followObj = {
+          follower_id: user.uid,
+          followerId: user.uid,
+          following_id: id,
+          followingId: id,
+          created_at: new Date().toISOString(),
+          createdAt: new Date().toISOString()
+        };
+
+        try {
+          await setDoc(directRef, followObj, { merge: true });
+          await updateDoc(userRef, { followersCount: increment(1) }).catch(() => {});
+          await updateDoc(currentUserRef, { followingCount: increment(1) }).catch(() => {});
+        } catch (fsErr: any) {
+          console.warn("Direct Firestore follow warning:", fsErr);
+        }
+
+        // Try API in background (syncs to MinIO)
         try {
           const idToken = await user.getIdToken();
-          const response = await fetch(getApiUrl("/api/toggle-follow"), {
+          fetch(getApiUrl("/api/toggle-follow"), {
             method: "POST",
             headers: { 
               "Content-Type": "application/json",
               "Authorization": `Bearer ${idToken}`
             },
             body: JSON.stringify({ followingId: id, action: 'follow' }),
-          });
-          
-          if (!response.ok) {
-            const errData = await response.text();
-            throw new Error(`Failed to follow: ${response.status} ${errData}`);
-          }
-          const data = await response.json();
-          docId = data.followId;
-
-          // Update UI immediately (optimistic update fallback)
-          if (data.newFollowersCount !== undefined) {
-              setProfile((prev: any) => prev ? { ...prev, followersCount: data.newFollowersCount } : prev);
-          }
-
-        } catch (err: any) {
-            console.error(err);
-            throw new Error(err.message || "Erro ao seguir");
-        }
+          }).catch(() => {});
+        } catch (_) {}
 
         // Sync to Local Backup
-        await syncToLocalBackup('follow', { id: docId, followerId: user.uid, followingId: id });
+        await syncToLocalBackup('follow', { id: followDocId, followerId: user.uid, followingId: id });
 
         createNotification(id, "follow", user.uid, "começou a te seguir");
-        setIsFollowing(true);
-        setFollowId(docId);
 
         // Email Notification for New Follower
         try {
@@ -747,15 +779,18 @@ export default function Profile() {
               "Content-Type": "application/json",
               "Authorization": `Bearer ${idToken}`
             },
-            body: JSON.stringify({ followerId: user.uid, followedId: id }),
-          });
+            body: JSON.stringify({
+              followedUserId: id,
+              followerName: user.displayName || 'Alguém',
+              followerAvatar: user.photoURL || ''
+            })
+          }).catch(() => {});
         } catch (e) {
-          console.error("Failed to send follow email notify:", e);
+          console.warn("Failed to send follow email notify:", e);
         }
       }
     } catch (error: any) {
       console.error("Error toggling follow:", error);
-      alert(`Erro ao processar seguimento: ${error.message}`);
     } finally {
       setIsFollowLoading(false);
     }

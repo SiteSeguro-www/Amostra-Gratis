@@ -1,6 +1,6 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { s3Client } from './minio-s3.js';
-import { getAdminFirestore, getAdminAuth } from './firebase-admin.js';
+import { s3Client } from './minio-s3.ts';
+import { getAdminFirestore, getAdminAuth } from './firebase-admin.ts';
 
 const DB_BUCKET = process.env.MINIO_DB_BUCKET || 'packzinhu-db';
 

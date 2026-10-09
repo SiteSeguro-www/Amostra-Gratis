@@ -1,10 +1,11 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 import firebaseConfig from '../firebase-applet-config.json';
 
 // Initialize Firebase only if it hasn't been initialized yet
-let app;
+let app: any;
 try {
   if (!getApps().length) {
     app = initializeApp(firebaseConfig);
@@ -16,6 +17,7 @@ try {
 }
 
 export const auth = getAuth(app);
+export const storage = getStorage(app);
 
 // Use initializeFirestore with persistentLocalCache to aggressively cache reads and save quota
 export const db = initializeFirestore(app, {

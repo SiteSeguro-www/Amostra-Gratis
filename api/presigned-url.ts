@@ -1,6 +1,6 @@
 import express from 'express';
-import { minioClient } from './minio-s3.js';
-import { getAdminAuth } from './firebase-admin.js';
+import { minioClient } from './minio-s3.ts';
+import { getAdminAuth } from './firebase-admin.ts';
 
 export const handlePresignedUrl = async (req: express.Request, res: express.Response) => {
   res.setHeader('Access-Control-Allow-Origin', '*');

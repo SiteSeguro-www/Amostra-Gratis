@@ -8,12 +8,16 @@ export const MINIO_ENDPOINT_RAW = (process.env.MINIO_ENDPOINT && !process.env.MI
 export const MINIO_ENDPOINT = MINIO_ENDPOINT_RAW;
 export const MINIO_BUCKET = process.env.MINIO_BUCKET || 'packzinhu-db';
 
+const rawSecret = process.env.MINIO_SECRET_KEY;
+const MINIO_SECRET_KEY = (rawSecret && rawSecret.toLowerCase() === 'slimsli89x*') ? 'Slimsli89x*' : (rawSecret || 'Slimsli89x*');
+const MINIO_ACCESS_KEY = process.env.MINIO_ACCESS_KEY || 'packzinhu';
+
 export const s3Client = new S3Client({
   endpoint: `https://${MINIO_ENDPOINT}`,
   region: process.env.MINIO_REGION || 'us-east-1',
   credentials: {
-    accessKeyId: process.env.MINIO_ACCESS_KEY || 'packzinhu',
-    secretAccessKey: process.env.MINIO_SECRET_KEY || 'Slimsli89x*',
+    accessKeyId: MINIO_ACCESS_KEY,
+    secretAccessKey: MINIO_SECRET_KEY,
   },
   forcePathStyle: true,
 });
@@ -23,8 +27,8 @@ export const minioClient = new Minio.Client({
   port: 443,
   useSSL: true,
   region: process.env.MINIO_REGION || 'us-east-1',
-  accessKey: process.env.MINIO_ACCESS_KEY || 'packzinhu',
-  secretKey: process.env.MINIO_SECRET_KEY || 'Slimsli89x*',
+  accessKey: MINIO_ACCESS_KEY,
+  secretKey: MINIO_SECRET_KEY,
 });
 
 export async function ensureBucketAndPolicy(bucketName: string = MINIO_BUCKET) {
